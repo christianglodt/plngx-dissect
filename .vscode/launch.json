@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        
+        {
+            "command": "vite dev server",
+            "name": "Run npm run dev",
+            "request": "launch",
+            "type": "node-terminal",
+            "cwd": "${workspaceFolder}/plngx-dissect-frontend"
+        },
+        {
+            "name": "uvicorn",
+            "request": "launch",
+            "type": "python",
+            "program": "/opt/venv/bin/uvicorn",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "--host", "0.0.0.0", "main.app", "--reload"
+            ],
+        }
+    ]
+}
