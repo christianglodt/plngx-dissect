@@ -12,6 +12,10 @@ from fastapi import FastAPI, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import StreamingResponse
 
+import dotenv
+
+dotenv.load_dotenv()
+
 # import watcher
 # watcher.start_watcher()
 
