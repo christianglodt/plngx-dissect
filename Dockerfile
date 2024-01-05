@@ -30,4 +30,4 @@ RUN rm -rf /app/plngx-dissect-frontend
 
 COPY --from=build_stage /app/plngx-dissect-frontend/dist /app/plngx-dissect-frontend/dist/
 
-CMD ["/app/entrypoint.sh"]
+CMD ["/opt/venv/bin/uvicorn", "--host", "0.0.0.0", "main:app"]
