@@ -9,6 +9,11 @@
 
 	"runArgs": ["--network=host"],
 
+	"mounts": [
+		"source=${localWorkspaceFolder}/config,target=/config,type=bind,consistency=cached",
+		"source=${localWorkspaceFolder}/cache,target=/cache,type=bind,consistency=cached"
+	],
+
 	"postCreateCommand": ".devcontainer/post-create.sh",
 
 	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
