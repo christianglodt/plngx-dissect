@@ -2,7 +2,7 @@
     "configurations": [
         
         {
-            "command": "vite dev server",
+            "command": "npm run dev",
             "name": "Run npm run dev",
             "request": "launch",
             "type": "node-terminal",
@@ -12,7 +12,7 @@
             "name": "uvicorn",
             "request": "launch",
             "type": "python",
-            "program": "/opt/venv/bin/uvicorn",
+            "program": "/home/vscode/.local/bin/uvicorn",
             "cwd": "${workspaceFolder}",
             "args": [
                 "--host", "0.0.0.0", "main:app", "--reload"
