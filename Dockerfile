@@ -17,10 +17,10 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY requirements.txt /app/requirements.txt
+COPY backend/requirements.txt /app/backend/requirements.txt
 
 # Install Python packages
-RUN pip install -r /app/requirements.txt
+RUN pip install -r /app/backend/requirements.txt
 
 COPY . /app
 
@@ -30,4 +30,5 @@ RUN rm -rf /app/plngx-dissect-frontend
 
 COPY --from=build_stage /app/plngx-dissect-frontend/dist /app/plngx-dissect-frontend/dist/
 
+WORKDIR /app/backend
 CMD ["/opt/venv/bin/uvicorn", "--host", "0.0.0.0", "main:app"]
