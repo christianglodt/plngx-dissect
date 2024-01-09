@@ -4,7 +4,10 @@
 	"name": "Python 3",
 	"image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
 	"features": {
-		"ghcr.io/devcontainers/features/node:1": {}
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/akhildevelops/devcontainer-features/apt:0": {
+			"packages": "inkscape"
+		}
 	},
 
 	"runArgs": ["--network=host"],

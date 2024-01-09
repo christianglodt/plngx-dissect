@@ -12,6 +12,8 @@ RUN npm run build
 
 FROM python:3.12-bookworm
 
+RUN apt update -y && apt install -y inkscape && rm -rf /var/apt/lists
+
 # Create virtual env
 ENV VIRTUAL_ENV=/opt/venv
 RUN python -m venv $VIRTUAL_ENV
