@@ -14,7 +14,7 @@ from starlette.responses import StreamingResponse
 
 import dotenv
 
-dotenv.load_dotenv()
+dotenv.load_dotenv('../.env')
 
 
 app = FastAPI()

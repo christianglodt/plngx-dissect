@@ -8,7 +8,7 @@ import decimal
 import dotenv
 
 
-dotenv.load_dotenv()
+dotenv.load_dotenv('../.env')
 
 
 PAPERLESS_URL: str = os.environ.get('PAPERLESS_URL', 'http://localhost')
