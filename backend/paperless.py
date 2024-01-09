@@ -1,11 +1,11 @@
 import aiohttp
 import os
-import collections.abc
 import pydantic
-from typing import TypeVar, Mapping, Any, Literal, Generic, Type, Collection
+from typing import TypeVar, Mapping, Any, Literal, Generic, Type, Collection, AsyncIterator, AsyncGenerator
 import datetime
 import decimal
 import dotenv
+from contextlib import asynccontextmanager
 
 
 dotenv.load_dotenv('../.env')
@@ -93,16 +93,21 @@ class PaperlessClient:
         self.base_url = base_url
         self.api_token = api_token
 
-    async def _iter_paginated_results(self, url: str, result_type: Type[PaperlessDataT]) -> collections.abc.AsyncGenerator[PaperlessDataT, None]:
+    @asynccontextmanager
+    async def _get(self, url: str | pydantic.AnyHttpUrl) -> AsyncIterator[aiohttp.ClientResponse]:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+                yield response
+
+    async def _iter_paginated_results(self, url: str, result_type: Type[PaperlessDataT]) -> AsyncGenerator[PaperlessDataT, None]:
         current_url: str | pydantic.AnyHttpUrl | None = url
         while current_url is not None:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(str(current_url), headers={'Authorization': f'Token {self.api_token}'}) as response:
-                    response.raise_for_status()
-                    response_obj: PaperlessResponse[result_type] = PaperlessResponse[result_type].model_validate(await response.json())
-                    for obj in response_obj.results:
-                        yield obj
-                    current_url = response_obj.next
+            async with self._get(current_url) as response:
+                response.raise_for_status()
+                response_obj: PaperlessResponse[result_type] = PaperlessResponse[result_type].model_validate(await response.json())
+                for obj in response_obj.results:
+                    yield obj
+                current_url = response_obj.next
         
     async def tags_by_id(self) -> Mapping[int, PaperlessTag]:
         return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/tags/', PaperlessTag) }
@@ -127,3 +132,9 @@ class PaperlessClient:
         tag_ids = [tags_by_name[tag].id for tag in tags]
         url = f'{self.base_url}/api/documents/?tags__id__all={",".join(str(tag_id) for tag_id in tag_ids)}'
         return [d async for d in self._iter_paginated_results(url, PaperlessDocument)]
+
+    @asynccontextmanager
+    async def get_document_stream(self, document_id: int) -> AsyncIterator[aiohttp.StreamReader]:
+        url = f'{self.base_url}/api/documents/{document_id}/download/'
+        async with self._get(url) as response:
+            yield response.content
