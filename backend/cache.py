@@ -15,11 +15,6 @@ NoValueType = NewType('NoValue', object)
 NO_VALUE: NoValueType = NoValueType(object())
 
 
-@lru_cache(maxsize=128)
-def parse_yaml(s: str) -> Any:
-    return ruamel.yaml.YAML().load(StringIO(s))
-
-
 P = ParamSpec('P')
 T = TypeVar('T')
 
@@ -71,6 +66,11 @@ class AsyncBaseCache[T](abc.ABC):
             await f.write(self.dump(obj))
             # atomically rename-into-place
             await aiofiles.os.rename(str(f.name), self.cache_dir / key)
+
+
+@lru_cache(maxsize=128)
+def parse_yaml(s: str) -> Any:
+    return ruamel.yaml.YAML().load(StringIO(s))
 
 
 PT = TypeVar('PT', bound=pydantic.BaseModel)
