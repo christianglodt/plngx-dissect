@@ -1,7 +1,7 @@
 import pathlib
 import pydantic
 import ruamel.yaml
-from typing import Type, Any, NewType, Callable, TypeVar, ParamSpec, Coroutine, Awaitable, cast
+from typing import Type, Any, NewType, Callable, ParamSpec, Awaitable, cast
 from ruamel.yaml.compat import StringIO
 from functools import wraps, lru_cache
 import json
@@ -50,21 +50,24 @@ async def set_cache_value(cache_name: str, key: str, obj: pydantic.BaseModel):
         # atomically rename-into-place
         await aiofiles.os.rename(str(f.name), _get_cache_dir(cache_name) / key)
 
-P = ParamSpec('P')
-T = TypeVar('T', bound=pydantic.BaseModel)
 
-def pydantic_yaml_cache(Model: Type[pydantic.BaseModel], cache_name: str):
-    def inner(f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+P = ParamSpec('P')
+
+class pydantic_yaml_cache:
+    def __init__(self, Model: Type[pydantic.BaseModel], cache_name: str):
+        self.Model = Model
+        self.cache_name = cache_name
+
+    def __call__(self, f: Callable[P, Awaitable[pydantic.BaseModel]]) -> Callable[P, Awaitable[pydantic.BaseModel]]:
         @wraps(f)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> pydantic.BaseModel:
             key = cache_key(args, kwargs)
-            cached_value = await get_cache_value(cache_name, key, Model)
+            cached_value = await get_cache_value(self.cache_name, key, self.Model)
             if cached_value != NO_VALUE:
-                return cast(T, cached_value)
+                return cast(pydantic.BaseModel, cached_value)
             
             value = await f(*args, **kwargs)
-            await set_cache_value(cache_name, key, value)
+            await set_cache_value(self.cache_name, key, value)
 
             return value
         return wrapper
-    return inner
