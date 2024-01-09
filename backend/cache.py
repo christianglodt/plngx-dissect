@@ -90,3 +90,10 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
         stream = StringIO()
         ruamel.yaml.YAML().dump(value.model_dump(), stream)
         return stream.getvalue().encode('utf-8')
+
+
+class file_cache(AsyncBaseCache[bytes]):
+    def load(self, data: bytes) -> bytes:
+        return data
+    def dump(self, value: bytes) -> bytes:
+        return value
