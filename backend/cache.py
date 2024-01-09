@@ -1,7 +1,7 @@
 import pathlib
 import pydantic
 import ruamel.yaml
-from typing import Type, Any, NewType
+from typing import Type, Any, NewType, Callable, TypeVar, ParamSpec, Coroutine, Awaitable, cast
 from ruamel.yaml.compat import StringIO
 from functools import wraps, lru_cache
 import json
@@ -14,7 +14,7 @@ NoValueType = NewType('NoValue', object)
 NO_VALUE: NoValueType = NoValueType(object())
 
 
-def cache_key(args: list[Any], kwargs: dict[str, Any]) -> str:
+def cache_key(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
     key_str = json.dumps({ "args": args, "kwargs": kwargs })
     hash = hashlib.sha256()
     hash.update(key_str.encode('utf-8'))
@@ -50,15 +50,17 @@ async def set_cache_value(cache_name: str, key: str, obj: pydantic.BaseModel):
         # atomically rename-into-place
         await aiofiles.os.rename(str(f.name), _get_cache_dir(cache_name) / key)
 
+P = ParamSpec('P')
+T = TypeVar('T', bound=pydantic.BaseModel)
 
 def pydantic_yaml_cache(Model: Type[pydantic.BaseModel], cache_name: str):
-    def inner(f):
+    def inner(f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             key = cache_key(args, kwargs)
             cached_value = await get_cache_value(cache_name, key, Model)
             if cached_value != NO_VALUE:
-                return cached_value
+                return cast(T, cached_value)
             
             value = await f(*args, **kwargs)
             await set_cache_value(cache_name, key, value)
