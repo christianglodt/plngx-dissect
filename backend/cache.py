@@ -7,6 +7,7 @@ from functools import wraps, lru_cache
 import json
 import hashlib
 import aiofiles
+import aiofiles.os
 
 
 NoValueType = NewType('NoValue', object)
@@ -42,10 +43,12 @@ async def get_cache_value(cache_name: str, key: str, Model: Type[pydantic.BaseMo
 
 
 async def set_cache_value(cache_name: str, key: str, obj: pydantic.BaseModel):
-    async with aiofiles.open(_get_cache_dir(cache_name) / key, mode='w', encoding='utf-8') as f:
+    async with aiofiles.tempfile.NamedTemporaryFile('w', encoding='utf-8', prefix=f'f{cache_name}-{key}', dir=_get_cache_dir(cache_name)) as f:
         stream = StringIO()
         ruamel.yaml.YAML().dump(obj.model_dump(), stream)
         await f.write(stream.getvalue())
+        # atomically rename-into-place
+        await aiofiles.os.rename(str(f.name), _get_cache_dir(cache_name) / key)
 
 
 def pydantic_yaml_cache(Model: Type[pydantic.BaseModel], cache_name: str):
