@@ -4,6 +4,7 @@
         "reportUnusedImport": "warning",
         "reportUnusedVariable": "warning",
         "reportUnusedFunction": "warning",
-        "reportUnusedClass": "warning"
+        "reportUnusedClass": "warning",
+        "reportUnusedCoroutine": "warning",
     }
 }
