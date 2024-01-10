@@ -20,8 +20,9 @@ T = TypeVar('T')
 
 
 class AsyncBaseCache[T](abc.ABC):
-    def __init__(self, cache_name: str):
+    def __init__(self, cache_name: str, extension: str = ''):
         self.cache_name = cache_name
+        self.extension = extension
         self.cache_dir = pathlib.Path(f'/cache') / cache_name
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -56,7 +57,7 @@ class AsyncBaseCache[T](abc.ABC):
 
     async def get_cache_value(self, key: str) -> T | NoValueType:
         try:
-            async with aiofiles.open(self.cache_dir / key, mode='rb') as f:
+            async with aiofiles.open((self.cache_dir / key).with_suffix(self.extension), mode='rb') as f:
                 return self.load(await f.read())
         except FileNotFoundError:
             return NO_VALUE
@@ -65,7 +66,7 @@ class AsyncBaseCache[T](abc.ABC):
         async with aiofiles.tempfile.NamedTemporaryFile('wb', prefix=f'f{self.cache_name}-{key}', dir=self.cache_dir) as f:
             await f.write(self.dump(obj))
             # atomically rename-into-place
-            await aiofiles.os.rename(str(f.name), self.cache_dir / key)
+            await aiofiles.os.rename(str(f.name), (self.cache_dir / key).with_suffix(self.extension))
 
 
 @lru_cache(maxsize=128)
@@ -77,9 +78,8 @@ PT = TypeVar('PT', bound=pydantic.BaseModel)
 
 
 class pydantic_yaml_cache(AsyncBaseCache[PT]):
-
     def __init__(self, Model: Type[PT], cache_name: str):
-        super().__init__(cache_name)
+        super().__init__(cache_name, '.yml')
         self.Model = Model
 
     def load(self, data: bytes) -> PT:
