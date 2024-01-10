@@ -61,17 +61,17 @@ class DateCreatedCheck(Check):
 
 class AndCheck(Check):
     type: Literal['and']
-    checks: list[Check]
+    checks: list['AnyCheck']
 
 
 class OrCheck(Check):
     type: Literal['or']
-    checks: list[Check]
+    checks: list['AnyCheck']
 
 
 class NotCheck(Check):
     type: Literal['not']
-    check: Check
+    check: 'AnyCheck'
 
 
 class RegionRegex(pydantic.BaseModel):
@@ -84,9 +84,12 @@ class Field(pydantic.BaseModel):
     template: str
 
 
+AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
+
+
 class Pattern(pydantic.BaseModel):
     name: str
-    checks: list[Check]
+    checks: list[AnyCheck]
     regions: list[RegionRegex]
     fields: list[Field]
 
