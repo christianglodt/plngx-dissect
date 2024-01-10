@@ -27,5 +27,13 @@
 		"vscode": {
 			"extensions": ["ms-python.python", "ms-python.vscode-pylance"]
 		  }
+	},
+	"portsAttributes": {
+		"5173": {
+			"label": "npm run dev (dev Frontend)"
+		},
+		"8000": {
+			"label": "uvicorn (Backend)"
+		}
 	}
 }
