@@ -17,7 +17,7 @@
 		"source=${localWorkspaceFolder}/cache,target=/cache,type=bind,consistency=cached"
 	],
 
-	"initializeCommand": "mkdir config cache",
+	"initializeCommand": "mkdir -p config cache",
 
 	"postCreateCommand": ".devcontainer/post-create.sh",
 
