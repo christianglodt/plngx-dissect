@@ -27,4 +27,4 @@ async def put_pattern(name: str, p: pattern.Pattern):
     
 
 
-app.mount('/', StaticFiles(directory='/app/plngx-dissect-frontend/dist/', html=True, check_dir=False))
+app.mount('/', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
