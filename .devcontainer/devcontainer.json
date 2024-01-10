@@ -17,7 +17,7 @@
 		"source=${localWorkspaceFolder}/cache,target=/cache,type=bind,consistency=cached"
 	],
 
-	"initializeCommand": "mkdir -p config cache",
+	"initializeCommand": "mkdir -p config cache plngx-dissect-frontend/dist",
 
 	"postCreateCommand": ".devcontainer/post-create.sh",
 
