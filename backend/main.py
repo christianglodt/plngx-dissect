@@ -34,7 +34,7 @@ async def put_pattern(name: str, p: pattern.Pattern):
 
 
 @app.get('/api/document/{document_id}/svg', response_class=Response)
-async def document_svg(document_id: int, page_nr: int = 0) -> Response:
+async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     data = await document.get_pdf_page_svg(document_id, page_nr)
     return Response(content=data, media_type='image/svg+xml')
 
