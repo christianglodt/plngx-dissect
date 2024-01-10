@@ -17,6 +17,8 @@
 		"source=${localWorkspaceFolder}/cache,target=/cache,type=bind,consistency=cached"
 	],
 
+	"initializeCommand": "mkdir config cache",
+
 	"postCreateCommand": ".devcontainer/post-create.sh",
 
 	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
