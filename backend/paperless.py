@@ -97,6 +97,7 @@ class PaperlessClient:
     async def _get(self, url: str | pydantic.AnyHttpUrl) -> AsyncIterator[aiohttp.ClientResponse]:
         async with aiohttp.ClientSession() as session:
             async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+                response.raise_for_status()
                 yield response
 
     async def _iter_paginated_results(self, url: str, result_type: Type[PaperlessDataT]) -> AsyncGenerator[PaperlessDataT, None]:
