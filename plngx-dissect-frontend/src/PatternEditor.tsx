@@ -11,7 +11,7 @@ export default function PatternEditor() {
 
     return (
         <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
-            <Stack direction="column" spacing={2} divider={<Divider orientation="horizontal" flexItem />} sx={{ height: '100%', width: '20%' }}>
+            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
                 <Card sx={{ height: '100%' }}>
                     <CardHeader title="Checks"></CardHeader>
                 </Card>
@@ -25,7 +25,7 @@ export default function PatternEditor() {
                 <div>Document Page Nav?</div>
             </Stack>
 
-            <Stack direction="column" spacing={2} divider={<Divider orientation="horizontal" flexItem />} sx={{ height: '100%', width: '20%' }}>
+            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
                 <Card sx={{ height: '100%' }}>
                     <CardHeader title="Regions"></CardHeader>
                 </Card>
