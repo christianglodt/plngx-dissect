@@ -1,20 +1,26 @@
 import { useParams } from "react-router-dom";
 import { usePattern } from "./hooks";
-import { Card, CardHeader, Divider, Paper, Stack } from "@mui/material";
+import { Card, CardHeader, Divider, LinearProgress, Paper, Stack } from "@mui/material";
+
+import ChecksCard from "./ChecksCard";
 
 
 export default function PatternEditor() {
 
     const { patternId } = useParams();
 
-    const { data: pattern } = usePattern(patternId!);
+    const { data: pattern, isLoading } = usePattern(patternId!);
+
+    if (!pattern || isLoading) {
+        return (
+            <LinearProgress/>
+        );
+    }
 
     return (
         <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
             <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
-                <Card sx={{ height: '100%' }}>
-                    <CardHeader title="Checks"></CardHeader>
-                </Card>
+                <ChecksCard pattern={pattern}/>
                 <Card sx={{ height: '100%' }}>
                     <CardHeader title="Matching Documents"></CardHeader>
                 </Card>
