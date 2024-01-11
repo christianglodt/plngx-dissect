@@ -10,7 +10,7 @@ const FieldsCard = (props: FieldsCardProps) => {
 
     const { pattern } = props;
 
-    const header = <Box sx={{ flexDirection: 'row', flexWrap: 'nowrap', display: 'flex', justifyContent: 'space-between' }}><div>Checks</div><IconButton><Add/></IconButton></Box>;
+    const header = <Box sx={{ flexDirection: 'row', flexWrap: 'nowrap', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><div>Fields</div><IconButton><Add/></IconButton></Box>;
 
     return (
         <Card sx={{ height: '100%' }}>
