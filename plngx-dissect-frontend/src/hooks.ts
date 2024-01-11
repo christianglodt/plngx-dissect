@@ -114,5 +114,33 @@ const getPatternByName = async (name: string) => {
 }
 
 export const usePattern = (name: string) => {
-    return useQuery({queryKey: ['pattern', name], queryFn: async () => getPatternByName(name)})
+    return useQuery({queryKey: ['pattern', name], queryFn: async () => getPatternByName(name)});
+}
+
+
+export type TextRun = {
+    x: number;
+    y: number;
+    x2: number;
+    y2: number;
+    text: string;
+}
+
+export type Page = {
+    aspect_ratio: number;
+    text_runs: TextRun[];
+}
+
+export type Document = {
+     id: number;
+     pages: Page[];
+}
+
+const getDocumentById = async (id: number | null) => {
+    if (!id) return null;
+    return await fetchJson<Document>(`/api/document/${id}`);
+}
+
+export const useDocument = (id: number | null) => {
+    return useQuery({queryKey: ['document', id], queryFn: async () => getDocumentById(id)});
 }
