@@ -23,85 +23,85 @@ export const usePatternList = () => {
 }
 
 
-type NumPagesCheck = {
+export type NumPagesCheck = {
     type: 'num_pages';
     num_pages: number;
 }
 
-type RegionRegexCheck = {
+export type RegionRegexCheck = {
     type: 'region';
     region: Region;
     regex: string;
 }
 
-type TitleRegexCheck = {
+export type TitleRegexCheck = {
     type: 'title';
     regex: string;
 }
 
-type CorrespondentCheck = {
+export type CorrespondentCheck = {
     type: 'correspondent';
     name: string;
 }
 
-type DocumentTypeCheck = {
+export type DocumentTypeCheck = {
     type: 'document_type';
     name: string;
 }
 
-type StoragePathCheck = {
+export type StoragePathCheck = {
     type: 'storage_path';
     name: string;
 }
 
-type TagCheck = {
+export type TagCheck = {
     type: 'tags';
     includes: string[];
     excludes: string[];
 }
 
-type DateCreatedCheck = {
+export type DateCreatedCheck = {
     type: 'date_created';
     before?: string;
     after?: string;
     year?: number
 }
 
-type AndCheck = {
+export type AndCheck = {
     type: 'and';
     checks: AnyCheck[];
 }
 
-type OrCheck = {
+export type OrCheck = {
     type: 'or';
     checks: AnyCheck[];
 }
 
-type NotCheck = {
+export type NotCheck = {
     type: 'not';
     check: AnyCheck;
 }
 
-type AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
+export type AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
 
-type Region = {
+export type Region = {
     x: number;
     y: number;
     x2: number;
     xy2: number;
 }
 
-type RegionRegex = {
+export type RegionRegex = {
     region: Region;
     regex: string;
 }
 
-type Field = {
+export type Field = {
     name: string;
     template: string;
 }
 
-type Pattern = {
+export type Pattern = {
     name: string;
     checks: AnyCheck[];
     regions: RegionRegex[];
