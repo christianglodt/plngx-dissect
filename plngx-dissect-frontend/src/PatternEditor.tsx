@@ -6,6 +6,7 @@ import ChecksCard from "./ChecksCard";
 import MatchingDocsCard from "./MatchingDocsCard";
 import RegionsCard from "./RegionsCard";
 import FieldsCard from "./FieldsCard";
+import DocumentView from "./DocumentView";
 
 
 export default function PatternEditor() {
@@ -20,6 +21,8 @@ export default function PatternEditor() {
         );
     }
 
+    const documentId = 708;
+
     return (
         <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
             <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
@@ -27,10 +30,7 @@ export default function PatternEditor() {
                 <MatchingDocsCard pattern={pattern}/>
             </Stack>
 
-            <Stack direction="column" spacing={2} sx={{ width: '60%', height: '100%' }}>
-                <div style={{ height: '100%' }}>Page</div>
-                <div>Document Page Nav?</div>
-            </Stack>
+            <DocumentView documentId={documentId} pattern={pattern}/>
 
             <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
                 <RegionsCard pattern={pattern}/>
