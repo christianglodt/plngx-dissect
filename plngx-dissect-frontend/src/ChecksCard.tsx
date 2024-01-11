@@ -1,6 +1,20 @@
-import { Box, Card, CardContent, CardHeader, IconButton } from "@mui/material";
-import { Pattern } from "./hooks";
+import { IconButton } from "@mui/material";
+import { Pattern, AnyCheck } from "./hooks";
 import { Add } from "@mui/icons-material";
+import NumPagesCheckItem from "./checks/NumPagesCheckItem";
+import ListCard from "./utils/ListCard";
+
+
+type CheckFactoryProps = {
+    check: AnyCheck;
+}
+
+const CheckFactory = (props: CheckFactoryProps) => {
+
+    if (props.check.type == 'num_pages') {
+        return <NumPagesCheckItem check={props.check}/>
+    }
+};
 
 type ChecksCardProps = {
     pattern: Pattern;
@@ -10,15 +24,12 @@ const ChecksCard = (props: ChecksCardProps) => {
 
     const { pattern } = props;
 
-    const header = <Box sx={{ flexDirection: 'row', flexWrap: 'nowrap', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><div>Checks</div><IconButton><Add/></IconButton></Box>;
-
     return (
-        <Card sx={{ height: '100%' }}>
-            <CardHeader title={header}></CardHeader>
-            <CardContent>
-                
-            </CardContent>
-        </Card>        
+        <ListCard title="Checks" headerWidget={<IconButton><Add/></IconButton>}>
+            { pattern.checks.map((check, index) =>
+                <CheckFactory key={index} check={check}/>
+            )}
+        </ListCard>
     );
 }
 

@@ -1,6 +1,7 @@
-import { Box, Card, CardContent, CardHeader, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { Pattern } from "./hooks";
 import { Add } from "@mui/icons-material";
+import ListCard from "./utils/ListCard";
 
 type FieldsCardProps = {
     pattern: Pattern;
@@ -10,15 +11,9 @@ const FieldsCard = (props: FieldsCardProps) => {
 
     const { pattern } = props;
 
-    const header = <Box sx={{ flexDirection: 'row', flexWrap: 'nowrap', display: 'flex', justifyContent: 'space-between', gap: '1rem' }}><div>Fields</div><IconButton><Add/></IconButton></Box>;
-
     return (
-        <Card sx={{ height: '100%' }}>
-            <CardHeader title={header}></CardHeader>
-            <CardContent>
-                
-            </CardContent>
-        </Card>        
+        <ListCard title="Fields" headerWidget={<IconButton><Add/></IconButton>}>
+        </ListCard>
     );
 }
 
