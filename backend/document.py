@@ -15,6 +15,7 @@ class TextRun(Region):
 
 
 class Page(pydantic.BaseModel):
+    aspect_ratio: float
     text_runs: list[TextRun]
 
 
@@ -49,7 +50,7 @@ async def get_parsed_document(paperless_id: int) -> Document:
                 pdfplumber_text_runs = page.extract_words(keep_blank_chars=True, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
                 for text_run in pdfplumber_text_runs:
                     runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
-                pages.append(Page(text_runs=runs))
+                pages.append(Page(text_runs=runs, aspect_ratio=page.width / page.height))
             
             document = Document(id=paperless_id, pages=pages)
             return document
