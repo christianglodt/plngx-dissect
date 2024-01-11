@@ -3,7 +3,7 @@
         
         {
             "command": "npm run dev",
-            "name": "Run npm run dev",
+            "name": "vite dev",
             "request": "launch",
             "type": "node-terminal",
             "cwd": "${workspaceFolder}/plngx-dissect-frontend"
