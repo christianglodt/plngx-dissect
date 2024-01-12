@@ -1,9 +1,8 @@
-import { IconButton } from "@mui/material";
 import { Pattern, Check } from "./types";
-import { Add } from "@mui/icons-material";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import { produce } from "immer";
+import CreateCheckItemButton from "./checks/CreateCheckItemButton";
 
 
 type CheckFactoryProps = {
@@ -42,8 +41,15 @@ const ChecksCard = (props: ChecksCardProps) => {
         onChange(newPattern);
     }
 
+    const onCheckCreated = (newCheck: Check) => {
+        const newPattern = produce(pattern, draft => {
+            draft.checks.push(newCheck);
+        });
+        onChange(newPattern);
+    }
+
     return (
-        <ListCard title="Checks" headerWidget={<IconButton><Add/></IconButton>}>
+        <ListCard title="Checks" headerWidget={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>}>
             { pattern.checks.map((check, index) =>
                 <CheckFactory key={index} check={check} onChange={(newCheck) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
             )}
