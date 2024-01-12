@@ -56,9 +56,9 @@ export type TagCheck = {
 
 export type DateCreatedCheck = {
     type: CheckTypeId.DateCreated;
-    before?: string;
-    after?: string;
-    year?: number
+    before: Date | null;
+    after: Date | null;
+    year: number | null;
 }
 
 export type AndCheck = {
@@ -73,7 +73,7 @@ export type OrCheck = {
 
 export type NotCheck = {
     type: CheckTypeId.Not;
-    check: Check;
+    check: Check | null;
 }
 
 export type Check = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
@@ -82,7 +82,7 @@ export type Region = {
     x: number;
     y: number;
     x2: number;
-    xy2: number;
+    y2: number;
 }
 
 export type RegionRegex = {

@@ -17,7 +17,47 @@ const CHECK_ITEM_FACTORIES: Record<CheckTypeId, FactoryEntry> = { // Typescript 
     [CheckTypeId.NumPages]: {
         label: 'Number of Pages Check',
         factory: () => { return { type: CheckTypeId.NumPages, num_pages: 1 }; }
-    }
+    },
+    [CheckTypeId.Region]: {
+        label: 'Text in Region Check',
+        factory: () => { return { type: CheckTypeId.Region, region: { x: 0, y: 0, x2: 100, y2: 100 }, regex: '(?P<value>.*)' }; }
+    },
+    [CheckTypeId.Title]: {
+        label: 'Title Check',
+        factory: () => { return { type: CheckTypeId.Title, regex: '.*' }; }
+    },
+    [CheckTypeId.Correspondent]: {
+        label: 'Correspondent Check',
+        factory: () => { return { type: CheckTypeId.Correspondent, name: 'Correspondent' }; }
+    },
+    [CheckTypeId.DocumentType]: {
+        label: 'Document Type Check',
+        factory: () => { return { type: CheckTypeId.DocumentType, name: 'Bill' }; }
+    },
+    [CheckTypeId.StoragePath]: {
+        label: 'Storage Path Check',
+        factory: () => { return { type: CheckTypeId.StoragePath, name: '/storage/path' }; }
+    },
+    [CheckTypeId.Tag]: {
+        label: 'Tag Check',
+        factory: () => { return { type: CheckTypeId.Tag, includes: [], excludes: [] }; }
+    },
+    [CheckTypeId.DateCreated]: {
+        label: 'Date created Check',
+        factory: () => { return { type: CheckTypeId.DateCreated, before: null, after: null, year: null }; }
+    },
+    [CheckTypeId.And]: {
+        label: 'And Check',
+        factory: () => { return { type: CheckTypeId.And, checks: [] }; }
+    },
+    [CheckTypeId.Or]: {
+        label: 'Or Check',
+        factory: () => { return { type: CheckTypeId.Or, checks: [] }; }
+    },
+    [CheckTypeId.Not]: {
+        label: 'Not Check',
+        factory: () => { return { type: CheckTypeId.Not, check: null }; }
+    },
 }
 
 type CreateCheckItemButtonPropsType = {
