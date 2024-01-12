@@ -1,4 +1,4 @@
-import { Input, ListItemText, Stack, TextField } from "@mui/material";
+import { ListItemText, Stack, TextField } from "@mui/material";
 import { RegionRegexCheck } from "../types";
 import { useState } from "react";
 import CheckItemDialog from "../utils/CheckItemDialog";
