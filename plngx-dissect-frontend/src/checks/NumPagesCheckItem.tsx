@@ -30,8 +30,13 @@ const NumPagesCheckDialog = (props: NumPagesCheckDialogPropsType) => {
         onClose();
     }
 
+    const onDeleteConfirmed = () => {
+        onDelete();
+        onClose();
+    }
+
     return (
-        <CheckItemDialog title="Check Number of Pages" open={open} onClose={onClose} onConfirmed={onConfirmed} onDelete={onDelete}>
+        <CheckItemDialog title="Check Number of Pages" open={open} onClose={onClose} onConfirmed={onConfirmed} onDelete={onDeleteConfirmed}>
             <div>Number of pages must be:</div>
             <Input type="number" value={value} onChange={onNumberChanged}></Input>
         </CheckItemDialog>
