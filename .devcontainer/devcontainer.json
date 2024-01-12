@@ -10,7 +10,7 @@
 		}
 	},
 
-	"runArgs": ["--network=host"],
+	"runArgs": ["--add-host", "host.docker.internal:host-gateway"],
 
 	"mounts": [
 		"source=${localWorkspaceFolder}/config,target=/config,type=bind,consistency=cached",
