@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import React from "react";
+import ConfirmButton from "./ConfirmButton";
 
 type CheckItemDialogPropsType = {
     title: string | React.JSX.Element;
@@ -20,7 +21,7 @@ const CheckItemDialog = (props: CheckItemDialogPropsType) => {
                 {props.children}
             </DialogContent>
             <DialogActions>
-                <Button variant="text" color="warning" sx={{ marginRight: 'auto' }} onClick={onDelete}>Delete</Button>
+                <ConfirmButton variant="text" color="warning" sx={{ marginRight: 'auto' }} dialogTitle="Delete Check?" dialogText="Are you sure to delete this check?" onConfirmed={onDelete}>Delete</ConfirmButton>
                 <Button variant="outlined" onClick={onClose}>Cancel</Button>
                 <Button variant="contained" onClick={onConfirmed}>Ok</Button>
             </DialogActions>
