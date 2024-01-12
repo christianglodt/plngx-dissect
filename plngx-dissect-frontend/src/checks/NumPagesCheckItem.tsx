@@ -2,6 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Input, ListI
 import { NumPagesCheck } from "../types";
 import React, { useState } from "react";
 import { produce } from "immer";
+import CheckItemDialog from "../utils/CheckItemDialog";
 
 type NumPagesCheckDialogPropsType = {
     check: NumPagesCheck;
@@ -30,19 +31,11 @@ const NumPagesCheckDialog = (props: NumPagesCheckDialogPropsType) => {
     }
 
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Check Number of Pages</DialogTitle>
-            <DialogContent>
-                <div>Number of pages must be:</div>
-                <Input type="number" value={value} onChange={onNumberChanged}></Input>
-            </DialogContent>
-            <DialogActions>
-                <Button variant="text" color="warning" sx={{ marginRight: 'auto' }} onClick={onDelete}>Delete</Button>
-                <Button variant="outlined" onClick={onClose}>Cancel</Button>
-                <Button variant="contained" onClick={onConfirmed}>Ok</Button>
-            </DialogActions>
-        </Dialog>
-    );   
+        <CheckItemDialog title="Check Number of Pages" open={open} onClose={onClose} onConfirmed={onConfirmed} onDelete={onDelete}>
+            <div>Number of pages must be:</div>
+            <Input type="number" value={value} onChange={onNumberChanged}></Input>
+        </CheckItemDialog>
+    );
 }
 
 type NumPagesCheckPropsType = {

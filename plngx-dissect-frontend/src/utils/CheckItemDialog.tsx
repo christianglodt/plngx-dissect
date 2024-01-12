@@ -1,0 +1,31 @@
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import React from "react";
+
+type CheckItemDialogPropsType = {
+    title: string | React.JSX.Element;
+    open: boolean;
+    onConfirmed: () => void;
+    onClose: () => void;
+    onDelete: () => void;
+    children?: string | React.JSX.Element[];
+}
+
+const CheckItemDialog = (props: CheckItemDialogPropsType) => {
+    const { title, open, onConfirmed, onClose, onDelete } = props;
+
+    return (
+        <Dialog open={open} onClose={onClose}>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent>
+                {props.children}
+            </DialogContent>
+            <DialogActions>
+                <Button variant="text" color="warning" sx={{ marginRight: 'auto' }} onClick={onDelete}>Delete</Button>
+                <Button variant="outlined" onClick={onClose}>Cancel</Button>
+                <Button variant="contained" onClick={onConfirmed}>Ok</Button>
+            </DialogActions>
+        </Dialog>
+    );   
+}
+
+export default CheckItemDialog;
