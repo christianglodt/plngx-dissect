@@ -1,9 +1,11 @@
+import React from "react";
+import { produce } from "immer";
+
 import { Pattern, Check, CheckTypeId } from "./types";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
-import { produce } from "immer";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
-import React from "react";
+import RegionRegexCheckItem from "./checks/RegionRegexCheckItem";
 
 
 type CheckItemFactoryProps = {
@@ -16,6 +18,8 @@ const CheckItemFactory = (props: CheckItemFactoryProps): React.JSX.Element => {
     switch (props.check.type) {
         case CheckTypeId.NumPages:
             return <NumPagesCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
+        case CheckTypeId.Region:
+            return <RegionRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>
     }
 };
 
