@@ -45,6 +45,8 @@ async def get_document(document_id: int) -> document.Document:
         return await document.get_parsed_document(document_id)
     except aiohttp.ClientResponseError as e:
         raise HTTPException(status_code=e.status, detail=e.message)
+    except aiohttp.ClientConnectorError as e:
+        raise HTTPException(status_code=500, detail=str(e.strerror))
 
 
 app.mount('/', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
