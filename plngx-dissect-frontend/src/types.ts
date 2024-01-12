@@ -49,20 +49,20 @@ export type DateCreatedCheck = {
 
 export type AndCheck = {
     type: 'and';
-    checks: AnyCheck[];
+    checks: Check[];
 }
 
 export type OrCheck = {
     type: 'or';
-    checks: AnyCheck[];
+    checks: Check[];
 }
 
 export type NotCheck = {
     type: 'not';
-    check: AnyCheck;
+    check: Check;
 }
 
-export type AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
+export type Check = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
 
 export type Region = {
     x: number;
@@ -83,7 +83,7 @@ export type Field = {
 
 export type Pattern = {
     name: string;
-    checks: AnyCheck[];
+    checks: Check[];
     regions: RegionRegex[];
     fields: Field[];
 }
