@@ -1,5 +1,5 @@
 import { ListItem, ListItemText } from "@mui/material";
-import { NumPagesCheck } from "../hooks";
+import { NumPagesCheck } from "../types";
 
 type NumPagesCheckPropsType = {
     check: NumPagesCheck;
