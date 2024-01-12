@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import { Alert, Box, IconButton, Skeleton, Stack } from "@mui/material";
+import { Alert, AlertTitle, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useDocument, Document, Pattern } from "./hooks";
 import { useState } from "react";
 
@@ -46,12 +46,23 @@ const DocumentView = (props: DocumentPropsType) => {
 
     const { documentId, pattern } = props;
     const [pageNr, setPageNr] = useState(0);
-    const { data: document } = useDocument(documentId);
+    const { data: document, error } = useDocument(documentId);
 
     if (!documentId) {
         return (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Alert severity="info">Select a matching document</Alert>
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+                <Alert severity="error">
+                    <AlertTitle>An error occured</AlertTitle>
+                    {error.toString()}
+                </Alert>
             </Box>
         );
     }
