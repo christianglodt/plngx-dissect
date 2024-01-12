@@ -1,20 +1,21 @@
-import { Pattern, Check } from "./types";
+import { Pattern, Check, CheckTypeId } from "./types";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import { produce } from "immer";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
+import React from "react";
 
 
-type CheckFactoryProps = {
+type CheckItemFactoryProps = {
     check: Check;
     onChange: (newCheck: Check) => void;
     onDelete: () => void;
 }
 
-const CheckFactory = (props: CheckFactoryProps) => {
-
-    if (props.check.type == 'num_pages') {
-        return <NumPagesCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>
+const CheckItemFactory = (props: CheckItemFactoryProps): React.JSX.Element => {
+    switch (props.check.type) {
+        case CheckTypeId.NumPages:
+            return <NumPagesCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
     }
 };
 
@@ -51,7 +52,7 @@ const ChecksCard = (props: ChecksCardProps) => {
     return (
         <ListCard title="Checks" headerWidget={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>}>
             { pattern.checks.map((check, index) =>
-                <CheckFactory key={index} check={check} onChange={(newCheck) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
+                <CheckItemFactory key={index} check={check} onChange={(newCheck) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
             )}
         </ListCard>
     );

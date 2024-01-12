@@ -3,62 +3,76 @@ export type PatternListEntry = {
     name: string
 }
 
+export enum CheckTypeId {
+    NumPages = 'num_pages',
+    Region = 'region',
+    Title = 'title',
+    Correspondent = 'correspondent',
+    DocumentType = 'document_type',
+    StoragePath = 'storage_path',
+    Tag = 'tags',
+    DateCreated = 'date_created',
+    And = 'and',
+    Or = 'or',
+    Not = 'not'
+}
+
 export type NumPagesCheck = {
-    type: 'num_pages';
+    type: CheckTypeId.NumPages;
     num_pages: number;
 }
 
 export type RegionRegexCheck = {
-    type: 'region';
+    type: CheckTypeId.Region;
     region: Region;
     regex: string;
 }
 
 export type TitleRegexCheck = {
-    type: 'title';
+    type: CheckTypeId.Title;
     regex: string;
 }
 
 export type CorrespondentCheck = {
-    type: 'correspondent';
+    type: CheckTypeId.Correspondent;
     name: string;
 }
 
 export type DocumentTypeCheck = {
-    type: 'document_type';
+    type: CheckTypeId.DocumentType;
     name: string;
 }
 
 export type StoragePathCheck = {
-    type: 'storage_path';
+    type: CheckTypeId.StoragePath;
     name: string;
 }
 
 export type TagCheck = {
-    type: 'tags';
+    type: CheckTypeId.Tag;
     includes: string[];
     excludes: string[];
 }
 
 export type DateCreatedCheck = {
-    type: 'date_created';
+    type: CheckTypeId.DateCreated;
     before?: string;
     after?: string;
     year?: number
 }
 
 export type AndCheck = {
-    type: 'and';
+    type: CheckTypeId.And;
     checks: Check[];
 }
 
 export type OrCheck = {
-    type: 'or';
+    type: CheckTypeId.Or;
     checks: Check[];
 }
 
 export type NotCheck = {
-    type: 'not';
+    type: CheckTypeId.Not;
     check: Check;
 }
 

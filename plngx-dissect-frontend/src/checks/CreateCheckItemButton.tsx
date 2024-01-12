@@ -3,23 +3,22 @@ import { IconButton } from '@mui/material';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useState, MouseEvent } from 'react';
-import { Check } from '../types';
+import { Check, CheckTypeId } from '../types';
 
 
 type FactoryFuncType = () => Check;
 
-type CheckItemFactoryType = {
+type FactoryEntry = {
     label: string;
     factory: FactoryFuncType;
 }
 
-// TODO Use type system to ensure that there is one factory function for every subtype of Check?
-const CHECK_ITEM_FACTORIES: CheckItemFactoryType[] = [
-    {
+const CHECK_ITEM_FACTORIES: Record<CheckTypeId, FactoryEntry> = { // Typescript "Record" ensures every kind of CheckItem has an entry
+    [CheckTypeId.NumPages]: {
         label: 'Number of Pages Check',
-        factory: () => { return { type: 'num_pages', num_pages: 1 }; }
+        factory: () => { return { type: CheckTypeId.NumPages, num_pages: 1 }; }
     }
-]
+}
 
 type CreateCheckItemButtonPropsType = {
     onCheckCreated: (newCheck: Check) => void;
@@ -41,7 +40,7 @@ const CreateCheckItemButton = (props: CreateCheckItemButtonPropsType) => {
         <>
             <IconButton onClick={onCreateClicked}><Add/></IconButton>
             <Menu anchorEl={anchorElement} open={anchorElement !== null} onClose={() => setAnchorElement(null)}>
-                {CHECK_ITEM_FACTORIES.map((factory, index) =>
+                {Object.values(CHECK_ITEM_FACTORIES).map((factory, index) =>
                     <MenuItem key={index} onClick={() => onMenuItemClicked(factory.factory)}>{factory.label}</MenuItem>
                 )}
             </Menu>
