@@ -25,14 +25,14 @@ export default function PatternEditor() {
 
     return (
         <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
-            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
+            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content'}}>
                 <ChecksCard pattern={pattern}/>
                 <MatchingDocsCard pattern={pattern}/>
             </Stack>
 
             <DocumentView documentId={documentId} pattern={pattern}/>
 
-            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%' }}>
+            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
                 <RegionsCard pattern={pattern}/>
                 <FieldsCard pattern={pattern}/>
             </Stack>
