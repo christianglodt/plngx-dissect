@@ -1,4 +1,4 @@
-import { Input, ListItemText } from "@mui/material";
+import { ListItemText, TextField } from "@mui/material";
 import { NumPagesCheck } from "../types";
 import React, { useState } from "react";
 import CheckItemDialog from "../utils/CheckItemDialog";
@@ -20,8 +20,7 @@ const NumPagesCheckDialog = (props: CheckItemDialogPropsType<NumPagesCheck>) => 
 
     return (
         <CheckItemDialog<NumPagesCheck> title="Check Number of Pages" onChangeDraft={onChangeDraft} {...props}>
-            <div>Number of pages must be:</div>
-            <Input type="number" value={value} onChange={onNumberChanged}></Input>
+            <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged}></TextField>
         </CheckItemDialog>
     );
 }
