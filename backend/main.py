@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
 import aiohttp
+import paperless
 
 import pattern
 import document
@@ -47,6 +48,11 @@ async def get_document(document_id: int) -> document.Document:
         raise HTTPException(status_code=e.status, detail=e.message)
     except aiohttp.ClientConnectorError as e:
         raise HTTPException(status_code=500, detail=str(e.strerror))
+
+@app.get('/api/tags')
+async def get_tag_list() -> list[paperless.PaperlessTag]:
+    tags_by_id = await paperless.PaperlessClient().tags_by_id()
+    return list(tags_by_id.values())
 
 
 app.mount('/', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
