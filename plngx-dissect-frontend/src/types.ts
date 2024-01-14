@@ -119,3 +119,20 @@ export type Document = {
      id: number;
      pages: Page[];
 }
+
+type PaperlessElementBase = {
+    id: number;
+    slug: string;
+    name: string;
+    match: string;
+    matching_algorithm: number;
+    is_insensitive: boolean;
+    document_count: number;
+    owner: number;
+    user_can_change: boolean;
+}
+
+export type PaperlessTag = PaperlessElementBase & {
+    color: number;
+    is_inbox_tag: boolean;
+}
