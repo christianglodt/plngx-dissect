@@ -1,23 +1,35 @@
 import React from "react";
 import { produce } from "immer";
 
-import { Pattern, Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck } from "./types";
+import { Pattern, Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck } from "./types";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
 import RegionRegexCheckItem from "./checks/RegionRegexCheckItem";
 import TitleRegexCheckItem from "./checks/TitleRegexCheckItem";
 import { CheckItemPropsType } from "./utils/CheckItem";
+import CorrespondentCheckItem from "./checks/CorrespondentCheckItem";
+import DocumentTypeCheckItem from "./checks/DocumentTypeCheckItem";
+import StoragePathCheckItem from "./checks/StoragePathCheckItem";
+import TagCheckItem from "./checks/TagCheckItem";
 
 
 const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element => {
     switch (props.check.type) {
         case CheckTypeId.NumPages:
-            return <NumPagesCheckItem    {...props as CheckItemPropsType<NumPagesCheck>}/>;
+            return <NumPagesCheckItem      {...props as CheckItemPropsType<NumPagesCheck>}/>;
         case CheckTypeId.Region:
-            return <RegionRegexCheckItem {...props as CheckItemPropsType<RegionRegexCheck>}/>;
+            return <RegionRegexCheckItem   {...props as CheckItemPropsType<RegionRegexCheck>}/>;
         case CheckTypeId.Title:
-            return <TitleRegexCheckItem  {...props as CheckItemPropsType<TitleRegexCheck>}/>;
+            return <TitleRegexCheckItem    {...props as CheckItemPropsType<TitleRegexCheck>}/>;
+        case CheckTypeId.Correspondent:
+            return <CorrespondentCheckItem {...props as CheckItemPropsType<CorrespondentCheck>}/>;
+        case CheckTypeId.DocumentType:
+            return <DocumentTypeCheckItem  {...props as CheckItemPropsType<DocumentTypeCheck>}/>;
+        case CheckTypeId.StoragePath:
+            return <StoragePathCheckItem   {...props as CheckItemPropsType<StoragePathCheck>}/>;
+        case CheckTypeId.Tag:
+            return <TagCheckItem           {...props as CheckItemPropsType<TagCheck>}/>;
     }
 };
 
