@@ -14,9 +14,8 @@ const TitleRegexCheckDialog = (props: CheckItemDialogPropsType<TitleRegexCheck>)
     }
 
     return (
-        <CheckItemDialog<TitleRegexCheck> title="Check Number of Pages" onChangeDraft={onChangeDraft} {...props}>
-            <div>Number of pages must be:</div>
-            <TextField value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+        <CheckItemDialog<TitleRegexCheck> title="Check Title" onChangeDraft={onChangeDraft} {...props}>
+            <TextField label="Title" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
         </CheckItemDialog>
     );
 }
