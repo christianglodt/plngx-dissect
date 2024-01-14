@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessTag } from './types';
 
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -32,4 +32,8 @@ const getDocumentById = async (id: number | null) => {
 
 export const useDocument = (id: number | null) => {
     return useQuery({queryKey: ['document', id], queryFn: async () => getDocumentById(id)});
+}
+
+export const useTagList = () => {
+    return useQuery({queryKey: ['tagList'], queryFn: async () => fetchJson<PaperlessTag[]>('/api/tags')})
 }
