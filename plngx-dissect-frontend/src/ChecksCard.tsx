@@ -6,6 +6,7 @@ import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
 import RegionRegexCheckItem from "./checks/RegionRegexCheckItem";
+import TitleRegexCheckItem from "./checks/TitleRegexCheckItem";
 
 
 type CheckItemFactoryProps = {
@@ -19,7 +20,9 @@ const CheckItemFactory = (props: CheckItemFactoryProps): React.JSX.Element => {
         case CheckTypeId.NumPages:
             return <NumPagesCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
         case CheckTypeId.Region:
-            return <RegionRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>
+            return <RegionRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
+        case CheckTypeId.Title:
+            return <TitleRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
     }
 };
 
