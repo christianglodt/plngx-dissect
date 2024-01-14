@@ -1,28 +1,23 @@
 import React from "react";
 import { produce } from "immer";
 
-import { Pattern, Check, CheckTypeId } from "./types";
+import { Pattern, Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck } from "./types";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
 import RegionRegexCheckItem from "./checks/RegionRegexCheckItem";
 import TitleRegexCheckItem from "./checks/TitleRegexCheckItem";
+import { CheckItemPropsType } from "./utils/CheckItem";
 
 
-type CheckItemFactoryProps = {
-    check: Check;
-    onChange: (newCheck: Check) => void;
-    onDelete: () => void;
-}
-
-const CheckItemFactory = (props: CheckItemFactoryProps): React.JSX.Element => {
+const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element => {
     switch (props.check.type) {
         case CheckTypeId.NumPages:
-            return <NumPagesCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
+            return <NumPagesCheckItem    {...props as CheckItemPropsType<NumPagesCheck>}/>;
         case CheckTypeId.Region:
-            return <RegionRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
+            return <RegionRegexCheckItem {...props as CheckItemPropsType<RegionRegexCheck>}/>;
         case CheckTypeId.Title:
-            return <TitleRegexCheckItem check={props.check} onChange={props.onChange} onDelete={props.onDelete}/>;
+            return <TitleRegexCheckItem  {...props as CheckItemPropsType<TitleRegexCheck>}/>;
     }
 };
 
