@@ -22,8 +22,8 @@ const RegionRegexCheckDialog = (props: CheckItemDialogPropsType<RegionRegexCheck
     }
 
     return (
-        <CheckItemDialog<RegionRegexCheck> title="Check Number of Pages" onChangeDraft={onChangeDraft} {...props}>
-            <Stack gap={2} sx={{ marginTop: '0.5rem' }}>
+        <CheckItemDialog<RegionRegexCheck> title="Check Region Text" onChangeDraft={onChangeDraft} {...props}>
+            <Stack gap={2}>
                 <TextField label="Top Left X Coordinate" type="number" value={x} onChange={(event) => setX(Number(event.target.value))}></TextField>
                 <TextField label="Top Left Y Coordinate" type="number" value={y} onChange={(event) => setY(Number(event.target.value))}></TextField>
                 <TextField label="Bottom Right X Coordinate" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>

@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import React from "react";
 import ConfirmButton from "./ConfirmButton";
 import { Draft, produce } from "immer";
@@ -34,7 +34,9 @@ const CheckItemDialog = <CheckType,>(props: CheckItemDialogPropsType<CheckType>)
         <Dialog open={open} onClose={onClose}>
             <DialogTitle>{title}</DialogTitle>
             <DialogContent>
-                {props.children}
+                <Box sx={{ paddingTop: '0.5rem' }}>
+                    {props.children}
+                </Box>
             </DialogContent>
             <DialogActions>
                 <ConfirmButton variant="text" color="warning" sx={{ marginRight: 'auto' }} dialogTitle="Delete Check?" dialogText="Are you sure to delete this check?" onConfirmed={onDeleteConfirmed}>Delete</ConfirmButton>
