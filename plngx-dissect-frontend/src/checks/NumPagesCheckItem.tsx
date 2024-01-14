@@ -2,7 +2,7 @@ import { Input, ListItemText } from "@mui/material";
 import { NumPagesCheck } from "../types";
 import React, { useState } from "react";
 import CheckItemDialog from "../utils/CheckItemDialog";
-import CheckItem, { CheckItemDialogPropsType } from "../utils/CheckItem";
+import CheckItem, { CheckItemDialogPropsType, CheckItemPropsType } from "../utils/CheckItem";
 
 
 const NumPagesCheckDialog = (props: CheckItemDialogPropsType<NumPagesCheck>) => {
@@ -26,21 +26,13 @@ const NumPagesCheckDialog = (props: CheckItemDialogPropsType<NumPagesCheck>) => 
     );
 }
 
-type NumPagesCheckPropsType = {
-    check: NumPagesCheck;
-    onChange: (newCheck: NumPagesCheck) => void;
-    onDelete: () => void;
-}
+const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
 
-const NumPagesCheckItem = (props: NumPagesCheckPropsType) => {
-
-    const { check, onChange, onDelete } = props;
-
-    const pluralize = check.num_pages > 1 ? 's' : '';
+    const pluralize = props.check.num_pages > 1 ? 's' : '';
 
     return (
-        <CheckItem<NumPagesCheck> dialogComponent={NumPagesCheckDialog} check={check} onChange={onChange} onDelete={onDelete}>
-            <ListItemText primary="Number of Pages" secondary={`Must have ${check.num_pages} page${pluralize}`}></ListItemText>
+        <CheckItem<NumPagesCheck> dialogComponent={NumPagesCheckDialog} {...props}>
+            <ListItemText primary="Number of Pages" secondary={`Must have ${props.check.num_pages} page${pluralize}`}></ListItemText>
         </CheckItem>
     );
 };

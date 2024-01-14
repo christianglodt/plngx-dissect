@@ -13,11 +13,14 @@ export type CheckItemPropsType<CheckType> = {
     check: CheckType;
     onChange: (newCheck: CheckType) => void;
     onDelete: () => void;
+}
+
+export type CheckItemInternalPropsType<CheckType> = {
     dialogComponent: React.FunctionComponent<CheckItemDialogPropsType<CheckType>>;
     children: React.ReactNode[] | React.ReactNode | null;
 }
 
-const CheckItem = <CheckType,>(props: CheckItemPropsType<CheckType>) => {
+const CheckItem = <CheckType,>(props: CheckItemPropsType<CheckType> & CheckItemInternalPropsType<CheckType>) => {
     const { check, onChange, onDelete } = props;
 
     const [dialogOpen, setDialogOpen] = useState(false);

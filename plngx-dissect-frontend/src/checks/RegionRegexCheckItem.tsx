@@ -2,7 +2,7 @@ import { ListItemText, Stack, TextField } from "@mui/material";
 import { RegionRegexCheck } from "../types";
 import { useState } from "react";
 import CheckItemDialog from "../utils/CheckItemDialog";
-import CheckItem, { CheckItemDialogPropsType } from "../utils/CheckItem";
+import CheckItem, { CheckItemDialogPropsType, CheckItemPropsType } from "../utils/CheckItem";
 
 
 const RegionRegexCheckDialog = (props: CheckItemDialogPropsType<RegionRegexCheck>) => {
@@ -34,18 +34,12 @@ const RegionRegexCheckDialog = (props: CheckItemDialogPropsType<RegionRegexCheck
     );
 }
 
-type RegionRegexCheckPropsType = {
-    check: RegionRegexCheck;
-    onChange: (newCheck: RegionRegexCheck) => void;
-    onDelete: () => void;
-}
+const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
 
-const RegionRegexCheckItem = (props: RegionRegexCheckPropsType) => {
-
-    const { check, onChange, onDelete } = props;
+    const { check } = props;
 
     return (
-        <CheckItem<RegionRegexCheck> dialogComponent={RegionRegexCheckDialog} check={check} onChange={onChange} onDelete={onDelete}>
+        <CheckItem<RegionRegexCheck> dialogComponent={RegionRegexCheckDialog} {...props}>
             <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text Match" secondary={`Must match "${check.regex}"\nin region [${check.region.x}, ${check.region.y}, ${check.region.x2}, ${check.region.y2}]`}></ListItemText>
         </CheckItem>
     );
