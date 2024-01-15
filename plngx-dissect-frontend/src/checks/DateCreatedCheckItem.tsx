@@ -19,11 +19,19 @@ const DateCreatedCheckDialog = (props: CheckItemDialogPropsType<DateCreatedCheck
         draft.year = year;
     }
 
+    const afterSlotProps = {
+        field: { clearable: true, onClear: () => setAfter(null) }
+    };
+
+    const beforeSlotProps = {
+        field: { clearable: true, onClear: () => setBefore(null) }
+    };
+
     return (
         <CheckItemDialog<DateCreatedCheck> title="Check Date Created" onChangeDraft={onChangeDraft} {...props}>
             <Stack gap={2}>
-                <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.toDate() : null)} format="D.M.YYYY"/>
-                <DatePicker<Dayjs> label="Date Is After"  value={dayjs(after)}  onChange={(value) => setAfter(value ? value.toDate() : null)} format="D.M.YYYY"/>
+                <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={afterSlotProps}/>
+                <DatePicker<Dayjs> label="Date Is After"  value={dayjs(after)}  onChange={(value) => setAfter(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={beforeSlotProps}/>
                 <TextField type="number" label="Year is" value={year || ''} onChange={(event) => setYear(Number(event.target.value))}></TextField>
             </Stack>
         </CheckItemDialog>
@@ -43,9 +51,11 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
         descriptionParts.push(`year must be ${props.check.year}`)
     }
 
+    const description = descriptionParts.length > 0 ? 'Must be ' + descriptionParts.join(', ') : '(no condition set)';
+
     return (
         <CheckItem<DateCreatedCheck> dialogComponent={DateCreatedCheckDialog} {...props}>
-            <ListItemText primary="Date Created" secondary={`Must be ${descriptionParts.join(", ")}`}></ListItemText>
+            <ListItemText primary="Date Created" secondary={description}></ListItemText>
         </CheckItem>
     );
 };
