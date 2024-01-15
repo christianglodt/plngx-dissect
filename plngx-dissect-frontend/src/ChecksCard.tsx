@@ -1,7 +1,7 @@
 import React from "react";
 import { produce } from "immer";
 
-import { Pattern, Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck } from "./types";
+import { Pattern, Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck } from "./types";
 import NumPagesCheckItem from "./checks/NumPagesCheckItem";
 import ListCard from "./utils/ListCard";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
@@ -12,6 +12,7 @@ import CorrespondentCheckItem from "./checks/CorrespondentCheckItem";
 import DocumentTypeCheckItem from "./checks/DocumentTypeCheckItem";
 import StoragePathCheckItem from "./checks/StoragePathCheckItem";
 import TagCheckItem from "./checks/TagCheckItem";
+import DateCreatedCheckItem from "./checks/DateCreatedCheckItem";
 
 
 const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element => {
@@ -30,6 +31,8 @@ const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element =
             return <StoragePathCheckItem   {...props as CheckItemPropsType<StoragePathCheck>}/>;
         case CheckTypeId.Tag:
             return <TagCheckItem           {...props as CheckItemPropsType<TagCheck>}/>;
+        case CheckTypeId.DateCreated:
+            return <DateCreatedCheckItem   {...props as CheckItemPropsType<DateCreatedCheck>}/>;
     }
 };
 
