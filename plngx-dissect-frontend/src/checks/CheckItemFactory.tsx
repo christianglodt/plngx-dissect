@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck } from "../types";
+import { Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck, AndCheck } from "../types";
 import NumPagesCheckItem from "./NumPagesCheckItem";
 import RegionRegexCheckItem from "./RegionRegexCheckItem";
 import TitleRegexCheckItem from "./TitleRegexCheckItem";
@@ -10,6 +10,7 @@ import DocumentTypeCheckItem from "./DocumentTypeCheckItem";
 import StoragePathCheckItem from "./StoragePathCheckItem";
 import TagCheckItem from "./TagCheckItem";
 import DateCreatedCheckItem from "./DateCreatedCheckItem";
+import AndCheckItem from "./AndCheckItem";
 
 const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element => {
     switch (props.check.type) {
@@ -29,6 +30,8 @@ const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element =
             return <TagCheckItem           {...props as CheckItemPropsType<TagCheck>}/>;
         case CheckTypeId.DateCreated:
             return <DateCreatedCheckItem   {...props as CheckItemPropsType<DateCreatedCheck>}/>;
+        case CheckTypeId.And:
+            return <AndCheckItem           {...props as CheckItemPropsType<AndCheck>}/>;
     }
 };
 
