@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack } from "@mui/material";
 import React from "react";
 import ConfirmButton from "./ConfirmButton";
 import { Draft, produce } from "immer";
@@ -11,6 +11,7 @@ type CheckItemDialogPropsType<CheckType> = {
     onChangeDraft: (draft: Draft<CheckType>) => void;
     onClose: () => void;
     onDelete: () => void;
+    extraTitle?: React.ReactNode | null;
     children?: React.ReactNode[] | React.ReactNode;
 }
 
@@ -32,7 +33,12 @@ const CheckItemDialog = <CheckType,>(props: CheckItemDialogPropsType<CheckType>)
 
     return (
         <Dialog open={open} onClose={onClose}>
-            <DialogTitle>{title}</DialogTitle>
+            <DialogTitle>
+                <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
+                    {title}
+                    {props.extraTitle}
+                </Stack>
+            </DialogTitle>
             <DialogContent>
                 <Box sx={{ paddingTop: '0.5rem' }}>
                     {props.children}
