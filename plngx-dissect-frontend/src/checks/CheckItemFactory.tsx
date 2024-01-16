@@ -1,16 +1,18 @@
 import React from "react";
 
-import { Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck, AndCheck } from "../types";
+import { Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck, AndCheck, OrCheck, NotCheck } from "../types";
 import NumPagesCheckItem from "./NumPagesCheckItem";
 import RegionRegexCheckItem from "./RegionRegexCheckItem";
 import TitleRegexCheckItem from "./TitleRegexCheckItem";
-import { CheckItemPropsType } from "../utils/CheckItem";
 import CorrespondentCheckItem from "./CorrespondentCheckItem";
 import DocumentTypeCheckItem from "./DocumentTypeCheckItem";
 import StoragePathCheckItem from "./StoragePathCheckItem";
 import TagCheckItem from "./TagCheckItem";
 import DateCreatedCheckItem from "./DateCreatedCheckItem";
 import AndCheckItem from "./AndCheckItem";
+import { CheckItemPropsType } from "./types";
+import OrCheckItem from "./OrCheckItem";
+import NotCheckItem from "./NotCheckItem";
 
 const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element => {
     switch (props.check.type) {
@@ -32,6 +34,10 @@ const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element =
             return <DateCreatedCheckItem   {...props as CheckItemPropsType<DateCreatedCheck>}/>;
         case CheckTypeId.And:
             return <AndCheckItem           {...props as CheckItemPropsType<AndCheck>}/>;
+        case CheckTypeId.Or:
+            return <OrCheckItem            {...props as CheckItemPropsType<OrCheck>}/>;
+        case CheckTypeId.Not:
+            return <NotCheckItem            {...props as CheckItemPropsType<NotCheck>}/>;
     }
 };
 

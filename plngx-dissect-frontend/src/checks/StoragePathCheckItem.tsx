@@ -1,31 +1,28 @@
 import { ListItemText, TextField } from "@mui/material";
-import { StoragePathCheck } from "../types";
+import { produce } from "immer";
 import { useState } from "react";
-import CheckItemDialog from "../utils/CheckItemDialog";
-import CheckItem, { CheckItemDialogPropsType, CheckItemPropsType } from "../utils/CheckItem";
+import { StoragePathCheck } from "../types";
+import CheckListItem from "../utils/CheckListItem";
+import { CheckItemPropsType } from "./types";
 
-
-const StoragePathCheckDialog = (props: CheckItemDialogPropsType<StoragePathCheck>) => {
-
+const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
     const [value, setValue] = useState(props.check.name);
 
-    const onChangeDraft = (draft: StoragePathCheck) => {
-        draft.name = value;
+    const onChangeConfirmed = () => {
+        props.onChange(produce(props.check, draft => {
+            draft.name = value;
+        }));
     }
 
     return (
-        <CheckItemDialog<StoragePathCheck> title="Check Storage Path" onChangeDraft={onChangeDraft} {...props}>
-            <TextField label="Storage Path" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
-        </CheckItemDialog>
-    );
-}
-
-const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
-
-    return (
-        <CheckItem<StoragePathCheck> dialogComponent={StoragePathCheckDialog} {...props}>
-            <ListItemText primary="Storage Path" secondary={`Path must be "${props.check.name}"`}></ListItemText>
-        </CheckItem>
+        <CheckListItem dialogTitle="Check Storage Path" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <CheckListItem.DialogContent>
+                <TextField label="Storage Path" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+            </CheckListItem.DialogContent>
+            <CheckListItem.ItemContent>
+                <ListItemText primary="Storage Path" secondary={`Must be "${props.check.name}"`}></ListItemText>
+            </CheckListItem.ItemContent>
+        </CheckListItem>
     );
 };
 

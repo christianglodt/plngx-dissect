@@ -1,31 +1,28 @@
 import { ListItemText, TextField } from "@mui/material";
-import { DocumentTypeCheck } from "../types";
+import { produce } from "immer";
 import { useState } from "react";
-import CheckItemDialog from "../utils/CheckItemDialog";
-import CheckItem, { CheckItemDialogPropsType, CheckItemPropsType } from "../utils/CheckItem";
+import { DocumentTypeCheck } from "../types";
+import CheckListItem from "../utils/CheckListItem";
+import { CheckItemPropsType } from "./types";
 
-
-const DocumentTypeCheckDialog = (props: CheckItemDialogPropsType<DocumentTypeCheck>) => {
-
+const DocumentTypeCheckItem = (props: CheckItemPropsType<DocumentTypeCheck>) => {
     const [value, setValue] = useState(props.check.name);
 
-    const onChangeDraft = (draft: DocumentTypeCheck) => {
-        draft.name = value;
+    const onChangeConfirmed = () => {
+        props.onChange(produce(props.check, draft => {
+            draft.name = value;
+        }));
     }
 
     return (
-        <CheckItemDialog<DocumentTypeCheck> title="Check Document Type" onChangeDraft={onChangeDraft} {...props}>
-            <TextField label="Document Type" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
-        </CheckItemDialog>
-    );
-}
-
-const DocumentTypeCheckItem = (props: CheckItemPropsType<DocumentTypeCheck>) => {
-
-    return (
-        <CheckItem<DocumentTypeCheck> dialogComponent={DocumentTypeCheckDialog} {...props}>
-            <ListItemText primary="Document Type" secondary={`Type must be "${props.check.name}"`}></ListItemText>
-        </CheckItem>
+        <CheckListItem dialogTitle="Check Document Type" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <CheckListItem.DialogContent>
+                <TextField label="Document Type" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+            </CheckListItem.DialogContent>
+            <CheckListItem.ItemContent>
+                <ListItemText primary="Document Type" secondary={`Must be "${props.check.name}"`}></ListItemText>
+            </CheckListItem.ItemContent>
+        </CheckListItem>
     );
 };
 

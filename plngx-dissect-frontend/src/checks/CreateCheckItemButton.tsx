@@ -62,6 +62,7 @@ const CHECK_ITEM_FACTORIES: Record<CheckTypeId, FactoryEntry> = { // Typescript 
 
 type CreateCheckItemButtonPropsType = {
     onCheckCreated: (newCheck: Check) => void;
+    disabled?: boolean;
 }
 
 const CreateCheckItemButton = (props: CreateCheckItemButtonPropsType) => {
@@ -78,7 +79,7 @@ const CreateCheckItemButton = (props: CreateCheckItemButtonPropsType) => {
 
     return (
         <>
-            <IconButton onClick={onCreateClicked}><Add/></IconButton>
+            <IconButton onClick={onCreateClicked} disabled={props.disabled}><Add/></IconButton>
             <Menu anchorEl={anchorElement} open={anchorElement !== null} onClose={() => setAnchorElement(null)}>
                 {Object.values(CHECK_ITEM_FACTORIES).map((factory, index) =>
                     <MenuItem key={index} onClick={() => onMenuItemClicked(factory.factory)}>{factory.label}</MenuItem>

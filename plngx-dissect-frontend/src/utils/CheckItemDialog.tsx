@@ -3,7 +3,7 @@ import React from "react";
 import ConfirmButton from "./ConfirmButton";
 import { Draft, produce } from "immer";
 
-type CheckItemDialogPropsType<CheckType> = {
+export type CheckItemDialogPropsType<CheckType> = {
     title: string | React.JSX.Element;
     check: CheckType;
     open: boolean;

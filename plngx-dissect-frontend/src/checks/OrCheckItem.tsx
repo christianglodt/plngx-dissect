@@ -1,13 +1,13 @@
 import { List, ListItemText } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
-import { AndCheck, Check } from "../types";
+import { OrCheck, Check } from "../types";
 import CheckListItem from "../utils/CheckListItem";
 import CheckItemFactory from "./CheckItemFactory";
 import CreateCheckItemButton from "./CreateCheckItemButton";
 import { CheckItemPropsType } from "./types";
 
-const AndCheckItem = (props: CheckItemPropsType<AndCheck>) => {
+const OrCheckItem = (props: CheckItemPropsType<OrCheck>) => {
 
     const [checks, setChecks] = useState(props.check.checks);
 
@@ -37,7 +37,7 @@ const AndCheckItem = (props: CheckItemPropsType<AndCheck>) => {
 
     const pluralize = checks.length == 1 ? '' : 's';
     return (
-        <CheckListItem dialogTitle="And Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <CheckListItem dialogTitle="Or Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <CheckListItem.DialogContent>
                 <List>
                     {checks.map((check, index) =>
@@ -46,10 +46,10 @@ const AndCheckItem = (props: CheckItemPropsType<AndCheck>) => {
                 </List>
             </CheckListItem.DialogContent>
             <CheckListItem.ItemContent>
-                <ListItemText primary="And" secondary={`${checks.length} sub-check${pluralize}`}></ListItemText>
+                <ListItemText primary="Or" secondary={`${checks.length} sub-check${pluralize}`}></ListItemText>
             </CheckListItem.ItemContent>
         </CheckListItem>
     );
 };
 
-export default AndCheckItem;
+export default OrCheckItem;

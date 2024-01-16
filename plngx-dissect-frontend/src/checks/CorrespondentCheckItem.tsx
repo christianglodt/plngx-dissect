@@ -1,32 +1,29 @@
 import { ListItemText, TextField } from "@mui/material";
-import { CorrespondentCheck } from "../types";
+import { produce } from "immer";
 import { useState } from "react";
-import CheckItemDialog from "../utils/CheckItemDialog";
-import CheckItem, { CheckItemDialogPropsType, CheckItemPropsType } from "../utils/CheckItem";
+import { CorrespondentCheck } from "../types";
+import CheckListItem from "../utils/CheckListItem";
+import { CheckItemPropsType } from "./types";
 
 
-const CorrespondentCheckDialog = (props: CheckItemDialogPropsType<CorrespondentCheck>) => {
-
+const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) => {
     const [value, setValue] = useState(props.check.name);
 
-    const onChangeDraft = (draft: CorrespondentCheck) => {
-        draft.name = value;
+    const onChangeConfirmed = () => {
+        props.onChange(produce(props.check, draft => {
+            draft.name = value;
+        }));
     }
 
     return (
-        // TODO autocomplete dropdown
-        <CheckItemDialog<CorrespondentCheck> title="Check Correspondent" onChangeDraft={onChangeDraft} {...props}>
-            <TextField label="Correspondent" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
-        </CheckItemDialog>
-    );
-}
-
-const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) => {
-
-    return (
-        <CheckItem<CorrespondentCheck> dialogComponent={CorrespondentCheckDialog} {...props}>
-            <ListItemText primary="Correspondent Name" secondary={`Name must be "${props.check.name}"`}></ListItemText>
-        </CheckItem>
+        <CheckListItem dialogTitle="Check Correspondent" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <CheckListItem.DialogContent>
+                <TextField label="Correspondent" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+            </CheckListItem.DialogContent>
+            <CheckListItem.ItemContent>
+                <ListItemText primary="Correspondent" secondary={`Must be "${props.check.name}"`}></ListItemText>
+            </CheckListItem.ItemContent>
+        </CheckListItem>
     );
 };
 
