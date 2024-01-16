@@ -7,7 +7,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import { Link, Outlet, useParams } from 'react-router-dom';
 
-export default function App() {
+const App = () => {
 
     const params = useParams();
 
@@ -34,3 +34,5 @@ export default function App() {
         </Box>
     );
 }
+
+export default App;
