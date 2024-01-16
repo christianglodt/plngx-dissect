@@ -33,11 +33,11 @@ const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element =
         case CheckTypeId.DateCreated:
             return <DateCreatedCheckItem   {...props as CheckItemPropsType<DateCreatedCheck>}/>;
         case CheckTypeId.And:
-            return <AndCheckItem           {...props as CheckItemPropsType<AndCheck>}/>;
+            return <AndCheckItem           {...props as CheckItemPropsType<AndCheck>}  factory={CheckItemFactory}/>;
         case CheckTypeId.Or:
-            return <OrCheckItem            {...props as CheckItemPropsType<OrCheck>}/>;
+            return <OrCheckItem            {...props as CheckItemPropsType<OrCheck>}   factory={CheckItemFactory}/>;
         case CheckTypeId.Not:
-            return <NotCheckItem            {...props as CheckItemPropsType<NotCheck>}/>;
+            return <NotCheckItem            {...props as CheckItemPropsType<NotCheck>} factory={CheckItemFactory}/>;
     }
 };
 

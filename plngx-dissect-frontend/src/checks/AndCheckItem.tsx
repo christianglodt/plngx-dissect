@@ -3,11 +3,10 @@ import { produce } from "immer";
 import { useState } from "react";
 import { AndCheck, Check } from "../types";
 import CheckListItem from "../utils/CheckListItem";
-import CheckItemFactory from "./CheckItemFactory";
 import CreateCheckItemButton from "./CreateCheckItemButton";
-import { CheckItemPropsType } from "./types";
+import { RecursiveCheckItemPropsType } from "./types";
 
-const AndCheckItem = (props: CheckItemPropsType<AndCheck>) => {
+const AndCheckItem = (props: RecursiveCheckItemPropsType<AndCheck>) => {
 
     const [checks, setChecks] = useState(props.check.checks);
 
@@ -36,13 +35,21 @@ const AndCheckItem = (props: CheckItemPropsType<AndCheck>) => {
     }
 
     const pluralize = checks.length == 1 ? '' : 's';
+
+    const subChecks = checks.map((check, index) => 
+        props.factory({
+            check,
+            key: index,
+            onChange: (newCheck: Check) => onCheckChanged(newCheck, index),
+            onDelete: () => onCheckDeleted(index)
+        })
+    );
+
     return (
         <CheckListItem dialogTitle="And Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <CheckListItem.DialogContent>
                 <List>
-                    {checks.map((check, index) =>
-                        <CheckItemFactory key={index} check={check} onChange={(newCheck) => onCheckChanged(newCheck, index)} onDelete={() => onCheckDeleted(index)}/>
-                    )}
+                    {subChecks}
                 </List>
             </CheckListItem.DialogContent>
             <CheckListItem.ItemContent>

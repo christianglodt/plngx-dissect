@@ -1,13 +1,12 @@
-import { List, ListItemText } from "@mui/material";
+import { ListItemText } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { Check, NotCheck } from "../types";
 import CheckListItem from "../utils/CheckListItem";
-import CheckItemFactory from "./CheckItemFactory";
 import CreateCheckItemButton from "./CreateCheckItemButton";
-import { CheckItemPropsType } from "./types";
+import { RecursiveCheckItemPropsType } from "./types";
 
-const NotCheckItem = (props: CheckItemPropsType<NotCheck>) => {
+const NotCheckItem = (props: RecursiveCheckItemPropsType<NotCheck>) => {
 
     const [check, setCheck] = useState(props.check.check);
 
@@ -21,14 +20,16 @@ const NotCheckItem = (props: CheckItemPropsType<NotCheck>) => {
         }));
     }
 
+    const subCheck = check && props.factory({
+        check,
+        onChange: (newCheck: Check) => setCheck(newCheck),
+        onDelete: () => setCheck(null)
+    });
+
     return (
         <CheckListItem dialogTitle="Not Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated} disabled={check !== null}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <CheckListItem.DialogContent>
-                { check &&
-                <List>
-                    <CheckItemFactory check={check} onChange={(newCheck) => setCheck(newCheck)} onDelete={() => setCheck(null)}/>
-                </List>
-                }
+                { subCheck }
                 </CheckListItem.DialogContent>
             <CheckListItem.ItemContent>
                 <ListItemText primary="Not" secondary={check ? "1 sub-check" : "(no condition set)"}></ListItemText>

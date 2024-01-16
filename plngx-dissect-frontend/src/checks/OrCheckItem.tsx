@@ -3,11 +3,10 @@ import { produce } from "immer";
 import { useState } from "react";
 import { OrCheck, Check } from "../types";
 import CheckListItem from "../utils/CheckListItem";
-import CheckItemFactory from "./CheckItemFactory";
 import CreateCheckItemButton from "./CreateCheckItemButton";
-import { CheckItemPropsType } from "./types";
+import { RecursiveCheckItemPropsType } from "./types";
 
-const OrCheckItem = (props: CheckItemPropsType<OrCheck>) => {
+const OrCheckItem = (props: RecursiveCheckItemPropsType<OrCheck>) => {
 
     const [checks, setChecks] = useState(props.check.checks);
 
@@ -35,14 +34,21 @@ const OrCheckItem = (props: CheckItemPropsType<OrCheck>) => {
         }));
     }
 
+    const subChecks = checks.map((check, index) => 
+    props.factory({
+        check,
+        key: index,
+        onChange: (newCheck: Check) => onCheckChanged(newCheck, index),
+        onDelete: () => onCheckDeleted(index)
+    })
+);
+
     const pluralize = checks.length == 1 ? '' : 's';
     return (
         <CheckListItem dialogTitle="Or Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <CheckListItem.DialogContent>
                 <List>
-                    {checks.map((check, index) =>
-                        <CheckItemFactory key={index} check={check} onChange={(newCheck) => onCheckChanged(newCheck, index)} onDelete={() => onCheckDeleted(index)}/>
-                    )}
+                    {subChecks}
                 </List>
             </CheckListItem.DialogContent>
             <CheckListItem.ItemContent>
