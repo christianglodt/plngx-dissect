@@ -88,6 +88,7 @@ AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentChe
 
 
 class Pattern(pydantic.BaseModel):
+    page: int # 0 is first, -1 is last, other number is exact page number
     name: str
     checks: list[AnyCheck]
     regions: list[RegionRegex]

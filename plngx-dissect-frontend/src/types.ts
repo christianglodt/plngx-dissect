@@ -97,6 +97,7 @@ export type Field = {
 
 export type Pattern = {
     name: string;
+    page: number;
     checks: Check[];
     regions: RegionRegex[];
     fields: Field[];

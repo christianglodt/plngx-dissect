@@ -9,6 +9,7 @@ import FieldsCard from "./FieldsCard";
 import DocumentView from "./DocumentView";
 import { useState } from "react";
 import { Pattern } from "./types";
+import PatternPageCard from "./PatternPageCard";
 
 
 export default function PatternEditor() {
@@ -35,7 +36,8 @@ export default function PatternEditor() {
 
     return (
         <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
-            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content'}}>
+            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
+                <PatternPageCard pattern={shownPattern} onChange={onChange}/>
                 <ChecksCard pattern={shownPattern} onChange={onChange}/>
                 <MatchingDocsCard pattern={shownPattern}/>
             </Stack>
