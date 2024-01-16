@@ -12,7 +12,7 @@ import { Pattern } from "./types";
 import PatternPageCard from "./PatternPageCard";
 
 
-export default function PatternEditor() {
+const PatternEditor = () => {
 
     const { patternId } = useParams();
 
@@ -51,3 +51,5 @@ export default function PatternEditor() {
         </Stack>
     );
 }
+
+export default PatternEditor;

@@ -14,7 +14,7 @@ function errorMessage(error: unknown): string {
     }
 }
 
-export default function ErrorPage() {
+const ErrorPage = () => {
     const error = useRouteError();
     console.error(error);
 
@@ -29,3 +29,5 @@ export default function ErrorPage() {
         </Box>
     );
 }
+
+export default ErrorPage;
