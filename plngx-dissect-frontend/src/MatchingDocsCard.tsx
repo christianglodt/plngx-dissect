@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { Pattern } from "./hooks";
+import { Pattern } from "./types";
 import ListCard from "./utils/ListCard";
 
 type MatchingDocsCardProps = {
