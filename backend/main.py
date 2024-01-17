@@ -27,11 +27,12 @@ async def get_pattern(name: str) -> pattern.Pattern:
         raise HTTPException(status_code=404, detail='Pattern not found')
 
 
-@app.post('/api/pattern/{name}')
-async def put_pattern(name: str, p: pattern.Pattern):
+@app.put('/api/pattern/{name}')
+async def put_pattern(name: str, p: pattern.Pattern) -> pattern.Pattern:
     if name != p.name:
         raise HTTPException(status_code=400, detail="Name in URL must correspond to name in body payload")
     await pattern.put_pattern(p)
+    return p
 
 
 @app.get('/api/document/{document_id}/svg', response_class=Response)
