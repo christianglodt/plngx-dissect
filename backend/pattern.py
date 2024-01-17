@@ -126,7 +126,6 @@ async def put_pattern(pattern: Pattern):
     escaped_name = urllib.parse.quote_plus(pattern.name) + '.yml'
     async with aiofiles.tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=CONFIG_PATH) as f:
         s = ruamel.yaml.StringIO()
-        ruamel.yaml.dump(pattern.model_dump(), s)
+        ruamel.yaml.YAML().dump(pattern.model_dump(), s)
         await f.write(s.getvalue())
-        await f.close()
         await aiofiles.os.rename(str(f.name), CONFIG_PATH / escaped_name)
