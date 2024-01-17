@@ -37,41 +37,10 @@ const TextRunBox = (props: TextRunBoxPropsType) => {
     );
 }
 
-const TextRunBox2 = (props: TextRunBoxPropsType) => {
-
-    const { pageWidth, pageHeight } = props;
-
-    const ptToPercentH = (pt: number) => (pt / pageWidth) * 100.0;
-    const ptToPercentV = (pt: number) => (pt / pageHeight) * 100.0;
-
-    const style: React.CSSProperties = {
-        position: 'absolute',
-        left: `${ptToPercentH(props.textRun.x)}%`,
-        width: `${ptToPercentH(props.textRun.x2 - props.textRun.x)}%`,
-        height: `${ptToPercentV(props.textRun.y2 - props.textRun.y)}%`,
-        top: `${ptToPercentV(props.textRun.y)}%`,
-        color: 'rgba(0, 0, 0, 0.85)',
-        border: '1px solid rgba(0, 0, 0, 0.85)',
-        padding: 0,
-        fontSize: `${ptToPercentV(props.textRun.y2 - props.textRun.y)}%`,
-        //fontSize: 'xx-small',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap'
-    };
-
-    return (
-        <div style={style}>
-            {props.textRun.x} {props.textRun.y} {props.textRun.text}
-        </div>
-    );
-}
-
-
 type PagePropsType = {
     document: Document;
     pageNr: number;
 }
-
 
 const Page = (props: PagePropsType) => {
 
