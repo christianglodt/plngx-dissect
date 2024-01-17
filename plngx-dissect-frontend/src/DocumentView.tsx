@@ -29,7 +29,7 @@ const TextRunBox = (props: TextRunBoxPropsType) => {
     return (
         <div style={style} className="TextRun">
             <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox={`0 0 ${props.textRun.x2 - props.textRun.x} ${props.textRun.y2 - props.textRun.y}`} style={{ display: 'block' }} preserveAspectRatio="none">
-                <text fontSize={props.textRun.y2 - props.textRun.y} textLength={props.textRun.x2 - props.textRun.x} lengthAdjust="spacing" x="0" y={props.textRun.y2 - props.textRun.y -1*}>
+                <text fontSize={props.textRun.y2 - props.textRun.y} textLength={props.textRun.x2 - props.textRun.x} lengthAdjust="spacing" x="0" y={props.textRun.y2 - props.textRun.y -1}>
                     {props.textRun.text}
                 </text>
             </svg>
