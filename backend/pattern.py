@@ -10,6 +10,9 @@ import ruamel.yaml
 
 import region
 
+class RegionRegex(region.Region):
+    regex: str
+
 
 class Check(pydantic.BaseModel, abc.ABC):
     pass
@@ -20,10 +23,8 @@ class NumPagesCheck(Check):
     num_pages: int
 
 
-class RegionRegexCheck(Check):
+class RegionRegexCheck(RegionRegex):
     type: Literal['region']
-    region: region.Region
-    regex: str
 
 
 class TitleRegexCheck(Check):
@@ -72,11 +73,6 @@ class OrCheck(Check):
 class NotCheck(Check):
     type: Literal['not']
     check: 'AnyCheck'
-
-
-class RegionRegex(pydantic.BaseModel):
-    region: region.Region
-    regex: str
 
 
 class Field(pydantic.BaseModel):

@@ -22,10 +22,8 @@ export type NumPagesCheck = {
     num_pages: number;
 }
 
-export type RegionRegexCheck = {
+export type RegionRegexCheck = RegionRegex & {
     type: CheckTypeId.Region;
-    region: Region;
-    regex: string;
 }
 
 export type TitleRegexCheck = {
@@ -85,8 +83,7 @@ export type Region = {
     y2: number;
 }
 
-export type RegionRegex = {
-    region: Region;
+export type RegionRegex = Region & {
     regex: string;
 }
 

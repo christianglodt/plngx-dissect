@@ -7,18 +7,18 @@ import { CheckItemPropsType } from "./types";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
 
-    const [x, setX] = useState(props.check.region.x);
-    const [y, setY] = useState(props.check.region.y);
-    const [x2, setX2] = useState(props.check.region.x2);
-    const [y2, setY2] = useState(props.check.region.y2);
+    const [x, setX] = useState(props.check.x);
+    const [y, setY] = useState(props.check.y);
+    const [x2, setX2] = useState(props.check.x2);
+    const [y2, setY2] = useState(props.check.y2);
     const [regex, setRegex] = useState(props.check.regex);
 
     const onChangeConfirmed = () => {
         props.onChange(produce(props.check, draft => {
-            draft.region.x = x;
-            draft.region.y = y;
-            draft.region.x2 = x2;
-            draft.region.y2 = y2;
+            draft.x = x;
+            draft.y = y;
+            draft.x2 = x2;
+            draft.y2 = y2;
             draft.regex = regex;
             }));
     }
@@ -35,7 +35,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
                 </Stack>
             </CheckListItem.DialogContent>
             <CheckListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.region.x}, ${props.check.region.y}, ${props.check.region.x2}, ${props.check.region.y2}]`}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.x}, ${props.check.y}, ${props.check.x2}, ${props.check.y2}]`}></ListItemText>
             </CheckListItem.ItemContent>
         </CheckListItem>
     );
