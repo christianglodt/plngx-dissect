@@ -6,7 +6,7 @@ import ChecksCard from "./ChecksCard";
 import MatchingDocsCard from "./MatchingDocsCard";
 import RegionsCard from "./RegionsCard";
 import FieldsCard from "./FieldsCard";
-import DocumentView from "./DocumentView";
+import DocumentView from "./documentView/DocumentView";
 import { useState } from "react";
 import { Pattern } from "./types";
 import PatternPageCard from "./PatternPageCard";
