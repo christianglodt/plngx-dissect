@@ -1,6 +1,6 @@
 .TextRun {
   position: absolute;
-  border: 1px solid rgba(0, 0, 0, 0.85);
+  outline: 1px solid rgba(0, 0, 0, 0.85);
   overflow: hidden;
   white-space: nowrap;
   background-color: rgba(255, 255, 255, 0.25);
