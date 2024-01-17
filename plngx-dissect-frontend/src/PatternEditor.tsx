@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import { usePattern } from "./hooks";
-import { LinearProgress, Stack } from "@mui/material";
+import { usePattern, useSavePatternMutation } from "./hooks";
+import { Alert, Button, LinearProgress, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksCard";
 import MatchingDocsCard from "./MatchingDocsCard";
@@ -10,6 +10,7 @@ import DocumentView from "./DocumentView";
 import { useState } from "react";
 import { Pattern } from "./types";
 import PatternPageCard from "./PatternPageCard";
+import PortalBox from "./utils/PortalBox";
 
 
 const PatternEditor = () => {
@@ -17,6 +18,7 @@ const PatternEditor = () => {
     const { patternId } = useParams();
 
     const { data: pattern, isLoading } = usePattern(patternId!);
+    const savePatternMutation = useSavePatternMutation();
 
     const [modifiedPattern, setModifiedPattern] = useState<Pattern|null>(null);
 
@@ -34,21 +36,35 @@ const PatternEditor = () => {
         setModifiedPattern(newPattern);
     }
 
+    const onSaveClicked = () => {
+        savePatternMutation.mutate(modifiedPattern!);
+    }
+
     return (
-        <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
-            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
-                <PatternPageCard pattern={shownPattern} onChange={onChange}/>
-                <ChecksCard pattern={shownPattern} onChange={onChange}/>
-                <MatchingDocsCard pattern={shownPattern}/>
-            </Stack>
+        <>
+            <PortalBox>
+                <Stack direction="row" gap={2}>
+                    { savePatternMutation.isError &&
+                    <Alert severity="error">Error: {savePatternMutation.error.message}</Alert>
+                    }
+                    <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
+                </Stack>
+            </PortalBox>
+            <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
+                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
+                    <PatternPageCard pattern={shownPattern} onChange={onChange}/>
+                    <ChecksCard pattern={shownPattern} onChange={onChange}/>
+                    <MatchingDocsCard pattern={shownPattern}/>
+                </Stack>
 
-            <DocumentView documentId={documentId} pattern={shownPattern}/>
+                <DocumentView documentId={documentId} pattern={shownPattern}/>
 
-            <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
-                <RegionsCard pattern={shownPattern}/>
-                <FieldsCard pattern={shownPattern}/>
+                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
+                    <RegionsCard pattern={shownPattern}/>
+                    <FieldsCard pattern={shownPattern}/>
+                </Stack>
             </Stack>
-        </Stack>
+        </>
     );
 }
 
