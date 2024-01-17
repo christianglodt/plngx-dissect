@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Stack, TextField } from "@mui/material";
 import { Pattern } from "./types";
-import { useState } from "react";
+import { produce } from "immer";
 
 type PatternPageCardPropsType = {
     pattern: Pattern;
@@ -9,19 +9,26 @@ type PatternPageCardPropsType = {
 
 const PatternPageCard = (props: PatternPageCardPropsType) => {
 
-    const [pageNr, setPageNr] = useState(props.pattern.page);
+    const pageNr = props.pattern.page;
 
     const selectValue = pageNr === 0 ? 'first' : (pageNr === -1 ? 'last' : 'exact');
 
+    const onPageNrChange = (newPageNr: number) => {
+        const newPattern = produce(props.pattern, draft => {
+            draft.page = newPageNr;
+        });
+        props.onChange(newPattern);
+    }
+
     const onSelectChange = (event: SelectChangeEvent) => {
         if (event.target.value === 'first') {
-            setPageNr(0);
+            onPageNrChange(0);
         }
         if (event.target.value === 'last') {
-            setPageNr(-1);
+            onPageNrChange(-1);
         }
         if (event.target.value === 'exact') {
-            setPageNr(1);
+            onPageNrChange(1);
         }
     }
 
@@ -44,7 +51,7 @@ const PatternPageCard = (props: PatternPageCardPropsType) => {
                         </Select>
                         
                         { pageNr !== 0 && pageNr !== -1 &&
-                        <TextField sx={{ width: '100%' }} type="number" value={pageNr + 1} onChange={(event) => setPageNr(Number(event.target.value) - 1)}/>
+                        <TextField sx={{ width: '100%' }} type="number" value={pageNr + 1} onChange={(event) => onPageNrChange(Number(event.target.value) - 1)}/>
                         }
                     </Stack>
                 </FormControl>
