@@ -112,7 +112,8 @@ export type TextRun = {
 }
 
 export type Page = {
-    aspect_ratio: number;
+    width: number;
+    height: number;
     text_runs: TextRun[];
 }
 

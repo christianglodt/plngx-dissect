@@ -1,7 +1,45 @@
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import { Alert, AlertTitle, Box, IconButton, Skeleton, Stack } from "@mui/material";
-import { useDocument, Document, Pattern } from "./hooks";
-import { useState } from "react";
+import { useDocument } from "./hooks";
+import React, { useState } from "react";
+import { Pattern, Document, TextRun } from "./types";
+
+
+type TextRunBoxPropsType = {
+    textRun: TextRun;
+    pageWidth: number;
+    pageHeight: number;
+}
+
+const TextRunBox = (props: TextRunBoxPropsType) => {
+
+    const { pageWidth, pageHeight } = props;
+
+    const ptToPercentH = (pt: number) => (pt / pageWidth) * 100.0;
+    const ptToPercentV = (pt: number) => (pt / pageHeight) * 100.0;
+
+    const style: React.CSSProperties = {
+        position: 'absolute',
+        left: `${ptToPercentH(props.textRun.x)}%`,
+        width: `${ptToPercentH(props.textRun.x2 - props.textRun.x)}%`,
+        height: `${ptToPercentV(props.textRun.y2 - props.textRun.y)}%`,
+        top: `${ptToPercentV(props.textRun.y)}%`,
+        color: 'rgba(0, 0, 0, 0.85)',
+        border: '1px solid rgba(0, 0, 0, 0.85)',
+        padding: 0,
+        fontSize: `${ptToPercentV(props.textRun.y2 - props.textRun.y)}%`,
+        //fontSize: 'xx-small',
+        overflow: 'hidden',
+        whiteSpace: 'nowrap'
+    };
+
+    return (
+        <div style={style}>
+            {props.textRun.x} {props.textRun.y} {props.textRun.text}
+        </div>
+    );
+}
+
 
 type PagePropsType = {
     document: Document;
@@ -12,9 +50,10 @@ type PagePropsType = {
 const Page = (props: PagePropsType) => {
 
     const { document, pageNr } = props;
-    const aspectRatio = document.pages[pageNr].aspect_ratio;
+    const pageWidth = document.pages[pageNr].width;
+    const pageHeight = document.pages[pageNr].height;
 
-
+    // This uses three DOM nodes to ensure the page is centered with a proper bounding element.
     return (
         <Box sx={{ height: '100%', position: 'relative' }}>
             <Box sx={{ height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
@@ -26,12 +65,17 @@ const Page = (props: PagePropsType) => {
                 right: 0,
                 minHeight: 0,
                 height: '100%', 
-                aspectRatio: aspectRatio,
+                aspectRatio: `${pageWidth} / ${pageHeight}`,
                 marginLeft: 'auto',
                 marginRight: 'auto'
             }}>
 
+
+            { document.pages[pageNr].text_runs.map((tr, index) =>
+                <TextRunBox key={index} textRun={tr} pageWidth={pageWidth} pageHeight={pageHeight} />
+            )}
             </div>
+
         </Box>
     );
 }
