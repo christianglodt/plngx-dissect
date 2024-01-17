@@ -4,7 +4,7 @@ import React, { PropsWithChildren, useState } from "react";
 import { Box, Button, Dialog, DialogActions, DialogContent as MuiDialogContent, DialogTitle, Stack } from "@mui/material";
 import ConfirmButton from "./ConfirmButton";
 
-export type CheckListItemPropsType = {
+export type DialogListItemPropsType = {
     onChangeConfirmed: () => void;
     onDelete: () => void;
     dialogTitle: string | React.JSX.Element;
@@ -20,7 +20,7 @@ const DialogContent = (props: PropsWithChildren) => {
     return <>{props.children}</>
 }
 
-const CheckListItem = (props: CheckListItemPropsType) => {
+const DialogListItem = (props: DialogListItemPropsType) => {
     const { onChangeConfirmed, onDelete } = props;
 
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -71,7 +71,7 @@ const CheckListItem = (props: CheckListItemPropsType) => {
     );
 }
 
-CheckListItem.ItemContent = ItemContent;
-CheckListItem.DialogContent = DialogContent;
+DialogListItem.ItemContent = ItemContent;
+DialogListItem.DialogContent = DialogContent;
 
-export default CheckListItem;
+export default DialogListItem;

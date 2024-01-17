@@ -2,7 +2,7 @@ import { List, ListItemText } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { AndCheck, Check } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import CreateCheckItemButton from "./CreateCheckItemButton";
 import { RecursiveCheckItemPropsType } from "./types";
 
@@ -46,16 +46,16 @@ const AndCheckItem = (props: RecursiveCheckItemPropsType<AndCheck>) => {
     );
 
     return (
-        <CheckListItem dialogTitle="And Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="And Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <List>
                     {subChecks}
                 </List>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="And" secondary={`${checks.length} sub-check${pluralize}`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

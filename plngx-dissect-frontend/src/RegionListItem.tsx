@@ -1,7 +1,7 @@
 import { ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
-import CheckListItem from "./utils/CheckListItem";
+import DialogListItem from "./utils/DialogListItem";
 import { RegionRegex } from "./types";
 
 type RegionListItemPropsType = {
@@ -30,8 +30,8 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     }
 
     return (
-        <CheckListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <TextField label="Top Left X Coordinate" type="number" value={x} onChange={(event) => setX(Number(event.target.value))}></TextField>
                     <TextField label="Top Left Y Coordinate" type="number" value={y} onChange={(event) => setY(Number(event.target.value))}></TextField>
@@ -39,11 +39,11 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     <TextField label="Bottom Right Y Coordinate" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)}></TextField>
                 </Stack>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={`[${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}]\n${props.region.regex}`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

@@ -1,7 +1,7 @@
 import { ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
-import CheckListItem from "./utils/CheckListItem";
+import DialogListItem from "./utils/DialogListItem";
 import { Field } from "./types";
 
 type FieldListItemPropsType = {
@@ -23,17 +23,17 @@ const FieldListItem = (props: FieldListItemPropsType) => {
     }
 
     return (
-        <CheckListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <TextField label="Name" value={name} onChange={(event) => setName(event.target.value)}></TextField>
                     <TextField label="Template" value={template} onChange={(event) => setTemplate(event.target.value)}></TextField>
                 </Stack>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Field ${props.field.name}`} secondary={props.field.template}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

@@ -2,7 +2,7 @@ import { ListItemText, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { DocumentTypeCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 const DocumentTypeCheckItem = (props: CheckItemPropsType<DocumentTypeCheck>) => {
@@ -15,14 +15,14 @@ const DocumentTypeCheckItem = (props: CheckItemPropsType<DocumentTypeCheck>) => 
     }
 
     return (
-        <CheckListItem dialogTitle="Check Document Type" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Document Type" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <TextField label="Document Type" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="Document Type" secondary={`Must be "${props.check.name}"`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

@@ -2,7 +2,7 @@ import { ListItemText, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { CorrespondentCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 
@@ -16,14 +16,14 @@ const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) =
     }
 
     return (
-        <CheckListItem dialogTitle="Check Correspondent" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Correspondent" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <TextField label="Correspondent" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="Correspondent" secondary={`Must be "${props.check.name}"`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

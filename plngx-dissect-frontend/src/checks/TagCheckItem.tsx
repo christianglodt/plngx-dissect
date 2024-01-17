@@ -5,7 +5,7 @@ import { produce } from "immer";
 import { useState } from "react";
 import { useTagList } from "../hooks";
 import { TagCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
@@ -36,8 +36,8 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
     const description = descriptionParts.join(' and ');
     const secondaryText = description ? `Must ${description}` : '(no condition set)';
     return (
-        <CheckListItem dialogTitle="Check Document Tags" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Document Tags" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <FormControl>
                         <InputLabel id="includes-label">Must Include</InputLabel>
@@ -56,11 +56,11 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
                         </Select>
                     </FormControl>
                 </Stack>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="Tags" secondary={secondaryText}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

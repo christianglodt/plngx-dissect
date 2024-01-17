@@ -2,7 +2,7 @@ import { ListItemText, TextField } from "@mui/material";
 import { produce } from "immer";
 import React, { useState } from "react";
 import { NumPagesCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 
@@ -24,14 +24,14 @@ const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
     const pluralize = props.check.num_pages > 1 ? 's' : '';
 
     return (
-        <CheckListItem dialogTitle="Check Number of Pages" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Number of Pages" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged}></TextField>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="Number of Pages" secondary={`Must have ${props.check.num_pages} page${pluralize}`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

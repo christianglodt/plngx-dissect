@@ -2,7 +2,7 @@ import { ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { RegionRegexCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
@@ -24,8 +24,8 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
     }
 
     return (
-        <CheckListItem dialogTitle="Check Region Text" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Region Text" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <TextField label="Top Left X Coordinate" type="number" value={x} onChange={(event) => setX(Number(event.target.value))}></TextField>
                     <TextField label="Top Left Y Coordinate" type="number" value={y} onChange={(event) => setY(Number(event.target.value))}></TextField>
@@ -33,11 +33,11 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
                     <TextField label="Bottom Right Y Coordinate" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)}></TextField>
                 </Stack>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.x}, ${props.check.y}, ${props.check.x2}, ${props.check.y2}]`}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 

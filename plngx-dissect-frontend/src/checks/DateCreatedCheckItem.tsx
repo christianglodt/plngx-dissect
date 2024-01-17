@@ -4,7 +4,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { produce } from "immer";
 import { useState } from "react";
 import { DateCreatedCheck } from "../types";
-import CheckListItem from "../utils/CheckListItem";
+import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
 const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
@@ -43,18 +43,18 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
     const description = descriptionParts.length > 0 ? 'Must be ' + descriptionParts.join(', ') : '(no condition set)';
 
     return (
-        <CheckListItem dialogTitle="Check Date Created" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
-            <CheckListItem.DialogContent>
+        <DialogListItem dialogTitle="Check Date Created" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+            <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={afterSlotProps}/>
                     <DatePicker<Dayjs> label="Date Is After"  value={dayjs(after)}  onChange={(value) => setAfter(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={beforeSlotProps}/>
                     <TextField type="number" label="Year is" value={year || ''} onChange={(event) => setYear(Number(event.target.value))}></TextField>
                 </Stack>
-            </CheckListItem.DialogContent>
-            <CheckListItem.ItemContent>
+            </DialogListItem.DialogContent>
+            <DialogListItem.ItemContent>
                 <ListItemText primary="Date Created" secondary={description}></ListItemText>
-            </CheckListItem.ItemContent>
-        </CheckListItem>
+            </DialogListItem.ItemContent>
+        </DialogListItem>
     );
 };
 
