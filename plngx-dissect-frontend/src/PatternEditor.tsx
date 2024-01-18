@@ -17,12 +17,12 @@ const PatternEditor = () => {
 
     const { patternId } = useParams();
 
-    const { data: pattern, isLoading } = usePattern(patternId!);
+    const { data: savedPattern, isLoading } = usePattern(patternId!);
     const savePatternMutation = useSavePatternMutation();
 
     const [modifiedPattern, setModifiedPattern] = useState<Pattern|null>(null);
 
-    if (!pattern || isLoading) {
+    if (!savedPattern || isLoading) {
         return (
             <LinearProgress/>
         );
@@ -30,7 +30,7 @@ const PatternEditor = () => {
 
     const documentId = 708;
 
-    const shownPattern = modifiedPattern || pattern;
+    const pattern = modifiedPattern || savedPattern;
 
     const onChange = (newPattern: Pattern) => {
         setModifiedPattern(newPattern);
@@ -52,16 +52,16 @@ const PatternEditor = () => {
             </PortalBox>
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
-                    <PatternPageCard pattern={shownPattern} onChange={onChange}/>
-                    <ChecksCard pattern={shownPattern} onChange={onChange}/>
-                    <MatchingDocsCard pattern={shownPattern}/>
+                    <PatternPageCard pattern={pattern} onChange={onChange}/>
+                    <ChecksCard pattern={pattern} onChange={onChange}/>
+                    <MatchingDocsCard pattern={pattern}/>
                 </Stack>
 
-                <DocumentView documentId={documentId} pattern={shownPattern} onChange={onChange}/>
+                <DocumentView documentId={documentId} pattern={pattern} onChange={onChange}/>
 
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
-                    <RegionsCard pattern={shownPattern} onChange={onChange}/>
-                    <FieldsCard pattern={shownPattern} onChange={onChange}/>
+                    <RegionsCard pattern={pattern} onChange={onChange}/>
+                    <FieldsCard pattern={pattern} onChange={onChange}/>
                 </Stack>
             </Stack>
         </>
