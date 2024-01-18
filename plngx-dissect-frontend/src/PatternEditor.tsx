@@ -18,10 +18,11 @@ const PatternEditor = () => {
     const { patternId } = useParams();
 
     const { data: savedPattern, isLoading } = usePattern(patternId!);
-    const savePatternMutation = useSavePatternMutation();
-
     const [modifiedPattern, setModifiedPattern] = useState<Pattern|null>(null);
+    const pattern = modifiedPattern || savedPattern;
 
+    const savePatternMutation = useSavePatternMutation();
+    
     if (!savedPattern || isLoading) {
         return (
             <LinearProgress/>
@@ -30,7 +31,6 @@ const PatternEditor = () => {
 
     const documentId = 708;
 
-    const pattern = modifiedPattern || savedPattern;
 
     const onChange = (newPattern: Pattern) => {
         setModifiedPattern(newPattern);
