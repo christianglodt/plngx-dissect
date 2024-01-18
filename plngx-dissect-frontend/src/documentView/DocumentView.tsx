@@ -8,6 +8,7 @@ import Page from "./Page";
 type DocumentPropsType = {
     documentId: number | null;
     pattern: Pattern;
+    onChange: (newPattern: Pattern) => void;
 };
 
 const DocumentView = (props: DocumentPropsType) => {
@@ -41,7 +42,7 @@ const DocumentView = (props: DocumentPropsType) => {
 
     return (
         <Stack sx={{ height: '100%', width: '100%' }} spacing={2}>
-            <Page document={document} pageNr={pageNr}/>
+            <Page document={document} pageNr={pageNr} pattern={pattern} onChange={props.onChange}/>
             <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', alignItems: 'center' }}>
                 <IconButton disabled={pageNr == 0} onClick={() => setPageNr(pageNr - 1)}><ChevronLeft/></IconButton>
                 <div>Page {pageNr + 1} / {document.pages.length }</div>

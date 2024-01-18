@@ -57,7 +57,7 @@ const PatternEditor = () => {
                     <MatchingDocsCard pattern={shownPattern}/>
                 </Stack>
 
-                <DocumentView documentId={documentId} pattern={shownPattern}/>
+                <DocumentView documentId={documentId} pattern={shownPattern} onChange={onChange}/>
 
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
                     <RegionsCard pattern={shownPattern} onChange={onChange}/>
