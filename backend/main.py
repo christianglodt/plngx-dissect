@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
 import aiohttp
+import pydantic
 import paperless
 
 import pattern
@@ -17,6 +18,15 @@ app = FastAPI()
 @app.get('/api/patterns')
 async def get_pattern_list() -> list[pattern.PatternListEntry]:
     return await pattern.list_patterns()
+
+
+class CreatePatternRequestBody(pydantic.BaseModel):
+    name: str
+
+
+@app.post('/api/patterns')
+async def create_pattern(request: CreatePatternRequestBody) -> pattern.Pattern:
+    return await pattern.create_pattern(request.name)
 
 
 @app.get('/api/pattern/{name}')

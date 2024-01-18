@@ -20,6 +20,16 @@ async function putJson<T>(url: string, object: T): Promise<T> {
     return response.json();
 }
 
+async function postRequest<T, R>(url: string, object: T): Promise<R> {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(object)
+    });
+    if (!response.ok) throw new Error(response.statusText);
+    return response.json();
+}
+
 async function deleteRequest(url: string): Promise<void> {
     const response = await fetch(url, {
         method: 'DELETE'
@@ -41,6 +51,23 @@ const getPatternByName = async (name: string) => {
 
 export const usePattern = (name: string) => {
     return useQuery({queryKey: ['pattern', name], queryFn: async () => getPatternByName(name)});
+}
+
+type CreatePatternRequestBody = { name: string }
+
+export const useCreatePatternMutation = () => {
+    const queryClient = useQueryClient();
+    const [patternName, setPatternName] = useState<string|null>(null);
+    return useMutation({
+        mutationFn: (name: string) => {
+            setPatternName(name);
+            return postRequest<CreatePatternRequestBody, Pattern>('/api/patterns', { name });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['pattern', patternName] });
+            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+        }
+    });
 }
 
 export const useSavePatternMutation = (patternId: string) => {
