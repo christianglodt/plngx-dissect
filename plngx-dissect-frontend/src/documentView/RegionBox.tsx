@@ -48,10 +48,10 @@ const RegionBox = <RegionType extends Region,>(props: RegionBoxPropsType<RegionT
         const dragYPt = pxToPtV(dragYPx);
 
         props.onChange(produce(props.region, draft => {
-            draft.x += dragXPt;
-            draft.y += dragYPt;
-            draft.x2 += dragXPt;
-            draft.y2 += dragYPt;
+            draft.x = Math.round(draft.x + dragXPt);
+            draft.y = Math.round(draft.y + dragYPt);
+            draft.x2 = Math.round(draft.x2 + dragXPt);
+            draft.y2 = Math.round(draft.y2 + dragYPt);
         }));
     };
 
@@ -66,8 +66,8 @@ const RegionBox = <RegionType extends Region,>(props: RegionBoxPropsType<RegionT
         const dX = pxToPtH(event.pageX - dragStart[0]);
         const dY = pxToPtV(event.pageY - dragStart[1]);
         props.onChange(produce(props.region, draft => {
-            draft.x2 = draft.x2 + dX;
-            draft.y2 = draft.y2 + dY;
+            draft.x2 = Math.round(draft.x2 + dX);
+            draft.y2 = Math.round(draft.y2 + dY);
         }));
         setWidthDuringResize(null);
         setHeightDuringResize(null);
