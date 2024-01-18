@@ -95,7 +95,25 @@ class PatternListEntry(pydantic.BaseModel):
     name: str
 
 
-CONFIG_PATH = pathlib.Path('/config')
+CONFIG_PATH = pathlib.Path('../config').resolve()
+
+
+def escape_name(name: str) -> str:
+    return urllib.parse.quote_plus(name) + '.yml'
+
+
+def unescape_name(name: str) -> str:
+    return urllib.parse.unquote(name)[:-len('.yml')]
+
+
+def name_to_path(name: str) -> pathlib.Path:
+    path_in_config = (CONFIG_PATH / escape_name(name)).resolve().relative_to(CONFIG_PATH)
+    return CONFIG_PATH / path_in_config
+
+
+def path_to_name(path: pathlib.Path) -> str:
+    relative = (CONFIG_PATH / path).resolve().relative_to(CONFIG_PATH)
+    return unescape_name(relative.name)
 
 
 async def list_patterns() -> list[PatternListEntry]:
@@ -104,7 +122,7 @@ async def list_patterns() -> list[PatternListEntry]:
         path = CONFIG_PATH / filename
         if path.suffix != '.yml':
             continue
-        name = urllib.parse.unquote(path.stem)
+        name = path_to_name(path)
 
         res.append(PatternListEntry(name=name))
 
@@ -112,8 +130,7 @@ async def list_patterns() -> list[PatternListEntry]:
 
 
 async def get_pattern(name: str) -> Pattern:
-    escaped_name = urllib.parse.quote_plus(name) + '.yml'
-    async with aiofiles.open(CONFIG_PATH / escaped_name, 'r', encoding='utf-8') as f:
+    async with aiofiles.open(name_to_path(name), 'r', encoding='utf-8') as f:
         obj = ruamel.yaml.YAML().load(ruamel.yaml.StringIO(await f.read()))
         return Pattern.model_validate(obj)
 
