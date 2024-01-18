@@ -20,7 +20,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
             draft.x2 = x2;
             draft.y2 = y2;
             draft.regex = regex;
-            }));
+        }));
     }
 
     return (
@@ -35,7 +35,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${Math.round(props.check.x)}, ${Math.round(props.check.y)}, ${Math.round(props.check.x2)}, ${Math.round(props.check.y2)}]`}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.x}, ${props.check.y}, ${props.check.x2}, ${props.check.y2}]`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
