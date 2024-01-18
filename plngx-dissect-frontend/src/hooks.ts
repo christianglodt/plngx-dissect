@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Pattern, PatternListEntry, Document, PaperlessTag } from './types';
+import { useState } from 'react';
 
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -42,11 +43,26 @@ export const usePattern = (name: string) => {
     return useQuery({queryKey: ['pattern', name], queryFn: async () => getPatternByName(name)});
 }
 
-export const useSavePatternMutation = () => {
+export const useSavePatternMutation = (patternId: string) => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: (pattern: Pattern) => putJson<Pattern>(`/api/pattern/${pattern.name}`, pattern),
+        mutationFn: (pattern: Pattern) => putJson<Pattern>(`/api/pattern/${patternId}`, pattern),
         onSuccess: (data) => queryClient.setQueryData(['pattern', data.name], data)
+    });
+}
+
+export const useDeletePatternMutation = () => {
+    const queryClient = useQueryClient();
+    const [patternName, setPatternName] = useState<string|null>(null);
+    return useMutation({
+        mutationFn: (pattern: Pattern) => {
+            setPatternName(pattern.name);
+            return deleteRequest(`/api/pattern/${pattern.name}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['pattern', patternName] });
+            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+        }
     });
 }
 
@@ -62,3 +78,4 @@ export const useDocument = (id: number | null) => {
 export const useTagList = () => {
     return useQuery({queryKey: ['tagList'], queryFn: async () => fetchJson<PaperlessTag[]>('/api/tags')})
 }
+

@@ -1,5 +1,5 @@
-import { useParams } from "react-router-dom";
-import { usePattern, useSavePatternMutation } from "./hooks";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDeletePatternMutation, usePattern, useSavePatternMutation } from "./hooks";
 import { Alert, Button, LinearProgress, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksCard";
@@ -11,17 +11,26 @@ import { useState } from "react";
 import { Pattern } from "./types";
 import PatternPageCard from "./PatternPageCard";
 import PortalBox from "./utils/PortalBox";
+import ConfirmButton from "./utils/ConfirmButton";
 
 
 const PatternEditor = () => {
 
     const { patternId } = useParams();
 
-    const { data: savedPattern, isLoading } = usePattern(patternId!);
+    const { data: savedPattern, isLoading, isError, error } = usePattern(patternId!);
     const [modifiedPattern, setModifiedPattern] = useState<Pattern|null>(null);
 
-    const savePatternMutation = useSavePatternMutation();
-    
+    const savePatternMutation = useSavePatternMutation(patternId!);
+    const deletePatternMutation = useDeletePatternMutation();
+    const navigate = useNavigate();
+
+    if (isError) {
+        return (
+            <Alert severity="error">Error: {error.message}</Alert>
+        );
+    }
+
     if (!savedPattern || isLoading) {
         return (
             <LinearProgress/>
@@ -37,16 +46,29 @@ const PatternEditor = () => {
     }
 
     const onSaveClicked = () => {
-        savePatternMutation.mutate(modifiedPattern!);
+        savePatternMutation.mutate(pattern!, {
+            onSuccess: () => {
+                setModifiedPattern(null);
+            }
+        });
+    }
+
+    const onDeleteClicked = () => {
+        deletePatternMutation.mutate(pattern, {
+            onSuccess: () => {
+                navigate('/');
+            }
+        });
     }
 
     return (
         <>
             <PortalBox>
                 <Stack direction="row" gap={2}>
-                    { savePatternMutation.isError &&
-                    <Alert severity="error">Error: {savePatternMutation.error.message}</Alert>
+                    { (savePatternMutation.isError || deletePatternMutation.isError) &&
+                    <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
+                    <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
                 </Stack>
             </PortalBox>
