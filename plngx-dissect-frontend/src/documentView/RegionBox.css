@@ -10,3 +10,12 @@
     font-weight: bold;
     z-index: 1; /* makes drag image not use a copy of parent background */
 }
+
+.RegionBox > .ResizeHandle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    right: 0;
+    bottom: 0;
+    background-color: #080;
+}
