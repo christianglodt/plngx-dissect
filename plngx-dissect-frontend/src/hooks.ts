@@ -19,6 +19,13 @@ async function putJson<T>(url: string, object: T): Promise<T> {
     return response.json();
 }
 
+async function deleteRequest(url: string): Promise<void> {
+    const response = await fetch(url, {
+        method: 'DELETE'
+    });
+    if (!response.ok) throw new Error(response.statusText);
+}
+
 const getPatternList = async () => {
     return await fetchJson<PatternListEntry[]>('/api/patterns');
 }

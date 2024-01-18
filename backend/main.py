@@ -35,6 +35,11 @@ async def put_pattern(name: str, p: pattern.Pattern) -> pattern.Pattern:
     return p
 
 
+@app.delete('/api/pattern/{name}')
+async def delete_pattern(name: str):
+    await pattern.delete_pattern(name)
+
+
 @app.get('/api/document/{document_id}/svg', response_class=Response)
 async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     data = await document.get_pdf_page_svg(document_id, page_nr)
