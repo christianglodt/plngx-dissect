@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
-import { CheckTypeId, Document, Pattern, RegionRegexCheck } from "../types";
+import { CheckTypeId, Document, Pattern, RegionRegex, RegionRegexCheck } from "../types";
 import TextRunBox from "./TextRunBox";
 import RegionBox from "./RegionBox";
 import { produce } from "immer";
-import { DragEvent, MutableRefObject, useLayoutEffect, useRef, useState } from "react";
+import { DragEvent } from "react";
 import useResizeObserver from "use-resize-observer";
 
 type PagePropsType = {
@@ -24,6 +24,12 @@ const Page = (props: PagePropsType) => {
     const onRegionCheckChange = (newRegion: RegionRegexCheck, index: number) => {
         props.onChange(produce(pattern, draft => {
             draft.checks[index] = newRegion;
+        }));
+    }
+
+    const onRegionChange = (newRegion: RegionRegex, index: number) => {
+        props.onChange(produce(pattern, draft => {
+            draft.regions[index] = newRegion;
         }));
     }
 
@@ -57,6 +63,9 @@ const Page = (props: PagePropsType) => {
                 { pattern.checks.map((check, index) =>
                 check.type === CheckTypeId.Region &&
                 <RegionBox<RegionRegexCheck> key={index} region={check} text={check.regex} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionRegexCheck) => onRegionCheckChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                )}
+                { pattern.regions.map((region, index) =>
+                <RegionBox<RegionRegex> key={index} region={region} text={region.regex} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
             </div>
 
