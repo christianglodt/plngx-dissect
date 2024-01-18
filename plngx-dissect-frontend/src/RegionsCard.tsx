@@ -31,7 +31,7 @@ const RegionsCard = (props: RegionsCardProps) => {
             draft.regions.push({
                 x: 50,
                 y: 50,
-                x2: 100,
+                x2: 200,
                 y2: 75,
                 regex: '(?P<name>.*)'
             });
