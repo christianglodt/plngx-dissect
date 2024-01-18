@@ -38,10 +38,14 @@ const RegionsCard = (props: RegionsCardProps) => {
         }));
     }
 
+    // The RegionListItem key is set to the JSON representation of the region below to ensure
+    // the RegionListItem is remounted when the region is changed. This is necessary because the RegionRegex is
+    // changed via drag-and-drop, which does not synchronize the state in the RegionListItem dialog.
+
     return (
         <ListCard title="Regions" headerWidget={<IconButton onClick={onAddRegionClick}><Add/></IconButton>}>
             { pattern.regions.map((region, index) =>
-            <RegionListItem key={index} nr={index + 1} region={region} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
+            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
             )}
         </ListCard>
     );
