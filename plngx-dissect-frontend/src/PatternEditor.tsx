@@ -19,7 +19,6 @@ const PatternEditor = () => {
 
     const { data: savedPattern, isLoading } = usePattern(patternId!);
     const [modifiedPattern, setModifiedPattern] = useState<Pattern|null>(null);
-    const pattern = modifiedPattern || savedPattern;
 
     const savePatternMutation = useSavePatternMutation();
     
@@ -29,8 +28,9 @@ const PatternEditor = () => {
         );
     }
 
-    const documentId = 708;
+    const pattern = modifiedPattern || savedPattern;
 
+    const documentId = 708;
 
     const onChange = (newPattern: Pattern) => {
         setModifiedPattern(newPattern);
