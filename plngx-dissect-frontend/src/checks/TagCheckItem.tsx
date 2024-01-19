@@ -3,8 +3,8 @@ import { FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Stack }
 import Select from '@mui/material/Select';
 import { produce } from "immer";
 import { useState } from "react";
-import { useTagList } from "../hooks";
-import { TagCheck } from "../types";
+import { usePaperlessElement } from "../hooks";
+import { PaperlessTag, TagCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 
@@ -13,7 +13,7 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
     const [includes, setIncludes] = useState(props.check.includes);
     const [excludes, setExcludes] = useState(props.check.excludes);
 
-    const {data: tagList } = useTagList();
+    const { data: tagList } = usePaperlessElement<PaperlessTag>('tags');
 
     const onChangeConfirmed = () => {
         props.onChange(produce(props.check, draft => {
