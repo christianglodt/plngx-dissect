@@ -46,7 +46,7 @@ export const usePatternList = () => {
 }
 
 const getPatternByName = async (name: string) => {
-    return await fetchJson<Pattern>(`/api/pattern/${name}`);
+    return await fetchJson<Pattern>(`/api/pattern/${encodeURIComponent(name)}`);
 }
 
 export const usePattern = (name: string) => {
@@ -107,5 +107,5 @@ export const useTagList = () => {
 }
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
-    return useQuery({queryKey: ['list', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${slug}`)});
+    return useQuery({queryKey: ['list', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`)});
 }

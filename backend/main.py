@@ -29,7 +29,7 @@ async def create_pattern(request: CreatePatternRequestBody) -> pattern.Pattern:
     return await pattern.create_pattern(request.name)
 
 
-@app.get('/api/pattern/{name}')
+@app.get('/api/pattern/{name:path}')
 async def get_pattern(name: str) -> pattern.Pattern:
     try:
         return await pattern.get_pattern(name)
@@ -37,7 +37,7 @@ async def get_pattern(name: str) -> pattern.Pattern:
         raise HTTPException(status_code=404, detail='Pattern not found')
 
 
-@app.put('/api/pattern/{name}')
+@app.put('/api/pattern/{name:path}')
 async def put_pattern(name: str, p: pattern.Pattern) -> pattern.Pattern:
     if name != p.name:
         raise HTTPException(status_code=400, detail="Name in URL must correspond to name in body payload")
@@ -45,7 +45,7 @@ async def put_pattern(name: str, p: pattern.Pattern) -> pattern.Pattern:
     return p
 
 
-@app.delete('/api/pattern/{name}')
+@app.delete('/api/pattern/{name:path}')
 async def delete_pattern(name: str):
     await pattern.delete_pattern(name)
 

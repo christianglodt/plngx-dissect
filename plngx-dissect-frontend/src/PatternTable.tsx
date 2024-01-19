@@ -32,7 +32,7 @@ const PatternTable = () => {
     const onCreatePatternConfirmed = () => {
         createPatternMutation.mutate(newPatternName, {
             onSuccess: (pattern: Pattern) => {
-                navigate(`/pattern/${pattern.name}`);
+                navigate(`/pattern/${encodeURIComponent(pattern.name)}`);
             }
         })
         onCreatePatternClosed();
@@ -65,7 +65,7 @@ const PatternTable = () => {
                     <TableBody>
                         {!isLoading && patterns?.map(p =>
                             <TableRow key={p.name}>
-                                <TableCell><Link to={`/pattern/${p.name}`}>{p.name}</Link></TableCell>
+                                <TableCell><Link to={`/pattern/${encodeURIComponent(p.name)}`}>{p.name}</Link></TableCell>
                             </TableRow>
                         )}
                     </TableBody>
