@@ -32,10 +32,12 @@ class PaperlessCustomField(pydantic.BaseModel):
     data_type: Literal['string', 'monetary']
 
 
-class PaperlessElementBase(pydantic.BaseModel):
+class PaperlessNamedElement(pydantic.BaseModel):
     id: int
-    slug: str
     name: str
+
+class PaperlessElementBase(PaperlessNamedElement):
+    slug: str
     match: str
     matching_algorithm: int
     is_insensitive: bool
@@ -140,10 +142,10 @@ class PaperlessClient:
         async with self._get(url) as response:
             yield response.content
 
-    async def get_element_list(self, slug: str) -> list[PaperlessElementBase]:
-        res: list[PaperlessElementBase] = []
+    async def get_element_list(self, slug: str) -> list[PaperlessNamedElement]:
+        res: list[PaperlessNamedElement] = []
 
-        async for e in self._iter_paginated_results(f'{self.base_url}/api/{slug}/', PaperlessElementBase):
+        async for e in self._iter_paginated_results(f'{self.base_url}/api/{slug}/', PaperlessNamedElement):
             res.append(e)
 
         return res

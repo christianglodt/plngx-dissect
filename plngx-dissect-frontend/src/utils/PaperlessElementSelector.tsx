@@ -1,5 +1,5 @@
 import { Autocomplete, TextField } from "@mui/material";
-import { PaperlessElementBase } from "../types";
+import { PaperlessNamedElement } from "../types";
 import { usePaperlessElement } from "../hooks";
 import { SyntheticEvent } from "react";
 
@@ -11,7 +11,7 @@ type PaperlessElementSelectorPropsType = {
     onChange: (newValue: string) => void;
 }
 
-const PaperlessElementSelector = <T extends PaperlessElementBase,>(props: PaperlessElementSelectorPropsType) => {
+const PaperlessElementSelector = <T extends PaperlessNamedElement,>(props: PaperlessElementSelectorPropsType) => {
 
     const { data } = usePaperlessElement<T>(props.slug);
 

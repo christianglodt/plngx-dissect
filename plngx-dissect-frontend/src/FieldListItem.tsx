@@ -3,6 +3,7 @@ import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Field } from "./types";
+import PaperlessElementSelector from "./utils/PaperlessElementSelector";
 
 type FieldListItemPropsType = {
     field: Field;
@@ -26,7 +27,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
-                    <TextField label="Name" value={name} onChange={(event) => setName(event.target.value)}></TextField>
+                    <PaperlessElementSelector value={name} onChange={setName} label="Field" slug="custom_fields"/>
                     <TextField label="Template" value={template} onChange={(event) => setTemplate(event.target.value)}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>

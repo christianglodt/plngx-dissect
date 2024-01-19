@@ -1,9 +1,10 @@
-import { ListItemText, TextField } from "@mui/material";
+import { ListItemText } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { StoragePathCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
+import PaperlessElementSelector from "../utils/PaperlessElementSelector";
 
 const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
     const [value, setValue] = useState(props.check.name);
@@ -17,7 +18,7 @@ const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
     return (
         <DialogListItem dialogTitle="Check Storage Path" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
-                <TextField label="Storage Path" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+                <PaperlessElementSelector value={value} onChange={setValue} label="Storage Path" slug="storage_paths"/>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
                 <ListItemText primary="Storage Path" secondary={`Must be "${props.check.name}"`}></ListItemText>

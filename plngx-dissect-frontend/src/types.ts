@@ -119,10 +119,13 @@ export type Document = {
      pages: Page[];
 }
 
-export type PaperlessElementBase = {
+export type PaperlessNamedElement = {
     id: number;
-    slug: string;
     name: string;
+}
+
+export type PaperlessElementBase = PaperlessNamedElement & {
+    slug: string;
     match: string;
     matching_algorithm: number;
     is_insensitive: boolean;
@@ -134,4 +137,19 @@ export type PaperlessElementBase = {
 export type PaperlessTag = PaperlessElementBase & {
     color: number;
     is_inbox_tag: boolean;
+}
+
+export enum PaperlessCustomFieldDataType {
+    String = 'string',
+    Url = 'url',
+    Date = 'date',
+    Boolean = 'boolean',
+    Integer = 'integer',
+    Float = 'float',
+    Monetary = 'monetary',
+    DocumentLink = 'documentlink'
+}
+
+export type PaperlessCustomField = PaperlessNamedElement & {
+    data_type: PaperlessCustomFieldDataType;
 }

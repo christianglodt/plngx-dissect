@@ -67,7 +67,7 @@ async def get_document(document_id: int) -> document.Document:
 
 
 @app.get('/api/paperless_element/{slug}')
-async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessElementBase]:
+async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement]:
     return await paperless.PaperlessClient().get_element_list(slug)
 
 

@@ -1,9 +1,10 @@
-import { ListItemText, TextField } from "@mui/material";
+import { ListItemText } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import { CorrespondentCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
+import PaperlessElementSelector from "../utils/PaperlessElementSelector";
 
 
 const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) => {
@@ -18,7 +19,7 @@ const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) =
     return (
         <DialogListItem dialogTitle="Check Correspondent" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
-                <TextField label="Correspondent" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+                <PaperlessElementSelector label="Correspondent" slug="correspondents" value={value} onChange={setValue}/>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
                 <ListItemText primary="Correspondent" secondary={`Must be "${props.check.name}"`}></ListItemText>
