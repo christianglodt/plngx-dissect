@@ -119,7 +119,7 @@ export type Document = {
      pages: Page[];
 }
 
-type PaperlessElementBase = {
+export type PaperlessElementBase = {
     id: number;
     slug: string;
     name: string;

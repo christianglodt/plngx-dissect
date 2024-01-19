@@ -139,3 +139,12 @@ class PaperlessClient:
         url = f'{self.base_url}/api/documents/{document_id}/download/'
         async with self._get(url) as response:
             yield response.content
+
+    async def get_element_list(self, slug: str) -> list[PaperlessElementBase]:
+        res: list[PaperlessElementBase] = []
+
+        async for e in self._iter_paginated_results(f'{self.base_url}/api/{slug}/', PaperlessElementBase):
+            res.append(e)
+
+        return res
+    

@@ -65,10 +65,16 @@ async def get_document(document_id: int) -> document.Document:
     except aiohttp.ClientConnectorError as e:
         raise HTTPException(status_code=500, detail=str(e.strerror))
 
+
 @app.get('/api/tags')
 async def get_tag_list() -> list[paperless.PaperlessTag]:
     tags_by_id = await paperless.PaperlessClient().tags_by_id()
     return list(tags_by_id.values())
+
+
+@app.get('/api/paperless_element/{slug}')
+async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessElementBase]:
+    return await paperless.PaperlessClient().get_element_list(slug)
 
 
 app.mount('/', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessTag } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessElementBase } from './types';
 import { useState } from 'react';
 
 
@@ -103,6 +103,9 @@ export const useDocument = (id: number | null) => {
 }
 
 export const useTagList = () => {
-    return useQuery({queryKey: ['tagList'], queryFn: async () => fetchJson<PaperlessTag[]>('/api/tags')})
+    return useQuery({queryKey: ['tagList'], queryFn: async () => fetchJson<PaperlessTag[]>('/api/tags')});
 }
 
+export const usePaperlessElement = <T extends PaperlessElementBase,>(slug: string) => {
+    return useQuery({queryKey: ['list', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${slug}`)});
+}
