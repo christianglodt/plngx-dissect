@@ -7,6 +7,7 @@ type InputDialogPropsType = {
     dialogText: string;
     label: string;
     onConfirmed: (value: string) => void;
+    // TODO optional validation function
 }
 
 const InputDialogButton = (props: InputDialogPropsType) => {
