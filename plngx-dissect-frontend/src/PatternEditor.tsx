@@ -12,6 +12,7 @@ import { Pattern } from "./types";
 import PatternPageCard from "./PatternPageCard";
 import PortalBox from "./utils/PortalBox";
 import ConfirmButton from "./utils/ConfirmButton";
+import RenamePatternButton from "./RenamePatternButton";
 
 
 const PatternEditor = () => {
@@ -68,6 +69,7 @@ const PatternEditor = () => {
                     { (savePatternMutation.isError || deletePatternMutation.isError) &&
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
+                    <RenamePatternButton/>
                     <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
                 </Stack>

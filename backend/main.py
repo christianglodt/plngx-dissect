@@ -50,6 +50,11 @@ async def delete_pattern(name: str):
     await pattern.delete_pattern(name)
 
 
+@app.post('/api/pattern/{name:path}/rename')
+async def rename_pattern(name: str, new_name: str):
+    await pattern.rename_pattern(name, new_name)
+
+
 @app.get('/api/document/{document_id}/svg', response_class=Response)
 async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     data = await document.get_pdf_page_svg(document_id, page_nr)

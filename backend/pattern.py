@@ -154,3 +154,11 @@ async def put_pattern(pattern: Pattern):
 
 async def delete_pattern(name: str):
     await aiofiles.os.remove(name_to_path(name))
+
+
+async def rename_pattern(old_name: str, new_name: str):
+    await create_pattern(new_name) # The purpose of this call is to fail if the file already exists
+    pattern = await get_pattern(old_name)
+    pattern.name = new_name
+    await put_pattern(pattern)
+    await delete_pattern(old_name)

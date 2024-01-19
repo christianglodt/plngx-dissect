@@ -93,6 +93,24 @@ export const useDeletePatternMutation = () => {
     });
 }
 
+export const useRenamePatternMutation = () => {
+    const queryClient = useQueryClient();
+    const [newName, setNewName] = useState<string|null>(null);
+    const [oldName, setOldName] = useState<string|null>(null);
+    return useMutation({
+        mutationFn: ({ oldName, newName }: { oldName: string, newName: string }) => {
+            setNewName(newName);
+            setOldName(oldName);
+            return postRequest(`/api/pattern/${encodeURIComponent(oldName)}/rename?new_name=${encodeURIComponent(newName)}`, undefined);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['pattern', newName] });
+            queryClient.invalidateQueries({ queryKey: ['pattern', oldName] });
+            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+        }
+    });
+}
+
 const getDocumentById = async (id: number | null) => {
     if (!id) return null;
     return await fetchJson<Document>(`/api/document/${id}`);
