@@ -117,6 +117,7 @@ export type Page = {
 export type Document = {
      id: number;
      pages: Page[];
+     paperless_url: string;
 }
 
 export type PaperlessNamedElement = {
