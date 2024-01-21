@@ -26,7 +26,7 @@ const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
     return (
         <DialogListItem dialogTitle="Check Number of Pages" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
-                <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged}></TextField>
+                <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged} sx={{ width: '100%' }}></TextField>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
                 <ListItemText primary="Number of Pages" secondary={`Must have ${props.check.num_pages} page${pluralize}`}></ListItemText>

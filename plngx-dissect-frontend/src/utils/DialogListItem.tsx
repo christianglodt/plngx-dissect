@@ -45,7 +45,7 @@ const DialogListItem = (props: DialogListItemPropsType) => {
 
     return (
         <>
-            <Dialog open={dialogOpen} onClose={onDialogClose}>
+            <Dialog open={dialogOpen} onClose={onDialogClose} maxWidth="sm" fullWidth>
                 <DialogTitle>
                     <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
                         {props.dialogTitle}

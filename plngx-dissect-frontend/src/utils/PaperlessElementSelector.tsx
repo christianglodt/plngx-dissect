@@ -33,7 +33,7 @@ const PaperlessElementSelector = <T extends PaperlessNamedElement,>(props: Paper
             freeSolo
             onChange={onAutocompleteChange}
             options={options}
-            sx={{ width: '400px'}}
+            sx={{ width: '100%'}}
             renderInput={(params) => <TextField {...params} label={props.label} />}
         />
     );
