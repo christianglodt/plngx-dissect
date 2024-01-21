@@ -90,6 +90,12 @@ class PaperlessStoragePath(PaperlessElementBase):
     path: str
 
 
+def ensure_https(url: str|pydantic.AnyHttpUrl) -> str:
+    parts = list(urllib.parse.urlsplit(str(url)))
+    parts[0] = 'https'
+    return urllib.parse.urlunsplit(parts)
+
+
 class PaperlessClient:
     def __init__(self, base_url: str = PAPERLESS_URL, api_token: str = PAPERLESS_API_TOKEN):
         self.base_url = base_url
@@ -98,7 +104,7 @@ class PaperlessClient:
     @asynccontextmanager
     async def _get(self, url: str | pydantic.AnyHttpUrl) -> AsyncIterator[aiohttp.ClientResponse]:
         async with aiohttp.ClientSession() as session:
-            async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+            async with session.get(ensure_https(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
                 response.raise_for_status()
                 yield response
 
