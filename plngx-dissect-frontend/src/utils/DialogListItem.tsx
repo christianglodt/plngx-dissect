@@ -1,4 +1,4 @@
-import { ListItem } from "@mui/material";
+import { ListItemButton } from "@mui/material";
 import React, { PropsWithChildren, useState } from "react";
 
 import { Box, Button, Dialog, DialogActions, DialogContent as MuiDialogContent, DialogTitle, Stack } from "@mui/material";
@@ -64,9 +64,9 @@ const DialogListItem = (props: DialogListItemPropsType) => {
                 </DialogActions>
             </Dialog>
             
-            <ListItem onClick={() => setDialogOpen(true)} sx={{ cursor: 'pointer' }}>
+            <ListItemButton onClick={() => setDialogOpen(true)} sx={{ cursor: 'pointer' }}>
                 {itemContent}
-            </ListItem>
+            </ListItemButton>
         </>
     );
 }
