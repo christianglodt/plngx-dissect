@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 dotenv.load_dotenv('../.env')
 
 
-PAPERLESS_URL: str = os.environ.get('PAPERLESS_URL', 'http://localhost')
+PAPERLESS_URL: str = os.environ.get('PAPERLESS_URL', 'http://localhost').rstrip('/')
 PAPERLESS_API_TOKEN: str = os.environ.get('PAPERLESS_API_TOKEN', '')
 
 
