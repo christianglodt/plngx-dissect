@@ -10,3 +10,12 @@ class Region(pydantic.BaseModel):
     y: Pt
     x2: Pt
     y2: Pt
+
+    def encloses(self, other: 'Region') -> bool:
+        assert self.x2 >= self.x
+        assert self.y2 >= self.y
+        assert other.x2 >= other.x
+        assert other.y2 >= other.y
+
+        return self.x <= other.x <= self.x2 and self.x <= other.x2 <= self.x2 and \
+               self.y <= other.y <= self.y2 and self.y <= other.y2 <= self.y2
