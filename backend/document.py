@@ -60,6 +60,6 @@ async def get_parsed_document(paperless_id: int) -> Document:
 @cache.file_cache('pdf_page_svg', '.svg')
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
     async with get_temporary_pdf_download(paperless_id) as pdf_path:
-        proc = await asyncio.create_subprocess_exec('/usr/bin/inkscape', '--export-plain-svg', '--export-filename=-', f'--pdf-page={page_nr + 1}', str(pdf_path), stdout=subprocess.PIPE)
+        proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), str(pdf_path), '-', stdout=subprocess.PIPE)
         stdout, _ = await proc.communicate()
         return stdout

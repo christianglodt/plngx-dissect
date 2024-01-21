@@ -6,7 +6,7 @@
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/akhildevelops/devcontainer-features/apt:0": {
-			"packages": "inkscape"
+			"packages": "poppler-utils"
 		}
 	},
 
