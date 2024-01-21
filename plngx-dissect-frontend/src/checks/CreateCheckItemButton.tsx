@@ -20,7 +20,7 @@ const CHECK_ITEM_FACTORIES: Record<CheckTypeId, FactoryEntry> = { // Typescript 
     },
     [CheckTypeId.Region]: {
         label: 'Text in Region Check',
-        factory: () => { return { type: CheckTypeId.Region, x: 50, y: 50, x2: 200, y2: 75, regex: '(?P<value>.*)' }; }
+        factory: () => { return { type: CheckTypeId.Region, x: 50, y: 50, x2: 200, y2: 75, regex: 'Regex' }; }
     },
     [CheckTypeId.Title]: {
         label: 'Title Check',
