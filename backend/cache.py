@@ -88,7 +88,7 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
 
     def dump(self, value: PT) -> bytes:
         stream = StringIO()
-        ruamel.yaml.YAML().dump(value.model_dump(), stream)
+        ruamel.yaml.YAML().dump(value.model_dump(mode='json'), stream)
         return stream.getvalue().encode('utf-8')
 
 

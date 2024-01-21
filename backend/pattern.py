@@ -133,7 +133,7 @@ async def create_pattern(name: str) -> Pattern:
     pattern = Pattern(name=name, page=0, checks=[], regions=[], fields=[])
     async with aiofiles.open(name_to_path(name), 'x') as f:
         s = ruamel.yaml.StringIO()
-        ruamel.yaml.YAML().dump(pattern.model_dump(), s)
+        ruamel.yaml.YAML().dump(pattern.model_dump(mode='json'), s)
         await f.write(s.getvalue())
     return pattern
 
@@ -147,7 +147,7 @@ async def get_pattern(name: str) -> Pattern:
 async def put_pattern(pattern: Pattern):
     async with aiofiles.tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=CONFIG_PATH) as f:
         s = ruamel.yaml.StringIO()
-        ruamel.yaml.YAML().dump(pattern.model_dump(), s)
+        ruamel.yaml.YAML().dump(pattern.model_dump(mode='json'), s)
         await f.write(s.getvalue())
         await aiofiles.os.rename(str(f.name), name_to_path(pattern.name))
 
