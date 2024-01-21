@@ -35,7 +35,7 @@ const App = () => {
                 </Toolbar>
             </AppBar>
             <PortalBoxContext.Provider value={extraAppToolbarItemsRef}>
-                <Box sx={{ padding: '1rem', height: '100%' }}>
+                <Box sx={{ padding: '1rem', height: '100%', overflow: 'hidden' }}>
                     <Outlet />                
                 </Box>
             </PortalBoxContext.Provider>

@@ -75,7 +75,7 @@ const PatternEditor = () => {
                 </Stack>
             </PortalBox>
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
-                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
+                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
                     <PatternPageCard pattern={pattern} onChange={onChange}/>
                     <ChecksCard pattern={pattern} onChange={onChange}/>
                     <MatchingDocsCard pattern={pattern}/>
@@ -83,7 +83,7 @@ const PatternEditor = () => {
 
                 <DocumentView documentId={documentId} pattern={pattern} onChange={onChange}/>
 
-                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '20%', minWidth: 'fit-content' }}>
+                <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
                     <RegionsCard pattern={pattern} onChange={onChange}/>
                     <FieldsCard pattern={pattern} onChange={onChange}/>
                 </Stack>

@@ -33,7 +33,7 @@ const PatternPageCard = (props: PatternPageCardPropsType) => {
     }
 
     return (
-        <Card sx={{ height: '27%' }}>
+        <Card sx={{ flexShrink: 0 }}>
             <CardHeader title="Page"></CardHeader>
             <CardContent>
                 <FormControl fullWidth>
