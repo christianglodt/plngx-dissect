@@ -5,6 +5,8 @@ from typing import TypeVar, Mapping, Any, Literal, Generic, Type, Collection, As
 import datetime
 import decimal
 import dotenv
+import asyncstdlib
+import urllib.parse
 from contextlib import asynccontextmanager
 
 
@@ -59,7 +61,7 @@ class PaperlessCustomFieldValue(pydantic.BaseModel):
 class PaperlessDocument(pydantic.BaseModel):
     id: int
     correspondent: int | None
-    document_type: int
+    document_type: int | None
     storage_path: int | None
     title: str
     content: str
@@ -117,22 +119,27 @@ class PaperlessClient:
                 for obj in response_obj.results:
                     yield obj
                 current_url = response_obj.next
-        
+    
+    @asyncstdlib.cached_property
     async def tags_by_id(self) -> Mapping[int, PaperlessTag]:
         return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/tags/', PaperlessTag) }
 
     async def tags_by_name(self) -> Mapping[str, PaperlessTag]:
-        return { t.name: t for t in (await self.tags_by_id()).values() }
+        return { t.name: t for t in (await self.tags_by_id).values() }
 
+    @asyncstdlib.cached_property
     async def custom_fields_by_id(self) -> Mapping[int, PaperlessCustomField]:
         return { f.id: f async for f in self._iter_paginated_results(f'{self.base_url}/api/custom_fields/', PaperlessCustomField) }
 
+    @asyncstdlib.cached_property
     async def correspondents_by_id(self) -> Mapping[int, PaperlessCorrespondent]:
         return { c.id: c async for c in self._iter_paginated_results(f'{self.base_url}/api/correspondents/', PaperlessCorrespondent) }
 
+    @asyncstdlib.cached_property
     async def document_types_by_id(self) -> Mapping[int, PaperlessDocumentType]:
         return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/document_types/', PaperlessDocumentType) }
 
+    @asyncstdlib.cached_property
     async def storage_paths_by_id(self) -> Mapping[int, PaperlessStoragePath]:
         return { p.id: p async for p in self._iter_paginated_results(f'{self.base_url}/api/storage_paths/', PaperlessStoragePath) }
 
