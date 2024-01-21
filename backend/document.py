@@ -1,3 +1,4 @@
+import datetime
 import pydantic
 from region import Pt, Region
 import paperless
@@ -10,6 +11,7 @@ import pdfplumber
 import cache
 from typing import AsyncIterator
 
+
 class TextRun(Region):
     text: str
 
@@ -20,9 +22,15 @@ class Page(pydantic.BaseModel):
     text_runs: list[TextRun]
 
 
-class Document(pydantic.BaseModel):
+class DocumentBase(pydantic.BaseModel):
     id: int
+    title: str
     paperless_url: pydantic.AnyHttpUrl
+    datetime_added: pydantic.AwareDatetime
+    date_created: datetime.date
+
+
+class Document(DocumentBase):
     pages: list[Page]
 
 
@@ -42,8 +50,9 @@ async def get_temporary_pdf_download(paperless_id: int) -> AsyncIterator[pathlib
 X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document')
+@cache.pydantic_yaml_cache(Document, 'parsed_document') # TODO cache should consider last_modified time from paperless document
 async def get_parsed_document(paperless_id: int) -> Document:
+    paperless_doc = await paperless.PaperlessClient().get_document_by_id(paperless_id)
     async with get_temporary_pdf_download(paperless_id) as pdf_path:
         with pdfplumber.open(pdf_path) as pdf:
             pages: list[Page] = []
@@ -54,7 +63,14 @@ async def get_parsed_document(paperless_id: int) -> Document:
                     runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
                 pages.append(Page(text_runs=runs, width=page.width, height=page.height))
             
-            document = Document(id=paperless_id, pages=pages, paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'))
+            document = Document(
+                id=paperless_id,
+                title=paperless_doc.title,
+                datetime_added=paperless_doc.added,
+                date_created=paperless_doc.created,
+                paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
+                pages=pages,
+            )
             return document
 
 

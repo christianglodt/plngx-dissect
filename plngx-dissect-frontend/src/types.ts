@@ -114,10 +114,17 @@ export type Page = {
     text_runs: TextRun[];
 }
 
-export type Document = {
+export type DocumentBase = {
      id: number;
-     pages: Page[];
+     title: string;
+     datetime_added: Date;
+     date_created: Date;
      paperless_url: string;
+     pages: Page[];
+}
+
+export type Document = DocumentBase & {
+    pages: Page[];
 }
 
 export type PaperlessNamedElement = {

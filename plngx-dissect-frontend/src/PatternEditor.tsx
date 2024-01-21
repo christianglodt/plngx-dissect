@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDeletePatternMutation, usePattern, useSavePatternMutation } from "./hooks";
 import { Alert, Button, LinearProgress, Stack } from "@mui/material";
 
@@ -24,6 +24,7 @@ const PatternEditor = () => {
 
     const savePatternMutation = useSavePatternMutation(patternId!);
     const deletePatternMutation = useDeletePatternMutation();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
     if (isError) {
@@ -40,7 +41,7 @@ const PatternEditor = () => {
 
     const pattern = modifiedPattern || savedPattern;
 
-    const documentId = 708;
+    const documentId = searchParams.get('document') !== null ? Number(searchParams.get('document')) : null;
 
     const onChange = (newPattern: Pattern) => {
         setModifiedPattern(newPattern);

@@ -6,6 +6,7 @@ import paperless
 
 import pattern
 import document
+import matching
 
 import dotenv
 
@@ -69,6 +70,19 @@ async def get_document(document_id: int) -> document.Document:
         raise HTTPException(status_code=e.status, detail=e.message)
     except aiohttp.ClientConnectorError as e:
         raise HTTPException(status_code=500, detail=str(e.strerror))
+
+
+@app.post('/api/documents/matching_pattern')
+async def get_documents_matching_pattern(p: pattern.Pattern) -> list[document.DocumentBase]:
+    MAX_RESULTS = 20
+
+    res: list[document.DocumentBase] = []
+    async for d in matching.get_documents_matching_pattern(p):
+        res.append(d)
+
+        if len(res) == MAX_RESULTS:
+            break
+    return res
 
 
 @app.get('/api/paperless_element/{slug}')

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessNamedElement } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessNamedElement, DocumentBase } from './types';
 import { useState } from 'react';
+import { useDebounce } from 'use-debounce';
 
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -126,4 +127,9 @@ export const useTagList = () => {
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
     return useQuery({queryKey: ['list', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`)});
+}
+
+export const usePatternMatches = (pattern: Pattern) => {
+    const [debouncedPattern] = useDebounce(pattern, 1000);
+    return useQuery({queryKey: ['matches', debouncedPattern], queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern) });
 }

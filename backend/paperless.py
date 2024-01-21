@@ -130,11 +130,18 @@ class PaperlessClient:
     async def storage_paths_by_id(self) -> Mapping[int, PaperlessStoragePath]:
         return { p.id: p async for p in self._iter_paginated_results(f'{self.base_url}/api/storage_paths/', PaperlessStoragePath) }
 
-    async def get_documents_with_tags(self, tags: Collection[str]) -> Collection[PaperlessDocument]:
+    async def get_document_by_id(self, document_id: int) -> PaperlessDocument:
+        url = f'{self.base_url}/api/documents/{document_id}/'
+        async with self._get(url) as response:
+            response.raise_for_status()
+            return PaperlessDocument.model_validate(await response.json())
+
+    async def get_documents_with_tags(self, tags: Collection[str]) -> AsyncIterator[PaperlessDocument]:
         tags_by_name = await self.tags_by_name()
         tag_ids = [tags_by_name[tag].id for tag in tags]
         url = f'{self.base_url}/api/documents/?tags__id__all={",".join(str(tag_id) for tag_id in tag_ids)}'
-        return [d async for d in self._iter_paginated_results(url, PaperlessDocument)]
+        async for d in self._iter_paginated_results(url, PaperlessDocument):
+            yield d
 
     @asynccontextmanager
     async def get_document_stream(self, document_id: int) -> AsyncIterator[aiohttp.StreamReader]:
