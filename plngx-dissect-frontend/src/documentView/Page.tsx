@@ -42,7 +42,7 @@ const Page = (props: PagePropsType) => {
     // This uses three DOM nodes to ensure the page is centered with a proper bounding element.
     return (
         <Box sx={{ height: '100%', position: 'relative' }}>
-            <Box sx={{ height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
             </Box>
             <div ref={boundingNode} onDragOver={onDragOver} onDrop={onDrop} style={{
                 position: 'absolute',
@@ -53,7 +53,8 @@ const Page = (props: PagePropsType) => {
                 height: '100%', 
                 aspectRatio: `${pageWidth} / ${pageHeight}`,
                 marginLeft: 'auto',
-                marginRight: 'auto'
+                marginRight: 'auto',
+                backgroundColor: 'white'
             }}>
  
                 { document.pages[pageNr].text_runs.map((tr, index) =>

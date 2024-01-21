@@ -8,7 +8,7 @@
     align-items: center;
     color: #080;
     font-weight: bold;
-    z-index: 1; /* makes drag image not use a copy of parent background */
+    z-index: 2; /* makes drag image not use a copy of parent background */
 }
 
 .RegionBox > .ResizeHandle {
