@@ -2,9 +2,9 @@ import { Box, Card, CardContent, CardHeader, List } from "@mui/material";
 import React from "react";
 
 type ListCardProps = {
-    title: string | React.JSX.Element;
-    headerWidget?: React.JSX.Element;
-    children?: string | React.JSX.Element[];
+    title: React.ReactNode;
+    headerWidget?: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 const ListCard = (props: ListCardProps) => {
