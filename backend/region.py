@@ -37,4 +37,5 @@ class RegionRegex(Region):
 
 class RegionResult(pydantic.BaseModel):
     text: str | None
+    error: str | None
     group_values: typing.Mapping[str, str]

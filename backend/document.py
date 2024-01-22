@@ -43,10 +43,14 @@ class Page(pydantic.BaseModel):
         text = ' '.join(text_parts)
         group_values = {}
 
-        if match := re.search(region.regex, text):
-            group_values = match.groupdict()
+        error = None
+        try:
+            if match := re.search(region.regex, text, re.DOTALL):
+                group_values = match.groupdict()
+        except re.error as e:
+            error = e.msg
 
-        return RegionResult(text=text, group_values=group_values)
+        return RegionResult(text=text, group_values=group_values, error=error)
 
 
 class DocumentBase(pydantic.BaseModel):

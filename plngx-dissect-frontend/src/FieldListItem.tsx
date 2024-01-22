@@ -1,9 +1,10 @@
-import { Alert, ListItemText, Stack, TextField } from "@mui/material";
+import { Chip, ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Field, FieldResult } from "./types";
 import PaperlessElementSelector from "./utils/PaperlessElementSelector";
+import { ArrowRightAlt, Error, Notes } from "@mui/icons-material";
 
 type FieldListItemPropsType = {
     field: Field;
@@ -24,13 +25,17 @@ const FieldListItem = (props: FieldListItemPropsType) => {
         }));
     }
 
-    const secondaryText = <>
-        <div>{props.field.template}</div>
-        { props.result?.value }
-        { props.result?.error &&
-        <Alert severity="error">{props.result.error}</Alert>
-        }
-    </>;
+    const secondaryText = (
+        <Stack gap={1} alignItems="flex-start">
+            <Chip color="primary" icon={<Notes/>} label={props.field.template}/>
+            { props.result?.value &&
+            <Chip color="success" icon={<ArrowRightAlt/>} label={props.result.value}/>
+            }
+            { props.result?.error &&
+            <Chip color="error" icon={<Error/>} label={props.result.error}/>
+            }
+        </Stack>
+    );
 
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>

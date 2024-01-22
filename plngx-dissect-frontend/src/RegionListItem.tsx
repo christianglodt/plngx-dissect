@@ -1,8 +1,9 @@
-import { ListItemText, Stack, TextField } from "@mui/material";
+import { Chip, ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { RegionRegex, RegionResult } from "./types";
+import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
 
 type RegionListItemPropsType = {
     nr: number;
@@ -30,12 +31,18 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         }));
     }
 
-    let groupsText = '';
-    if (props.result) {
-        for (const key of Object.keys(props.result.group_values)) {
-            groupsText += ` - ${key}: ${props.result.group_values[key]}\n`;
-        }
-    }
+    const secondary = (
+        <Stack gap={1} alignItems="flex-start">
+            <Chip icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`}/>
+            <Chip icon={<Search/>} label={props.region.regex} color="primary"/>
+            {props.result && Object.keys(props.result.group_values).map((key) =>
+                <Chip key={key} color="success" icon={<ArrowRightAlt/>} label={key + ': ' + props.result?.group_values[key]}/>
+            )}
+            {props.result?.error &&
+            <Chip label={props.result.error} icon={<Error/>} color="error"/>
+            }
+        </Stack>
+    );
 
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
@@ -50,7 +57,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={`[${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}] - ${props.region.regex}\n${groupsText}`}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={secondary}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
