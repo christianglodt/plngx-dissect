@@ -12,9 +12,9 @@ from contextlib import asynccontextmanager
 
 dotenv.load_dotenv('../.env')
 
-
 PAPERLESS_URL: str = os.environ.get('PAPERLESS_URL', 'http://localhost').rstrip('/')
 PAPERLESS_API_TOKEN: str = os.environ.get('PAPERLESS_API_TOKEN', '')
+PAPERLESS_FORCE_SSL: bool = os.environ.get('PAPERLESS_FORCE_SSL', 'False').lower() == 'true'
 
 
 PaperlessDataT = TypeVar('PaperlessDataT')
@@ -106,7 +106,9 @@ class PaperlessClient:
     @asynccontextmanager
     async def _get(self, url: str | pydantic.AnyHttpUrl) -> AsyncIterator[aiohttp.ClientResponse]:
         async with aiohttp.ClientSession() as session:
-            async with session.get(ensure_https(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+            if PAPERLESS_FORCE_SSL:
+                url = ensure_https(url)
+            async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
                 response.raise_for_status()
                 yield response
 
