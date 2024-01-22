@@ -4,6 +4,7 @@ import { useDocument } from "../hooks";
 import { useState } from "react";
 import { Pattern } from "../types";
 import Page from "./Page";
+import { useSearchParams } from "react-router-dom";
 
 type DocumentPropsType = {
     documentId: number | null;
@@ -14,7 +15,7 @@ type DocumentPropsType = {
 const DocumentView = (props: DocumentPropsType) => {
 
     const { documentId, pattern } = props;
-    const [pageNr, setPageNr] = useState(0);
+    const [searchParams, setSearchParams] = useSearchParams();
     const { data: document, error } = useDocument(documentId);
 
     if (!documentId) {
@@ -38,6 +39,17 @@ const DocumentView = (props: DocumentPropsType) => {
 
     if (!document) {
         return <Skeleton variant="rectangular" sx={{ width: '100%', height: '100%' }}/>;
+    }
+
+    const pageNr = Number(searchParams.get('page') || '1') - 1;
+
+    const setPageNr = (newNr: number) => {
+        if (newNr == 0) {
+            searchParams.delete('page');
+        } else {
+            searchParams.set('page', String(newNr + 1));
+        }
+        setSearchParams(searchParams);
     }
 
     return (
