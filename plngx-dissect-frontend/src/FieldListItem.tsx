@@ -1,4 +1,4 @@
-import { ListItemText, Stack, TextField } from "@mui/material";
+import { Alert, ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
@@ -24,10 +24,13 @@ const FieldListItem = (props: FieldListItemPropsType) => {
         }));
     }
 
-    let secondaryText = props.field.template;
-    if (props.result?.value) {
-        secondaryText += '\n' + props.result.value;
-    }
+    const secondaryText = <>
+        <div>{props.field.template}</div>
+        { props.result?.value }
+        { props.result?.error &&
+        <Alert severity="error">{props.result.error}</Alert>
+        }
+    </>;
 
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>

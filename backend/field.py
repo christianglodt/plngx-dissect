@@ -21,6 +21,11 @@ class Field(pydantic.BaseModel):
                 continue
             context.update(r.group_values)
 
-        template = jinja2.Template(self.template)
-        value = template.render(**context)
-        return FieldResult(value=value, error=None)
+        try:
+            template = jinja2.Template(self.template)
+            value = template.render(**context)
+            error = None
+        except jinja2.exceptions.TemplateError as e:
+            value = None
+            error = e.message
+        return FieldResult(value=value, error=error)
