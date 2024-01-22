@@ -38,15 +38,15 @@ const FieldListItem = (props: FieldListItemPropsType) => {
     );
 
     return (
-        <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Field" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
-                    <PaperlessElementSelector value={name} onChange={setName} label="Field" slug="custom_fields"/>
+                    <PaperlessElementSelector value={name} onChange={setName} label="Custom Field" slug="custom_fields"/>
                     <TextField label="Template" value={template} onChange={(event) => setTemplate(event.target.value)}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Field ${props.field.name}`} secondary={secondaryText}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={props.field.name} secondary={secondaryText}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
