@@ -168,7 +168,9 @@ class Pattern(pydantic.BaseModel):
         return True
 
     async def get_match_result(self, doc: document.Document, page_nr: int, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[bool]:
-        if page_nr != self.page:
+        if self.page == -1 and page_nr != len(doc.pages) - 1:
+            return [False] * len(self.checks)
+        if self.page != -1 and page_nr != self.page:
             return [False] * len(self.checks)
         
         page = doc.pages[page_nr]
