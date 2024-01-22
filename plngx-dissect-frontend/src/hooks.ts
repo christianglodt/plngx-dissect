@@ -139,8 +139,7 @@ export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|
     const [debouncedPageNr] = useDebounce(pageNr, 1000);
 
     const qfn = async() => {
-        if (debouncedPattern === null) return null;
-        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern);
+        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern!);
     }
-    return useQuery({queryKey: ['evaluate', docId, debouncedPattern, debouncedPageNr], queryFn: qfn });
+    return useQuery({queryKey: ['evaluate', docId, debouncedPattern, debouncedPageNr], enabled: !!docId && !!debouncedPattern, queryFn: qfn });
 }
