@@ -183,7 +183,7 @@ CONFIG_PATH = pathlib.Path('../config').resolve()
 
 
 def escape_name(name: str) -> str:
-    return urllib.parse.quote_plus(name) + '.yml'
+    return urllib.parse.quote(name, safe='') + '.yml'
 
 
 def unescape_name(name: str) -> str:
