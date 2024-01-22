@@ -1,5 +1,5 @@
 import { IconButton } from "@mui/material";
-import { Pattern, RegionRegex } from "./types";
+import { Pattern, PatternEvaluationResult, RegionRegex } from "./types";
 import { Add } from "@mui/icons-material";
 import ListCard from "./utils/ListCard";
 import RegionListItem from "./RegionListItem";
@@ -7,6 +7,7 @@ import { produce } from "immer";
 
 type RegionsCardProps = {
     pattern: Pattern;
+    evalResult: PatternEvaluationResult | null | undefined;
     onChange: (newPattern: Pattern) => void;
 }
 
@@ -45,7 +46,7 @@ const RegionsCard = (props: RegionsCardProps) => {
     return (
         <ListCard title="Regions" headerWidget={<IconButton onClick={onAddRegionClick}><Add/></IconButton>}>
             { pattern.regions.map((region, index) =>
-            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
+            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} result={props.evalResult?.regions[index]} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
             )}
         </ListCard>
     );

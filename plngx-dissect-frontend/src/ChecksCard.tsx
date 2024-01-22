@@ -1,12 +1,13 @@
 import { produce } from "immer";
 
-import { Pattern, Check } from "./types";
+import { Pattern, Check, PatternEvaluationResult } from "./types";
 import ListCard from "./utils/ListCard";
 import CreateCheckItemButton from "./checks/CreateCheckItemButton";
 import CheckItemFactory from "./checks/CheckItemFactory";
 
 type ChecksCardProps = {
     pattern: Pattern;
+    evalResult: PatternEvaluationResult | null | undefined;
     onChange: (newPattern: Pattern) => void;
 }
 
@@ -41,7 +42,7 @@ const ChecksCard = (props: ChecksCardProps) => {
     return (
         <ListCard title="Checks" headerWidget={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>}>
             { pattern.checks.map((check, index) =>
-                <CheckItemFactory key={JSON.stringify(check) + index} check={check} onChange={(newCheck: Check) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
+                <CheckItemFactory key={JSON.stringify(check) + index} check={check} matches={props.evalResult?.checks[index]} onChange={(newCheck: Check) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
             )}
         </ListCard>
     );

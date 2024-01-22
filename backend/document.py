@@ -1,6 +1,6 @@
 import datetime
 import pydantic
-from region import Pt, Region
+from region import Pt, Region, RegionRegex, RegionResult
 import paperless
 import aiofiles
 import asyncio
@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 import pathlib
 import pdfplumber
 import cache
+import re
 from typing import AsyncIterator
 
 
@@ -20,6 +21,32 @@ class Page(pydantic.BaseModel):
     width: float
     height: float
     text_runs: list[TextRun]
+
+    def evaluate_region(self, region: RegionRegex) -> RegionResult:
+        runs_in_region = list(filter(lambda t: region.encloses(t), self.text_runs))
+
+        text_parts: list[str] = []
+        while len(runs_in_region) > 0:
+            runs_in_region.sort(key=lambda t: (t.y, t.x))
+            first = runs_in_region.pop(0)
+            text_parts.append(first.text)
+            horizontally_colliding = list(filter(lambda t: t.intersects_vertically(first), runs_in_region))
+            for c in horizontally_colliding: # TODO make more efficient
+                runs_in_region.remove(c)
+
+            horizontally_colliding.sort(key=lambda t: t.x)
+            text_parts += [t.text for t in horizontally_colliding]
+            text_parts += '\n'
+        
+        text_parts = [s.strip() if s != '\n' else s for s in text_parts]
+        text_parts = list(filter(lambda s: s != '', text_parts))
+        text = ' '.join(text_parts)
+        group_values = {}
+
+        if match := re.search(region.regex, text):
+            group_values = match.groupdict()
+
+        return RegionResult(text=text, group_values=group_values)
 
 
 class DocumentBase(pydantic.BaseModel):

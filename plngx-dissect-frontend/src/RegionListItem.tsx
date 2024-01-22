@@ -2,11 +2,12 @@ import { ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
-import { RegionRegex } from "./types";
+import { RegionRegex, RegionResult } from "./types";
 
 type RegionListItemPropsType = {
     nr: number;
     region: RegionRegex;
+    result: RegionResult | null | undefined;
     onChange: (newRegion: RegionRegex) => void;
     onDelete: () => void;
 }
@@ -29,6 +30,13 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         }));
     }
 
+    let groupsText = '';
+    if (props.result) {
+        for (const key of Object.keys(props.result.group_values)) {
+            groupsText += ` - ${key}: ${props.result.group_values[key]}\n`;
+        }
+    }
+
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
@@ -41,7 +49,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={`[${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}]\n${props.region.regex}`}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={`[${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}] - ${props.region.regex}\n${groupsText}`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );

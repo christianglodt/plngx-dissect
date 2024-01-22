@@ -1,5 +1,5 @@
 import pydantic
-from typing import Literal
+from typing import Literal, Mapping
 import abc
 import datetime
 import aiofiles
@@ -11,10 +11,8 @@ import re
 
 import region
 import document
+import field
 from paperless import PaperlessClient, PaperlessDocument
-
-class RegionRegex(region.Region):
-    regex: str
 
 
 class Check(pydantic.BaseModel, abc.ABC):
@@ -31,7 +29,7 @@ class NumPagesCheck(Check):
         return len(doc.pages) == self.num_pages
 
 
-class RegionRegexCheck(RegionRegex):
+class RegionRegexCheck(region.RegionRegex):
     type: Literal['region']
 
     async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
@@ -147,11 +145,6 @@ class NotCheck(Check):
         return not await self.check.matches(page, doc, paperless_doc, client)
 
 
-class Field(pydantic.BaseModel):
-    name: str
-    template: str
-
-
 AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
 
 
@@ -159,8 +152,8 @@ class Pattern(pydantic.BaseModel):
     page: int # 0 is first, -1 is last, other number is exact page number
     name: str
     checks: list[AnyCheck]
-    regions: list[RegionRegex]
-    fields: list[Field]
+    regions: list[region.RegionRegex]
+    fields: list[field.Field]
 
     async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         try:
@@ -174,9 +167,31 @@ class Pattern(pydantic.BaseModel):
 
         return True
 
+    async def get_match_result(self, doc: document.Document, page_nr: int, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[bool]:
+        if page_nr != self.page:
+            return [False] * len(self.checks)
+        
+        page = doc.pages[page_nr]
+
+        res: list[bool] = []
+        for check in self.checks:
+            res.append(await check.matches(page, doc, paperless_doc, client))
+
+        return res
+
+
 
 class PatternListEntry(pydantic.BaseModel):
     name: str
+
+
+
+
+
+class PatternEvaluationResult(pydantic.BaseModel):
+    checks: list[bool]
+    regions: list[region.RegionResult|None]
+    fields: list[field.FieldResult|None]
 
 
 CONFIG_PATH = pathlib.Path('../config').resolve()

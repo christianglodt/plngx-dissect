@@ -161,3 +161,19 @@ export enum PaperlessCustomFieldDataType {
 export type PaperlessCustomField = PaperlessNamedElement & {
     data_type: PaperlessCustomFieldDataType;
 }
+
+export type RegionResult = {
+    text: string;
+    group_values: Record<string, string>;
+}
+
+export type FieldResult = {
+    value: string | null;
+    error: string | null;
+}
+
+export type PatternEvaluationResult = {
+    checks: Array<boolean>;
+    regions: Array<RegionResult | null>;
+    fields: Array<FieldResult | null>;
+}

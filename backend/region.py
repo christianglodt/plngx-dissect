@@ -19,3 +19,22 @@ class Region(pydantic.BaseModel):
 
         return self.x <= other.x <= self.x2 and self.x <= other.x2 <= self.x2 and \
                self.y <= other.y <= self.y2 and self.y <= other.y2 <= self.y2
+
+    def intersects_vertically(self, other: 'Region') -> bool:
+        assert self.x2 >= self.x
+        assert self.y2 >= self.y
+        assert other.x2 >= other.x
+        assert other.y2 >= other.y
+
+        if other.y2 <= self.y or other.y >= self.y2:
+            return False
+        return True
+
+
+class RegionRegex(Region):
+    regex: str
+
+
+class RegionResult(pydantic.BaseModel):
+    text: str | None
+    group_values: typing.Mapping[str, str]

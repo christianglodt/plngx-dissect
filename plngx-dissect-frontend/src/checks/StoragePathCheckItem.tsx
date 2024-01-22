@@ -5,6 +5,7 @@ import { StoragePathCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 import PaperlessElementSelector from "../utils/PaperlessElementSelector";
+import { CheckCircle } from "@mui/icons-material";
 
 const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
     const [value, setValue] = useState(props.check.name);
@@ -20,7 +21,7 @@ const StoragePathCheckItem = (props: CheckItemPropsType<StoragePathCheck>) => {
             <DialogListItem.DialogContent>
                 <PaperlessElementSelector value={value} onChange={setValue} label="Storage Path" slug="storage_paths"/>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent>
+            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
                 <ListItemText primary="Storage Path" secondary={`Must be "${props.check.name}"`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

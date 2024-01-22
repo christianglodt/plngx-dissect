@@ -1,4 +1,4 @@
-import { ListItemButton } from "@mui/material";
+import { ListItemButton, ListItemIcon } from "@mui/material";
 import React, { PropsWithChildren, useState } from "react";
 
 import { Box, Button, Dialog, DialogActions, DialogContent as MuiDialogContent, DialogTitle, Stack } from "@mui/material";
@@ -12,8 +12,19 @@ export type DialogListItemPropsType = {
     children: React.ReactElement[] | React.ReactElement;
 }
 
-const ItemContent = (props: PropsWithChildren) => {
-    return <>{props.children}</>
+export type ItemContentPropsType = PropsWithChildren & {
+    icon?: React.ReactNode;
+}
+
+const ItemContent = (props: ItemContentPropsType) => {
+    return (
+        <>
+            {props.children}
+            {props.icon &&
+            <ListItemIcon>{props.icon}</ListItemIcon>
+            }
+        </>
+    );
 }
 
 const DialogContent = (props: PropsWithChildren) => {

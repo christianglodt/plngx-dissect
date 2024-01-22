@@ -2,11 +2,12 @@ import { ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
-import { Field } from "./types";
+import { Field, FieldResult } from "./types";
 import PaperlessElementSelector from "./utils/PaperlessElementSelector";
 
 type FieldListItemPropsType = {
     field: Field;
+    result: FieldResult | null | undefined;
     onChange: (newField: Field) => void;
     onDelete: () => void;
 }
@@ -23,6 +24,11 @@ const FieldListItem = (props: FieldListItemPropsType) => {
         }));
     }
 
+    let secondaryText = props.field.template;
+    if (props.result?.value) {
+        secondaryText += '\n' + props.result.value;
+    }
+
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
@@ -32,7 +38,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Field ${props.field.name}`} secondary={props.field.template}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Field ${props.field.name}`} secondary={secondaryText}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );

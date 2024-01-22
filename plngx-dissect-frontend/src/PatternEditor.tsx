@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useDeletePatternMutation, usePattern, useSavePatternMutation } from "./hooks";
+import { useDeletePatternMutation, usePattern, usePatternEvaluationResult, useSavePatternMutation } from "./hooks";
 import { Alert, Button, LinearProgress, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksCard";
@@ -26,22 +26,24 @@ const PatternEditor = () => {
     const deletePatternMutation = useDeletePatternMutation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const documentId = searchParams.get('document') !== null ? Number(searchParams.get('document')) : null;
+    const pageNr = searchParams.get('page') !== null ? Number(searchParams.get('page')) : 1;
 
+    const pattern = modifiedPattern || savedPattern || null;
+
+    const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern, pageNr);
+    
     if (isError) {
         return (
             <Alert severity="error">Error: {error.message}</Alert>
         );
     }
 
-    if (!savedPattern || isLoading) {
+    if (!pattern || isLoading) {
         return (
             <LinearProgress/>
         );
     }
-
-    const pattern = modifiedPattern || savedPattern;
-
-    const documentId = searchParams.get('document') !== null ? Number(searchParams.get('document')) : null;
 
     const onChange = (newPattern: Pattern) => {
         setModifiedPattern(newPattern);
@@ -78,15 +80,15 @@ const PatternEditor = () => {
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
                     <PatternPageCard pattern={pattern} onChange={onChange}/>
-                    <ChecksCard pattern={pattern} onChange={onChange}/>
+                    <ChecksCard pattern={pattern} evalResult={patternEvaluationResult} onChange={onChange}/>
                     <MatchingDocsCard pattern={pattern}/>
                 </Stack>
 
                 <DocumentView documentId={documentId} pattern={pattern} onChange={onChange}/>
 
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
-                    <RegionsCard pattern={pattern} onChange={onChange}/>
-                    <FieldsCard pattern={pattern} onChange={onChange}/>
+                    <RegionsCard pattern={pattern}  evalResult={patternEvaluationResult} onChange={onChange}/>
+                    <FieldsCard pattern={pattern} evalResult={patternEvaluationResult} onChange={onChange}/>
                 </Stack>
             </Stack>
         </>

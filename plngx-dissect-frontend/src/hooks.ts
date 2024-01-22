@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessNamedElement, DocumentBase } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessNamedElement, DocumentBase, PatternEvaluationResult } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -132,4 +132,15 @@ export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: stri
 export const usePatternMatches = (pattern: Pattern) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
     return useQuery({queryKey: ['matches', debouncedPattern], queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern) });
+}
+
+export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null, pageNr: number) => {
+    const [debouncedPattern] = useDebounce(pattern, 1000);
+    const [debouncedPageNr] = useDebounce(pageNr, 1000);
+
+    const qfn = async() => {
+        if (debouncedPattern === null) return null;
+        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern);
+    }
+    return useQuery({queryKey: ['evaluate', docId, debouncedPattern, debouncedPageNr], queryFn: qfn });
 }

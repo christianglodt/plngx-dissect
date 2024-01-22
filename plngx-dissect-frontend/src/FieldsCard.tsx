@@ -1,5 +1,5 @@
 import { IconButton } from "@mui/material";
-import { Field, Pattern } from "./types";
+import { Field, Pattern, PatternEvaluationResult } from "./types";
 import { Add } from "@mui/icons-material";
 import ListCard from "./utils/ListCard";
 import { produce } from "immer";
@@ -7,6 +7,7 @@ import FieldListItem from "./FieldListItem";
 
 type FieldsCardProps = {
     pattern: Pattern;
+    evalResult: PatternEvaluationResult | null | undefined;
     onChange: (newPattern: Pattern) => void;
 }
 
@@ -37,7 +38,7 @@ const FieldsCard = (props: FieldsCardProps) => {
     return (
         <ListCard title="Fields" headerWidget={<IconButton onClick={onAddFieldClick}><Add/></IconButton>}>
             { pattern.fields.map((field, index) =>
-            <FieldListItem key={index} field={field} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
+            <FieldListItem key={index} field={field} result={props.evalResult?.fields[index]} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
             )}
         </ListCard>
     );

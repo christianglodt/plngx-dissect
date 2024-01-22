@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RegionRegexCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
+import { CheckCircle } from "@mui/icons-material";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
 
@@ -34,7 +35,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
                     <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent>
+            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
                 <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.x}, ${props.check.y}, ${props.check.x2}, ${props.check.y2}]`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

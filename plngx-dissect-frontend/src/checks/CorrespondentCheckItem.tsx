@@ -5,6 +5,7 @@ import { CorrespondentCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 import PaperlessElementSelector from "../utils/PaperlessElementSelector";
+import { CheckCircle } from "@mui/icons-material";
 
 
 const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) => {
@@ -21,7 +22,7 @@ const CorrespondentCheckItem = (props: CheckItemPropsType<CorrespondentCheck>) =
             <DialogListItem.DialogContent>
                 <PaperlessElementSelector label="Correspondent" slug="correspondents" value={value} onChange={setValue}/>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent>
+            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
                 <ListItemText primary="Correspondent" secondary={`Must be "${props.check.name}"`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
