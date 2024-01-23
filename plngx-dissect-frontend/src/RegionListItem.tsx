@@ -1,4 +1,4 @@
-import { Chip, ListItemText, Stack, TextField } from "@mui/material";
+import { Box, Chip, ListItemText, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
@@ -32,9 +32,15 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         }));
     }
 
+    const primary = (
+        <Stack direction="row" gap={1} alignItems="center" sx={{ marginBottom: '5px' }}>
+            <span>Region {props.nr}</span>
+            <Chip size="small" icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`}/>
+        </Stack>
+    );
+
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
-            <Chip icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`}/>
             <Chip icon={<Search/>} label={props.region.regex} color="primary"/>
             {props.result && Object.keys(props.result.group_values).map((key) =>
                 <Chip key={key} color="success" icon={<ArrowRightAlt/>} label={key + ': ' + props.result?.group_values[key]}/>
@@ -65,7 +71,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={`Region ${props.nr}`} secondary={secondary}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={primary} secondary={secondary}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
