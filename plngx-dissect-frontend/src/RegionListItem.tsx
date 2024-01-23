@@ -4,6 +4,7 @@ import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { RegionRegex, RegionResult } from "./types";
 import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
+import RegexPreview, { pythonRegexToJsRegex } from "./utils/RegexPreview";
 
 type RegionListItemPropsType = {
     nr: number;
@@ -44,6 +45,13 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </Stack>
     );
 
+    let regexError = null;
+    try {
+        new RegExp(pythonRegexToJsRegex(regex), 'dgs');
+    } catch (error) {
+        regexError = String(error);
+    }
+
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
@@ -52,8 +60,8 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     <TextField label="Top Left Y Coordinate" type="number" value={y} onChange={(event) => setY(Number(event.target.value))}></TextField>
                     <TextField label="Bottom Right X Coordinate" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                     <TextField label="Bottom Right Y Coordinate" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
-                    <TextField label="Region Text" multiline disabled value={props.result?.text}></TextField>
-                    <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)}></TextField>
+                    <RegexPreview regex={regex} text={props.result?.text || ''}/>
+                    <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)} error={regexError != null} helperText={regexError}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
