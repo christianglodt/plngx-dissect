@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 from typing import AsyncIterator, Annotated, Literal
 from pydantic import BaseModel, Field, NaiveDatetime
@@ -89,4 +91,12 @@ async def process_all_documents():
         if paperless_doc_has_changed:
             pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
             
-            await client.put_document(paperless_doc)
+            #await client.put_document(paperless_doc)
+
+
+if __name__ == '__main__':
+    import asyncio
+    import pathlib
+    if pathlib.Path(os.getcwd()).resolve() != pathlib.Path(__file__).parent.resolve():
+        raise Exception('Must be run from directory containing matching.py')
+    asyncio.run(process_all_documents())
