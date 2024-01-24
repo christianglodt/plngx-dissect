@@ -1,12 +1,16 @@
 #!/usr/bin/env python
 
 import os
+import logging
 from typing import AsyncIterator, Annotated, Literal
 from pydantic import BaseModel, Field, NaiveDatetime
 
 import paperless
 from document import DocumentBase, get_parsed_document
 from pattern import Pattern, list_patterns, get_pattern
+
+logging.basicConfig(format='%(asctime)s %(levelname)8s: %(message)s', level=logging.DEBUG)
+log = logging.getLogger(__name__)
 
 import dotenv
 
@@ -46,35 +50,45 @@ async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[Docu
 
 
 async def process_all_documents():
+    log.info(f'Processing all documents with tags {REQUIRED_TAGS}')
+
     patterns: list[Pattern] = []
     for p in await list_patterns():
         patterns.append(await get_pattern(p.name))
+    log.debug(f'Loaded {len(patterns)} patterns')
 
     client = paperless.PaperlessClient()
+    tags_by_id = await client.tags_by_id
     tags_by_name = await client.tags_by_name()
+    log.debug(f'Retrieved tags by name from Paperless')
     custom_fields_by_name = await client.custom_fields_by_name()
-    client.custom_fields_by_id
+    log.debug(f'Retrieved custom fields by name from Paperless')
 
     remove_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_REMOVE_TAGS]
     add_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_ADD_TAGS]
 
     async for paperless_doc in client.get_documents_with_tags(REQUIRED_TAGS):
+        log.debug(f'Retrieved paperless document {paperless_doc.id}')
         doc = await get_parsed_document(paperless_doc.id)
+        log.debug(f'Loaded cached text runs for document {doc.id}')
 
         paperless_doc_has_changed = False
         for pattern in patterns:
             if await pattern.matches(doc, paperless_doc, client):
+                log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
                 result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
                 
                 for t_id in remove_tag_ids:
                     if t_id in paperless_doc.tags:
                         paperless_doc_has_changed = True
-                    paperless_doc.tags.remove(t_id)
+                        paperless_doc.tags.remove(t_id)
+                        log.debug('Removed tag {tags_by_id[t_id]} from document {doc.id}')
                 
                 for t_id in add_tag_ids:
                     if t_id not in paperless_doc.tags:
                         paperless_doc_has_changed = True
-                    paperless_doc.tags.append(t_id)
+                        paperless_doc.tags.append(t_id)
+                        log.debug('Added tag {tags_by_id[t_id]} to document {doc.id}')
 
                 
                 for field, field_result in zip(pattern.fields, result.fields):
@@ -83,15 +97,17 @@ async def process_all_documents():
                         if field_id not in [f.field for f in paperless_doc.custom_fields]:
                             paperless_doc_has_changed = True
 
-                        new_value = paperless.PaperlessCustomFieldValue(field=field_id, value=field_result.value)
+                        new_value = paperless.PaperlessCustomFieldValue(field=field_id, value=field_result.value) # TODO check value against expected type (also in UI)
                         new_custom_fields = list(filter(lambda f: f.field == field_id, paperless_doc.custom_fields))
                         new_custom_fields.append(new_value)
                         paperless_doc.custom_fields = new_custom_fields
+                        log.info(f'Updated custom fields of document {doc.id} to {new_custom_fields}')
         
         if paperless_doc_has_changed:
             pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
             
-            #await client.put_document(paperless_doc)
+            await client.put_document(paperless_doc)
+            log.info(f'Saved document {paperless_doc.id} to Paperless')
 
 
 if __name__ == '__main__':
