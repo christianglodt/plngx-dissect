@@ -1,4 +1,4 @@
-import { Chip, ListItemText, Stack, TextField } from "@mui/material";
+import { Chip, ListItemText, Stack, TextField, Tooltip } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
@@ -32,7 +32,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
             <Chip color="success" icon={<ArrowRightAlt/>} label={props.result.value}/>
             }
             { props.result?.error &&
-            <Chip color="error" icon={<Error/>} label={props.result.error}/>
+            <Tooltip title={props.result.error}><Chip color="error" icon={<Error/>} label={props.result.error}/></Tooltip>
             }
         </Stack>
     );
