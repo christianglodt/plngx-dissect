@@ -38,6 +38,7 @@ SCHEDULER_PATTERN = SchedulerPattern.model_validate_json(os.environ.get('SCHEDUL
 REQUIRED_TAGS = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_REMOVE_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_REMOVE_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_ADD_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_ADD_TAGS', '').split(',') if t.strip() != '']
+POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
 
 
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
@@ -106,8 +107,11 @@ async def process_all_documents():
         if paperless_doc_has_changed:
             pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
             
-            await client.put_document(paperless_doc)
-            log.info(f'Saved document {paperless_doc.id} to Paperless')
+            if POST_PROCESS_DONT_SAVE:
+                log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
+            else:
+                await client.put_document(paperless_doc)
+                log.info(f'Saved document {paperless_doc.id} to Paperless')
 
 
 if __name__ == '__main__':
