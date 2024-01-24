@@ -133,6 +133,9 @@ class PaperlessClient:
     async def custom_fields_by_id(self) -> Mapping[int, PaperlessCustomField]:
         return { f.id: f async for f in self._iter_paginated_results(f'{self.base_url}/api/custom_fields/', PaperlessCustomField) }
 
+    async def custom_fields_by_name(self) -> Mapping[str, PaperlessCustomField]:
+        return { t.name: t for t in (await self.custom_fields_by_id).values() }
+
     @asyncstdlib.cached_property
     async def correspondents_by_id(self) -> Mapping[int, PaperlessCorrespondent]:
         return { c.id: c async for c in self._iter_paginated_results(f'{self.base_url}/api/correspondents/', PaperlessCorrespondent) }
