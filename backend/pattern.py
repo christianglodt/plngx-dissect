@@ -12,7 +12,7 @@ import re
 import region
 import document
 import field
-from paperless import PaperlessClient, PaperlessDocument
+from paperless import PaperlessClient, PaperlessDocument, CustomFieldValueConversionException
 
 
 class Check(pydantic.BaseModel, abc.ABC):
@@ -193,6 +193,9 @@ class Pattern(pydantic.BaseModel):
         paperless_doc = await client.get_document_by_id(document_id)
 
         check_results = await self.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)
+
+        custom_fields_by_name = await client.custom_fields_by_name()
+
         region_results: list[region.RegionResult|None] = []
         field_results: list[field.FieldResult|None] = []
         if any(r == False for r in check_results):
@@ -204,7 +207,18 @@ class Pattern(pydantic.BaseModel):
                 region_results.append(page.evaluate_region(r))
 
             for f in self.fields:
-                field_results.append(f.get_result(region_results))
+                field_result = f.get_result(region_results)
+                if not field_result.error:
+                    if not f.name in custom_fields_by_name:
+                        field_result.error = f'Field {f.name} not found'
+                    else:
+                        field_def = custom_fields_by_name[f.name]
+                        try:
+                            field_def.validate_value(field_result.value)
+                        except CustomFieldValueConversionException as e:
+                            field_result.value = None
+                            field_result.error = str(e)
+                field_results.append(field_result)
 
         return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
 
