@@ -112,6 +112,15 @@ class PaperlessClient:
                 response.raise_for_status()
                 yield response
 
+    @asynccontextmanager
+    async def _put(self, url: str | pydantic.AnyHttpUrl, obj: pydantic.BaseModel) -> AsyncIterator[aiohttp.ClientResponse]:
+        async with aiohttp.ClientSession() as session:
+            if PAPERLESS_FORCE_SSL:
+                url = ensure_https(url)
+            async with session.put(str(url), headers={'Authorization': f'Token {self.api_token}', 'Content-type': 'application/json'}, data=obj.model_dump_json()) as response:
+                response.raise_for_status()
+                yield response
+
     async def _iter_paginated_results(self, url: str, result_type: Type[PaperlessDataT]) -> AsyncGenerator[PaperlessDataT, None]:
         current_url: str | pydantic.AnyHttpUrl | None = url
         while current_url is not None:
@@ -151,8 +160,11 @@ class PaperlessClient:
     async def get_document_by_id(self, document_id: int) -> PaperlessDocument:
         url = f'{self.base_url}/api/documents/{document_id}/'
         async with self._get(url) as response:
-            response.raise_for_status()
             return PaperlessDocument.model_validate(await response.json())
+
+    async def put_document(self, document: PaperlessDocument):
+        async with self._put(f'{self.base_url}/api/documents/{document.id}/', document):
+            return
 
     async def get_documents_with_tags(self, tags: Collection[str]) -> AsyncIterator[PaperlessDocument]:
         tags_by_name = await self.tags_by_name()
