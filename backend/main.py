@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 import aiohttp
 import pydantic
-import paperless
 
+import paperless
 import pattern
 import document
 import matching
@@ -16,7 +18,6 @@ dotenv.load_dotenv('../.env')
 
 
 app = FastAPI()
-
 
 @app.get('/api/patterns')
 async def get_pattern_list() -> list[pattern.PatternListEntry]:
@@ -97,5 +98,16 @@ async def get_documents_matching_pattern(p: pattern.Pattern) -> list[document.Do
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement]:
     return await paperless.PaperlessClient().get_element_list(slug)
 
+
+scheduler = AsyncIOScheduler()
+trigger = CronTrigger(**matching.SCHEDULER_PATTERN)
+
+
+@scheduler.scheduled_job(trigger) # type: ignore
+async def process_patterns():
+    await matching.process_all_documents()
+
+
+scheduler.start()
 
 app.mount('/', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
