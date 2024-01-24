@@ -28,10 +28,38 @@ class PaperlessResponse(pydantic.BaseModel, Generic[PaperlessDataT]):
     previous: pydantic.AnyHttpUrl | None
 
 
+class CustomFieldValueConversionException(Exception):
+    pass
+
+
 class PaperlessCustomField(pydantic.BaseModel):
     id: int
     name: str
-    data_type: Literal['string', 'monetary']
+    data_type: Literal['string', 'url', 'date', 'boolean', 'integer', 'float', 'monetary', 'documentlink']
+
+    def _check_type(self, value: Any, typ: type | tuple[type, ...]):
+        if not isinstance(value, typ):
+            raise CustomFieldValueConversionException(f'Expected instance of {typ}, got "{value}"')
+
+    def validate_value(self, value: Any):
+        match self.data_type:
+            case 'string':
+                self._check_type(value, str)
+            case 'url':
+                self._check_type(value, (str, pydantic.AnyHttpUrl))
+                # TODO validate url, however there's no standard
+            case 'date':
+                self._check_type(value, datetime.date)
+            case 'boolean':
+                self._check_type(value, bool)
+            case 'integer':
+                self._check_type(value, int)
+            case 'float':
+                self._check_type(value, float)
+            case 'monetary':
+                self._check_type(value, (int, decimal.Decimal))
+            case 'documentlink':
+                self._check_type(value, str)
 
 
 class PaperlessNamedElement(pydantic.BaseModel):
@@ -54,7 +82,7 @@ class PaperlessTag(PaperlessElementBase):
 
 
 class PaperlessCustomFieldValue(pydantic.BaseModel):
-    value: str | decimal.Decimal | None
+    value: str | pydantic.AnyHttpUrl | datetime.date | bool | int | float | decimal.Decimal | None
     field: int
 
 
