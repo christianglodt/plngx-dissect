@@ -9,8 +9,6 @@ import paperless
 import pattern
 import document
 import matching
-import region
-import field
 
 import dotenv
 
