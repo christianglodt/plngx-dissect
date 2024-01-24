@@ -66,26 +66,8 @@ async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
 
 @app.post('/api/document/{document_id}/{page_nr}/evaluate_pattern')
 async def evaluate_pattern(document_id: int, page_nr: int, p: pattern.Pattern) -> pattern.PatternEvaluationResult:
-
     client = paperless.PaperlessClient()
-    doc = await document.get_parsed_document(document_id)
-    paperless_doc = await client.get_document_by_id(document_id)
-
-    check_results = await p.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)
-    region_results: list[region.RegionResult|None] = []
-    field_results: list[field.FieldResult|None] = []
-    if any(r == False for r in check_results):
-        region_results = [None] * len(p.regions)
-        field_results = [None] * len(p.fields)
-    else:
-        page = doc.pages[page_nr]
-        for r in p.regions:
-            region_results.append(page.evaluate_region(r))
-
-        for f in p.fields:
-            field_results.append(f.get_result(region_results))
-
-    return pattern.PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
+    return await p.evaluate(document_id, page_nr, client)
 
 
 @app.get('/api/document/{document_id}')

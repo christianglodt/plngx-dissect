@@ -148,6 +148,12 @@ class NotCheck(Check):
 AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
 
 
+class PatternEvaluationResult(pydantic.BaseModel):
+    checks: list[bool]
+    regions: list[region.RegionResult|None]
+    fields: list[field.FieldResult|None]
+
+
 class Pattern(pydantic.BaseModel):
     page: int # 0 is first, -1 is last, other number is exact page number
     name: str
@@ -181,19 +187,30 @@ class Pattern(pydantic.BaseModel):
 
         return res
 
+    async def evaluate(self, document_id: int, page_nr: int, client: PaperlessClient) -> PatternEvaluationResult:
+
+        doc = await document.get_parsed_document(document_id)
+        paperless_doc = await client.get_document_by_id(document_id)
+
+        check_results = await self.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)
+        region_results: list[region.RegionResult|None] = []
+        field_results: list[field.FieldResult|None] = []
+        if any(r == False for r in check_results):
+            region_results = [None] * len(self.regions)
+            field_results = [None] * len(self.fields)
+        else:
+            page = doc.pages[page_nr]
+            for r in self.regions:
+                region_results.append(page.evaluate_region(r))
+
+            for f in self.fields:
+                field_results.append(f.get_result(region_results))
+
+        return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
 
 
 class PatternListEntry(pydantic.BaseModel):
     name: str
-
-
-
-
-
-class PatternEvaluationResult(pydantic.BaseModel):
-    checks: list[bool]
-    regions: list[region.RegionResult|None]
-    fields: list[field.FieldResult|None]
 
 
 CONFIG_PATH = pathlib.Path('../config').resolve()
