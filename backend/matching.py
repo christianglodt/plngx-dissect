@@ -35,7 +35,7 @@ class SchedulerPattern(BaseModel): # https://apscheduler.readthedocs.io/en/lates
 DEFAULT_SCHEDULER_PATTERN = SchedulerPattern(hour='*')
 SCHEDULER_PATTERN = SchedulerPattern.model_validate_json(os.environ.get('SCHEDULER_PATTERN', DEFAULT_SCHEDULER_PATTERN.model_dump_json())).model_dump()
 
-REQUIRED_TAGS = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '']
+PAPERLESS_REQUIRED_TAGS = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_REMOVE_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_REMOVE_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_ADD_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_ADD_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
@@ -43,7 +43,7 @@ POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower
 
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
     client = paperless.PaperlessClient()
-    async for paperless_doc in client.get_documents_with_tags(REQUIRED_TAGS):
+    async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
         doc = await get_parsed_document(paperless_doc.id)
         
         if await pattern.matches(doc, paperless_doc, client):
@@ -51,7 +51,7 @@ async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[Docu
 
 
 async def process_all_documents():
-    log.info(f'Processing all documents with tags {REQUIRED_TAGS}')
+    log.info(f'Processing all documents with tags {PAPERLESS_REQUIRED_TAGS}')
 
     patterns: list[Pattern] = []
     for p in await list_patterns():
@@ -59,16 +59,20 @@ async def process_all_documents():
     log.debug(f'Loaded {len(patterns)} patterns')
 
     client = paperless.PaperlessClient()
-    tags_by_id = await client.tags_by_id
     tags_by_name = await client.tags_by_name()
     log.debug(f'Retrieved tags by name from Paperless')
     custom_fields_by_name = await client.custom_fields_by_name()
     log.debug(f'Retrieved custom fields by name from Paperless')
 
-    remove_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_REMOVE_TAGS]
-    add_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_ADD_TAGS]
+    try:
+        remove_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_REMOVE_TAGS]
+        add_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_ADD_TAGS]
+        [tags_by_name[t].id for t in PAPERLESS_REQUIRED_TAGS]
+    except KeyError as e:
+        log.error(f'Tag with name "{e.args[0]}" used in PAPERLESS_REQUIRED_TAGS, POST_PROCESS_REMOVE_TAGS or POST_PROCESS_ADD_TAGS does not exist')
+        return
 
-    async for paperless_doc in client.get_documents_with_tags(REQUIRED_TAGS):
+    async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
         log.debug(f'Retrieved paperless document {paperless_doc.id}')
         doc = await get_parsed_document(paperless_doc.id)
         log.debug(f'Loaded cached text runs for document {doc.id}')
