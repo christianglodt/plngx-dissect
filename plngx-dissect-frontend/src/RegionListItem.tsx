@@ -75,7 +75,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={primary} secondary={secondary}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={primary} secondary={secondary} secondaryTypographyProps={{ component: 'div' }}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );

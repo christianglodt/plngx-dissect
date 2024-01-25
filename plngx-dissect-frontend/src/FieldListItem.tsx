@@ -61,7 +61,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={props.field.name} secondary={secondaryText}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={props.field.name} secondary={secondaryText} secondaryTypographyProps={{ component: 'div' }}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
