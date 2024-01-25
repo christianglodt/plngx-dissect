@@ -214,7 +214,9 @@ class Pattern(pydantic.BaseModel):
                     else:
                         field_def = custom_fields_by_name[f.name]
                         try:
-                            field_def.validate_value(field_result.value)
+                            if field_result.value is not None:
+                                converted_value = field_def.convert_value_to_paperless(field_result.value)
+                                field_result.value = str(converted_value)
                         except CustomFieldValueConversionException as e:
                             field_result.value = None
                             field_result.error = str(e)

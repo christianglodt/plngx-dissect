@@ -103,7 +103,8 @@ async def process_all_documents():
                         field_def = custom_fields_by_id[field_id]
                         field_value = field_result.value
                         try:
-                            field_def.validate_value(field_value)
+                            if field_value is not None:
+                                field_value = field_def.convert_value_to_paperless(field_value)
                         except paperless.CustomFieldValueConversionException as e:
                             log.error(f'Invalid value {field_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                             continue
