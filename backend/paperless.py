@@ -170,12 +170,12 @@ class PaperlessClient:
                 response.raise_for_status()
                 yield response
 
-    async def _iter_paginated_results(self, url: str, result_type: Type[PaperlessDataT]) -> AsyncGenerator[PaperlessDataT, None]:
+    async def _iter_paginated_results[PaperlessDataT](self, url: str, result_type: Type[PaperlessDataT]) -> AsyncGenerator[PaperlessDataT, None]:
         current_url: str | pydantic.AnyHttpUrl | None = url
         while current_url is not None:
             async with self._get(current_url) as response:
                 response.raise_for_status()
-                response_obj: PaperlessResponse[result_type] = PaperlessResponse[result_type].model_validate(await response.json())
+                response_obj: PaperlessResponse[PaperlessDataT] = PaperlessResponse[result_type].model_validate(await response.json())
                 for obj in response_obj.results:
                     yield obj
                 current_url = response_obj.next
