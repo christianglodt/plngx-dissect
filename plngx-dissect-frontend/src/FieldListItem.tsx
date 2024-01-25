@@ -1,16 +1,27 @@
 import { Chip, ListItemText, Stack, TextField, Tooltip } from "@mui/material";
 import { produce } from "immer";
-import { useState } from "react";
+import React, { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Field, FieldResult } from "./types";
 import PaperlessElementSelector from "./utils/PaperlessElementSelector";
-import { ArrowRightAlt, Error, Notes } from "@mui/icons-material";
+import { ArrowRightAlt, CalendarMonth, CreditCard, Error, Flag, Link, Notes, Numbers, QuestionMark, ShortText } from "@mui/icons-material";
 
 type FieldListItemPropsType = {
     field: Field;
     result: FieldResult | null | undefined;
     onChange: (newField: Field) => void;
     onDelete: () => void;
+}
+
+const FIELD_TYPE_ICON: Record<string, React.ReactElement> = {
+    'string': <ShortText/>,
+    'url': <Link/>,
+    'date': <CalendarMonth/>,
+    'boolean': <Flag/>,
+    'integer': <Numbers/>,
+    'float': <Numbers/>,
+    'monetary': <CreditCard/>,
+    'documentlink': <Link/>
 }
 
 const FieldListItem = (props: FieldListItemPropsType) => {
@@ -25,11 +36,15 @@ const FieldListItem = (props: FieldListItemPropsType) => {
         }));
     }
 
+    const chipIcon = props.result?.data_type ? FIELD_TYPE_ICON[props.result?.data_type] : <QuestionMark/>;
+
     const secondaryText = (
         <Stack gap={1} alignItems="flex-start">
             <Chip color="primary" icon={<Notes/>} label={props.field.template}/>
             { props.result?.value &&
-            <Chip color="success" icon={<ArrowRightAlt/>} label={props.result.value}/>
+            <Stack direction="row">
+                <ArrowRightAlt/><Chip color="success" icon={chipIcon} label={props.result.value}/>
+            </Stack>
             }
             { props.result?.error &&
             <Tooltip title={props.result.error}><Chip color="error" icon={<Error/>} label={props.result.error}/></Tooltip>

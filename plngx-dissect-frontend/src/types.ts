@@ -174,6 +174,7 @@ export type RegionResult = {
 }
 
 export type FieldResult = {
+    data_type?: string | null;
     value: string | null;
     error: string | null;
 }

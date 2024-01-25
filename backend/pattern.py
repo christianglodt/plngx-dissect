@@ -226,6 +226,7 @@ class Pattern(pydantic.BaseModel):
                         field_result.error = f'Field {f.name} not found'
                     else:
                         field_def = custom_fields_by_name[f.name]
+                        field_result.data_type = field_def.data_type
                         try:
                             if field_result.value is not None:
                                 converted_value = field_def.convert_value_to_paperless(field_result.value)

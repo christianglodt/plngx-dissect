@@ -25,6 +25,7 @@ def parse_monetary(s: str) -> decimal.Decimal:
 
 
 class FieldResult(pydantic.BaseModel):
+    data_type: str | None = None
     value: str | None
     error: str | None
 
