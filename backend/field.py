@@ -52,4 +52,7 @@ class Field(pydantic.BaseModel):
         except jinja2.exceptions.TemplateError as e:
             value = None
             error = e.message
+        except Exception as e:
+            value = None
+            error = str(e)
         return FieldResult(value=value, error=error)
