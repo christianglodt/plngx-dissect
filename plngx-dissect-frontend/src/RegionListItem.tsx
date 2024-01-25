@@ -1,4 +1,4 @@
-import { Box, Chip, ListItemText, Stack, TextField, Tooltip } from "@mui/material";
+import { Chip, ListItemText, Stack, TextField, Tooltip } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
