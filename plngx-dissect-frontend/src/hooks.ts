@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessTag, PaperlessNamedElement, DocumentBase, PatternEvaluationResult } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -43,7 +43,7 @@ const getPatternList = async () => {
 }
 
 export const usePatternList = () => {
-    return useQuery({ queryKey: ['patternList'], queryFn: getPatternList });
+    return useQuery({ queryKey: ['patterns'], queryFn: getPatternList });
 }
 
 const getPatternByName = async (name: string) => {
@@ -51,7 +51,7 @@ const getPatternByName = async (name: string) => {
 }
 
 export const usePattern = (name: string) => {
-    return useQuery({queryKey: ['pattern', name], queryFn: async () => getPatternByName(name)});
+    return useQuery({queryKey: ['patterns', name], queryFn: async () => getPatternByName(name)});
 }
 
 type CreatePatternRequestBody = { name: string }
@@ -65,8 +65,8 @@ export const useCreatePatternMutation = () => {
             return postRequest<CreatePatternRequestBody, Pattern>('/api/patterns', { name });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['pattern', patternName] });
-            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+            queryClient.invalidateQueries({ queryKey: ['patterns', patternName] });
+            queryClient.invalidateQueries({ queryKey: ['patterns'] });
         }
     });
 }
@@ -75,7 +75,7 @@ export const useSavePatternMutation = (patternId: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (pattern: Pattern) => putJson<Pattern>(`/api/pattern/${patternId}`, pattern),
-        onSuccess: (data) => queryClient.setQueryData(['pattern', data.name], data)
+        onSuccess: (data) => queryClient.setQueryData(['patterns', data.name], data)
     });
 }
 
@@ -88,8 +88,8 @@ export const useDeletePatternMutation = () => {
             return deleteRequest(`/api/pattern/${pattern.name}`);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['pattern', patternName] });
-            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+            queryClient.invalidateQueries({ queryKey: ['patterns', patternName] });
+            queryClient.invalidateQueries({ queryKey: ['patterns'] });
         }
     });
 }
@@ -105,9 +105,9 @@ export const useRenamePatternMutation = () => {
             return postRequest(`/api/pattern/${encodeURIComponent(oldName)}/rename?new_name=${encodeURIComponent(newName)}`, undefined);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['pattern', newName] });
-            queryClient.invalidateQueries({ queryKey: ['pattern', oldName] });
-            queryClient.invalidateQueries({ queryKey: ['patternList'] });
+            queryClient.invalidateQueries({ queryKey: ['patterns', newName] });
+            queryClient.invalidateQueries({ queryKey: ['patterns', oldName] });
+            queryClient.invalidateQueries({ queryKey: ['patterns'] });
         }
     });
 }
@@ -118,20 +118,16 @@ const getDocumentById = async (id: number | null) => {
 }
 
 export const useDocument = (id: number | null) => {
-    return useQuery({queryKey: ['document', id], queryFn: async () => getDocumentById(id)});
-}
-
-export const useTagList = () => {
-    return useQuery({queryKey: ['tagList'], queryFn: async () => fetchJson<PaperlessTag[]>('/api/tags')});
+    return useQuery({queryKey: ['documents', id], queryFn: async () => getDocumentById(id)});
 }
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
-    return useQuery({queryKey: ['list', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`)});
+    return useQuery({queryKey: ['paperless', 'elements', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`)});
 }
 
 export const usePatternMatches = (pattern: Pattern) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
-    return useQuery({queryKey: ['matches', debouncedPattern], queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern) });
+    return useQuery({queryKey: ['patterns', 'matches', debouncedPattern], queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern) });
 }
 
 export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null, pageNr: number) => {
@@ -141,5 +137,5 @@ export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|
     const qfn = async() => {
         return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern!);
     }
-    return useQuery({queryKey: ['evaluate', docId, debouncedPattern, debouncedPageNr], enabled: !!docId && !!debouncedPattern, queryFn: qfn });
+    return useQuery({queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr], enabled: !!docId && !!debouncedPattern, queryFn: qfn });
 }
