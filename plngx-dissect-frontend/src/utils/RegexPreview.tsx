@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import React from "react";
 
 
@@ -59,9 +59,16 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
         /* empty */
     }
 
+    const typographyProps = {
+        component: 'span',
+        sx: {
+            fontSize: 'x-small'
+        }
+    };
+
     const nodes: Array<React.ReactNode> = [];
     if (highlights.length == 0) {
-        nodes.push(<div>{props.text}</div>);
+        nodes.push(<Typography key="allText" {...typographyProps}>{props.text}</Typography>);
     } else {
         const firstStart = highlights[0].startIndex;
         const lastEnd = highlights.slice(-1)[0].endIndex;
@@ -70,24 +77,24 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
         const tail = props.text.slice(lastEnd);
 
         if (head.length > 0) {
-            nodes.push(<span>{head}</span>);
+            nodes.push(<Typography key="head" {...typographyProps}>{head}</Typography>);
         }
 
         for (const [h, nextH] of pairWiseIteration(highlights)) {
             if (h) {
                 const text = props.text.slice(h.startIndex, h.endIndex);
-                nodes.push(<span title={h.group} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }}>{text}</span>);
+                nodes.push(<Typography key={`${h.startIndex}-${h.endIndex}`} title={h.group} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }} {...typographyProps}>{text}</Typography>);
 
                 if (nextH) {
                     // Add text between highlights
                     const textBetween = props.text.slice(h.endIndex, nextH.startIndex);
-                    nodes.push(<span>{textBetween}</span>);
+                    nodes.push(<Typography key={`${h.endIndex}-${nextH.startIndex}`} {...typographyProps}>{textBetween}</Typography>);
                 }
             }
         }
 
         if (tail.length > 0) {
-            nodes.push(<span>{tail}</span>);
+            nodes.push(<Typography key="tail" {...typographyProps}>{tail}</Typography>);
         }
     }
 
