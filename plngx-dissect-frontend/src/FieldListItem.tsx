@@ -42,7 +42,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <PaperlessElementSelector value={name} onChange={setName} label="Custom Field" slug="custom_fields"/>
-                    <TextField label="Template" value={template} onChange={(event) => setTemplate(event.target.value)}></TextField>
+                    <TextField label="Template" value={template} multiline onChange={(event) => setTemplate(event.target.value)}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
