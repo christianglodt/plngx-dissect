@@ -1,8 +1,9 @@
 import React from "react";
+import { CheckResult } from "../types";
 
 export type CheckItemPropsType<CheckType> = {
     check: CheckType;
-    matches?: boolean | null;
+    result?: CheckResult | null;
     onChange: (newCheck: CheckType) => void;
     onDelete: () => void;
 }

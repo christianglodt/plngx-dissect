@@ -42,7 +42,7 @@ const ChecksCard = (props: ChecksCardProps) => {
     return (
         <ListCard title="Checks" headerWidget={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>}>
             { pattern.checks.map((check, index) =>
-                <CheckItemFactory key={JSON.stringify(check) + index} check={check} matches={props.evalResult?.checks[index]} onChange={(newCheck: Check) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
+                <CheckItemFactory key={JSON.stringify(check) + index} check={check} result={props.evalResult?.checks[index]} onChange={(newCheck: Check) => onCheckChange(index, newCheck)} onDelete={() => onCheckDelete(index)}/>
             )}
         </ListCard>
     );

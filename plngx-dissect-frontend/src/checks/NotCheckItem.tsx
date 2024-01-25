@@ -5,7 +5,7 @@ import { Check, NotCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import CreateCheckItemButton from "./CreateCheckItemButton";
 import { RecursiveCheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 const NotCheckItem = (props: RecursiveCheckItemPropsType<NotCheck>) => {
 
@@ -32,7 +32,7 @@ const NotCheckItem = (props: RecursiveCheckItemPropsType<NotCheck>) => {
             <DialogListItem.DialogContent>
                 { subCheck }
                 </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+                <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Not" secondary={check ? "1 sub-check" : "(no condition set)"}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

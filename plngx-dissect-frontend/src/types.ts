@@ -162,6 +162,11 @@ export type PaperlessCustomField = PaperlessNamedElement & {
     data_type: PaperlessCustomFieldDataType;
 }
 
+export type CheckResult = {
+    passed: boolean;
+    error: string | null;
+}
+
 export type RegionResult = {
     text: string;
     error: string | null;
@@ -174,7 +179,7 @@ export type FieldResult = {
 }
 
 export type PatternEvaluationResult = {
-    checks: Array<boolean>;
+    checks: Array<CheckResult | null>;
     regions: Array<RegionResult | null>;
     fields: Array<FieldResult | null>;
 }

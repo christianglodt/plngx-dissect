@@ -4,7 +4,7 @@ import { useState } from "react";
 import { TitleRegexCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 
 const TitleRegexCheckItem = (props: CheckItemPropsType<TitleRegexCheck>) => {
@@ -19,9 +19,9 @@ const TitleRegexCheckItem = (props: CheckItemPropsType<TitleRegexCheck>) => {
     return (
         <DialogListItem dialogTitle="Check Title" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
-                <TextField label="Title" value={value} onChange={(event) => setValue(event.target.value)}></TextField>
+                <TextField label="Title" value={value} onChange={(event) => setValue(event.target.value)} sx={{ width: '100%' }} error={props.result?.error != null} helperText={props.result?.error}></TextField>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Title" secondary={`Must match "${props.check.regex}"`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

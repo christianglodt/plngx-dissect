@@ -7,7 +7,7 @@ import { usePaperlessElement } from "../hooks";
 import { PaperlessTag, TagCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
 
@@ -58,7 +58,7 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
                     </FormControl>
                 </Stack>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Tags" secondary={secondaryText}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

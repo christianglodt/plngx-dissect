@@ -22,7 +22,7 @@ class Page(pydantic.BaseModel):
     height: float
     text_runs: list[TextRun]
 
-    def evaluate_region(self, region: RegionRegex) -> RegionResult:
+    def get_region_text(self, region: Region) -> str:
         runs_in_region = list(filter(lambda t: region.encloses(t), self.text_runs))
 
         text_parts: list[str] = []
@@ -41,6 +41,10 @@ class Page(pydantic.BaseModel):
         text_parts = [s.strip() if s != '\n' else s for s in text_parts]
         text_parts = list(filter(lambda s: s != '', text_parts))
         text = ' '.join(text_parts)
+        return text
+
+    def evaluate_region(self, region: RegionRegex) -> RegionResult:
+        text = self.get_region_text(region)
         group_values = {}
 
         error = None

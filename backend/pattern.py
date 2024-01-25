@@ -33,12 +33,10 @@ class RegionRegexCheck(region.RegionRegex):
     type: Literal['region']
 
     async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        for run in page.text_runs:
-            if self.encloses(run):
-                if re.match(self.regex, run.text) is not None:
-                    return True
+        text = page.get_region_text(self)
+        if re.match(self.regex, text) is not None:
+            return True
         return False
-
 
 
 class TitleRegexCheck(Check):
@@ -148,8 +146,14 @@ class NotCheck(Check):
 AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
 
 
+class CheckResult(pydantic.BaseModel):
+    passed: bool
+    error: str | None
+
+
 class PatternEvaluationResult(pydantic.BaseModel):
-    checks: list[bool]
+    # None values are present if pattern page match fails
+    checks: list[CheckResult|None]
     regions: list[region.RegionResult|None]
     fields: list[field.FieldResult|None]
 
@@ -168,22 +172,31 @@ class Pattern(pydantic.BaseModel):
             return False
 
         for check in self.checks:
-            if not await check.matches(page, doc, paperless_doc, client):
+            try:
+                if not await check.matches(page, doc, paperless_doc, client):
+                    return False
+            except:
                 return False
 
         return True
 
-    async def get_match_result(self, doc: document.Document, page_nr: int, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[bool]:
+    async def get_match_result(self, doc: document.Document, page_nr: int, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult|None]:
         if self.page == -1 and page_nr != len(doc.pages) - 1:
-            return [False] * len(self.checks)
+            return [None] * len(self.checks)
         if self.page != -1 and page_nr != self.page:
-            return [False] * len(self.checks)
+            return [None] * len(self.checks)
         
         page = doc.pages[page_nr]
 
-        res: list[bool] = []
+        res: list[CheckResult|None] = []
         for check in self.checks:
-            res.append(await check.matches(page, doc, paperless_doc, client))
+            try:
+                passed = await check.matches(page, doc, paperless_doc, client)
+                error = None
+            except Exception as e:
+                passed = False
+                error = str(e)
+            res.append(CheckResult(passed=passed, error=error))
 
         return res
 
@@ -198,7 +211,7 @@ class Pattern(pydantic.BaseModel):
 
         region_results: list[region.RegionResult|None] = []
         field_results: list[field.FieldResult|None] = []
-        if any(r == False for r in check_results):
+        if any(r is None or r.passed == False for r in check_results):
             region_results = [None] * len(self.regions)
             field_results = [None] * len(self.fields)
         else:

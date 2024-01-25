@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RegionRegexCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
 
@@ -32,10 +32,10 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionRegexCheck>) => {
                     <TextField label="Top Left Y Coordinate" type="number" value={y} onChange={(event) => setY(Number(event.target.value))}></TextField>
                     <TextField label="Bottom Right X Coordinate" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                     <TextField label="Bottom Right Y Coordinate" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
-                    <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)}></TextField>
+                    <TextField label="Regular Expression" value={regex} onChange={(event) => setRegex(event.target.value)} error={props.result?.error != null} helperText={props.result?.error}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary="Region Text" secondary={`Must match "${props.check.regex}"\nin region [${props.check.x}, ${props.check.y}, ${props.check.x2}, ${props.check.y2}]`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

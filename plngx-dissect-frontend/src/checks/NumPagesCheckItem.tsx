@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { NumPagesCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 
 const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
@@ -29,7 +29,7 @@ const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
             <DialogListItem.DialogContent>
                 <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged} sx={{ width: '100%' }}></TextField>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Number of Pages" secondary={`Must have ${props.check.num_pages} page${pluralize}`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

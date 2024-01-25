@@ -6,7 +6,7 @@ import { useState } from "react";
 import { DateCreatedCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
 
@@ -52,7 +52,7 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
                     <TextField type="number" label="Year is" value={year || ''} onChange={(event) => setYear(Number(event.target.value))}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Date Created" secondary={description}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>

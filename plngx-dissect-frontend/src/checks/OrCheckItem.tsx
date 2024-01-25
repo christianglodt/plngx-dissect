@@ -5,7 +5,7 @@ import { OrCheck, Check } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import CreateCheckItemButton from "./CreateCheckItemButton";
 import { RecursiveCheckItemPropsType } from "./types";
-import { CheckCircle } from "@mui/icons-material";
+import CheckResultIcon from "../utils/CheckResultIcon";
 
 const OrCheckItem = (props: RecursiveCheckItemPropsType<OrCheck>) => {
 
@@ -52,7 +52,7 @@ const OrCheckItem = (props: RecursiveCheckItemPropsType<OrCheck>) => {
                     {subChecks}
                 </List>
             </DialogListItem.DialogContent>
-            <DialogListItem.ItemContent icon={props.matches && <CheckCircle/>}>
+            <DialogListItem.ItemContent icon={<CheckResultIcon result={props.result}/>}>
                 <ListItemText primary="Or" secondary={`${checks.length} sub-check${pluralize}`}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
