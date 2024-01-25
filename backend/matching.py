@@ -113,7 +113,7 @@ async def process_all_documents():
                             paperless_doc_has_changed = True
 
                         new_value = paperless.PaperlessCustomFieldValue(field=field_id, value=field_value) # TODO check value against expected type (also in UI)
-                        new_custom_fields = list(filter(lambda f: f.field == field_id, paperless_doc.custom_fields))
+                        new_custom_fields = list(filter(lambda f: f.field != field_id, paperless_doc.custom_fields))
                         new_custom_fields.append(new_value)
                         paperless_doc.custom_fields = new_custom_fields
                         log.info(f'Updated custom fields of document {doc.id} to {new_custom_fields}')
