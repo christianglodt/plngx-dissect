@@ -35,12 +35,13 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const primary = (
         <Stack direction="row" gap={1} alignItems="center" sx={{ marginBottom: '5px' }}>
             <span>Region {props.nr}</span>
-            <Chip size="small" icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`}/>
+            
         </Stack>
     );
 
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
+            <Chip icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`} color="primary"/>
             <Tooltip title={props.region.regex}><Chip icon={<Search/>} label={props.region.regex} color="primary"/></Tooltip>
             {!props.result &&
                 <Stack direction="row">
