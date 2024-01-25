@@ -1,4 +1,4 @@
-import { Box, Chip, ListItemText, Stack, TextField } from "@mui/material";
+import { Box, Chip, ListItemText, Stack, TextField, Tooltip } from "@mui/material";
 import { produce } from "immer";
 import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
@@ -41,9 +41,13 @@ const RegionListItem = (props: RegionListItemPropsType) => {
 
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
-            <Chip icon={<Search/>} label={props.region.regex} color="primary"/>
+            <Tooltip title={props.region.regex}><Chip icon={<Search/>} label={props.region.regex} color="primary"/></Tooltip>
             {props.result && Object.keys(props.result.group_values).map((key) =>
-                <Chip key={key} color="success" icon={<ArrowRightAlt/>} label={key + ': ' + props.result?.group_values[key]}/>
+                <Stack direction="row" key={key}>
+                    <ArrowRightAlt/>
+                    <Tooltip title={props.result?.group_values[key]}><Chip color="success" label={key + ': ' + props.result?.group_values[key]}/></Tooltip>
+                </Stack>
+                
             )}
             {props.result?.error &&
             <Chip label={props.result.error} icon={<Error/>} color="error"/>
