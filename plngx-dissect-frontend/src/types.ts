@@ -117,6 +117,8 @@ export type Page = {
 export type DocumentBase = {
      id: number;
      title: string;
+     correspondent: string | null;
+     document_type: string | null;
      datetime_added: Date;
      date_created: Date;
      paperless_url: string;

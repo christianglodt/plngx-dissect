@@ -59,6 +59,8 @@ class Page(pydantic.BaseModel):
 class DocumentBase(pydantic.BaseModel):
     id: int
     title: str
+    correspondent: str | None
+    document_type: str | None
     paperless_url: pydantic.AnyHttpUrl
     datetime_added: pydantic.AwareDatetime
     date_created: datetime.date
@@ -84,9 +86,12 @@ async def get_temporary_pdf_download(paperless_id: int) -> AsyncIterator[pathlib
 X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document') # TODO cache should consider last_modified time from paperless document
+@cache.pydantic_yaml_cache(Document, 'parsed_document') # TODO cache should consider last_modified time from paperless document # type: ignore
 async def get_parsed_document(paperless_id: int) -> Document:
-    paperless_doc = await paperless.PaperlessClient().get_document_by_id(paperless_id)
+    client = paperless.PaperlessClient()
+    correspondents_by_id = await client.correspondents_by_id
+    document_types_by_id = await client.document_types_by_id
+    paperless_doc = await client.get_document_by_id(paperless_id)
     async with get_temporary_pdf_download(paperless_id) as pdf_path:
         with pdfplumber.open(pdf_path) as pdf:
             pages: list[Page] = []
@@ -97,9 +102,13 @@ async def get_parsed_document(paperless_id: int) -> Document:
                     runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
                 pages.append(Page(text_runs=runs, width=page.width, height=page.height))
             
+            correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
+            document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
             document = Document(
                 id=paperless_id,
                 title=paperless_doc.title,
+                correspondent=correspondent,
+                document_type=document_type,
                 datetime_added=paperless_doc.added,
                 date_created=paperless_doc.created,
                 paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
@@ -108,7 +117,7 @@ async def get_parsed_document(paperless_id: int) -> Document:
             return document
 
 
-@cache.file_cache('pdf_page_svg', '.svg')
+@cache.file_cache('pdf_page_svg', '.svg') # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
     async with get_temporary_pdf_download(paperless_id) as pdf_path:
         proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), str(pdf_path), '-', stdout=subprocess.PIPE)

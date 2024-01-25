@@ -47,7 +47,7 @@ async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[Docu
         doc = await get_parsed_document(paperless_doc.id)
         
         if await pattern.matches(doc, paperless_doc, client):
-            yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, datetime_added=paperless_doc.added, date_created=paperless_doc.created)
+            yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, date_created=paperless_doc.created)
 
 
 async def process_all_documents():

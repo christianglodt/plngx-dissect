@@ -26,9 +26,9 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
     return (
         <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
             { matches && matches.map((match) =>
-            <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)}>
+            <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={match.title} secondary={`${match.date_created.toString()}`}/>
+                <ListItemText primary={match.title} secondary={`${match.document_type}\n${match.correspondent}\n${match.date_created.toString()}`} sx={{ whiteSpace: 'pre' }}/>
             </ListItemButton>
             )}
         </ListCard>
