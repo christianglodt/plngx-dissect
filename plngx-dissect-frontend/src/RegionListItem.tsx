@@ -42,12 +42,17 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
             <Tooltip title={props.region.regex}><Chip icon={<Search/>} label={props.region.regex} color="primary"/></Tooltip>
+            {!props.result &&
+                <Stack direction="row">
+                    <ArrowRightAlt/>
+                    <Chip color="warning" label="Checks not passed"/>
+                </Stack>                
+            }
             {props.result && Object.keys(props.result.group_values).map((key) =>
                 <Stack direction="row" key={key}>
                     <ArrowRightAlt/>
                     <Tooltip title={props.result?.group_values[key]}><Chip color="success" label={key + ': ' + props.result?.group_values[key]}/></Tooltip>
-                </Stack>
-                
+                </Stack>                
             )}
             {props.result?.error &&
             <Chip label={props.result.error} icon={<Error/>} color="error"/>
