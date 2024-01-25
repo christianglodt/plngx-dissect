@@ -25,22 +25,21 @@ class Page(pydantic.BaseModel):
     def get_region_text(self, region: Region) -> str:
         runs_in_region = list(filter(lambda t: region.encloses(t), self.text_runs))
 
-        text_parts: list[str] = []
+        text_lines: list[list[str]] = [[]]
         while len(runs_in_region) > 0:
             runs_in_region.sort(key=lambda t: (t.y, t.x))
             first = runs_in_region.pop(0)
-            text_parts.append(first.text)
+            text_lines[-1].append(first.text)
             horizontally_colliding = list(filter(lambda t: t.intersects_vertically(first), runs_in_region))
             for c in horizontally_colliding: # TODO make more efficient
                 runs_in_region.remove(c)
 
             horizontally_colliding.sort(key=lambda t: t.x)
-            text_parts += [t.text for t in horizontally_colliding]
-            text_parts += '\n'
+            text_lines[-1] += [t.text for t in horizontally_colliding]
+            text_lines.append([])
         
-        text_parts = [s.strip() if s != '\n' else s for s in text_parts]
-        text_parts = list(filter(lambda s: s != '', text_parts))
-        text = ' '.join(text_parts)
+        lines = [' '.join(l) for l in text_lines]
+        text = '\n'.join(lines)
         return text
 
     def evaluate_region(self, region: RegionRegex) -> RegionResult:
@@ -49,7 +48,7 @@ class Page(pydantic.BaseModel):
 
         error = None
         try:
-            if match := re.search(region.regex, text, re.DOTALL):
+            if match := re.search(region.regex, text, re.DOTALL | re.MULTILINE):
                 group_values = match.groupdict()
         except re.error as e:
             error = e.msg

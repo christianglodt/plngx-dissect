@@ -43,7 +43,7 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
 
     const highlights: Array<Highlight> = [];
     try {
-        const regexp = new RegExp(jsRegex, 'dgs');
+        const regexp = new RegExp(jsRegex, 'dgsm');
         const regexpResult = props.text.matchAll(regexp);
         for (const r of regexpResult) {
             if (r.groups) {
