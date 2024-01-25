@@ -44,7 +44,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
             {!props.result &&
                 <Stack direction="row">
                     <ArrowRightAlt/>
-                    <Chip color="warning" label="Checks not passed"/>
+                    <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
             { props.result?.value &&

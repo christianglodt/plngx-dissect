@@ -45,7 +45,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
             {!props.result &&
                 <Stack direction="row">
                     <ArrowRightAlt/>
-                    <Chip color="warning" label="Checks not passed"/>
+                    <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
             {props.result && Object.keys(props.result.group_values).map((key) =>
