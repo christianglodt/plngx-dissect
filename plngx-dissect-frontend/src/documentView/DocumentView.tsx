@@ -1,7 +1,6 @@
 import { ChevronLeft, ChevronRight, OpenInNew } from "@mui/icons-material";
 import { Alert, AlertTitle, Box, IconButton, Skeleton, Stack } from "@mui/material";
 import { useDocument } from "../hooks";
-import { useState } from "react";
 import { Pattern } from "../types";
 import Page from "./Page";
 import { useSearchParams } from "react-router-dom";

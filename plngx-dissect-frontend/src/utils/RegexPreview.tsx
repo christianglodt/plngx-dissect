@@ -48,7 +48,7 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
         for (const r of regexpResult) {
             if (r.groups) {
                 for (const groupName of Object.keys(r.groups)) {
-                    const [groupStart, groupEnd] = r.indices.groups[groupName];
+                    const [groupStart, groupEnd] = r.indices!.groups![groupName];
 
                     highlights.push({ group: groupName, startIndex: groupStart, endIndex: groupEnd });
                 }
