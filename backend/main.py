@@ -17,7 +17,7 @@ import dotenv
 
 dotenv.load_dotenv('../.env')
 
-RAW_PATH_PREFIX = '/' + os.environ.get('VITE_PATH_PREFIX', '').strip('/')
+RAW_PATH_PREFIX = '/' + os.environ.get('PATH_PREFIX', '').strip('/')
 PATH_PREFIX = '' if RAW_PATH_PREFIX == '/' else RAW_PATH_PREFIX
 
 app = FastAPI(docs_url=PATH_PREFIX + '/docs', redoc_url=PATH_PREFIX + '/redoc')

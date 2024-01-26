@@ -3,8 +3,7 @@ import react from '@vitejs/plugin-react'
 
 const fullEnv = loadEnv('development', '..', '');
 
-const PATH_PREFIX = fullEnv.VITE_PATH_PREFIX || '';
-
+const PATH_PREFIX = fullEnv.PATH_PREFIX || '';
 const API_PATH = PATH_PREFIX + '/api';
 
 const PROXY_CONFIG = {};
@@ -22,6 +21,9 @@ export default defineConfig({
     proxy: PROXY_CONFIG
   },
   envDir: '..',
+  define: {
+    'import.meta.env.PATH_PREFIX': JSON.stringify(PATH_PREFIX)
+  },
   build: {
     manifest: true
   },
