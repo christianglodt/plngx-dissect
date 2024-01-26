@@ -20,9 +20,10 @@ T = TypeVar('T')
 
 
 class AsyncBaseCache[T](abc.ABC):
-    def __init__(self, cache_name: str, extension: str = ''):
+    def __init__(self, cache_name: str, extension: str = '', ignore_kwargs: list[str] | None = None):
         self.cache_name = cache_name
         self.extension = extension
+        self.ignore_kwargs = ignore_kwargs
         self.cache_dir = pathlib.Path(f'/cache') / cache_name
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -41,7 +42,11 @@ class AsyncBaseCache[T](abc.ABC):
         return wrapper
 
     def cache_key(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
-        key_str = json.dumps({ "args": args, "kwargs": kwargs })
+        kw = dict(kwargs)
+        for ignore_kw in self.ignore_kwargs or []:
+            kw.pop(ignore_kw, None)
+
+        key_str = json.dumps({ "args": args, "kwargs": kw })
         hash = hashlib.sha256()
         hash.update(key_str.encode('utf-8'))
         return hash.hexdigest()
@@ -78,8 +83,8 @@ PT = TypeVar('PT', bound=pydantic.BaseModel)
 
 
 class pydantic_yaml_cache(AsyncBaseCache[PT]):
-    def __init__(self, Model: Type[PT], cache_name: str):
-        super().__init__(cache_name, '.yml')
+    def __init__(self, Model: Type[PT], cache_name: str, ignore_kwargs: list[str] | None = None):
+        super().__init__(cache_name, '.yml', ignore_kwargs=ignore_kwargs)
         self.Model = Model
 
     def load(self, data: bytes) -> PT:
