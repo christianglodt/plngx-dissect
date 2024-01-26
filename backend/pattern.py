@@ -202,7 +202,7 @@ class Pattern(pydantic.BaseModel):
 
     async def evaluate(self, document_id: int, page_nr: int, client: PaperlessClient) -> PatternEvaluationResult:
 
-        doc = await document.get_parsed_document(document_id)
+        doc = await document.get_parsed_document(document_id, client=client)
         paperless_doc = await client.get_document_by_id(document_id)
 
         check_results = await self.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)

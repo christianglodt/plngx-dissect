@@ -86,9 +86,9 @@ async def get_temporary_pdf_download(paperless_id: int) -> AsyncIterator[pathlib
 X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document') # TODO cache should consider last_modified time from paperless document # type: ignore
-async def get_parsed_document(paperless_id: int) -> Document:
-    client = paperless.PaperlessClient()
+@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client']) # TODO cache should consider last_modified time from paperless document # type: ignore
+async def get_parsed_document(paperless_id: int, client: paperless.PaperlessClient | None = None) -> Document:
+    client = client or paperless.PaperlessClient()
     correspondents_by_id = await client.correspondents_by_id
     document_types_by_id = await client.document_types_by_id
     paperless_doc = await client.get_document_by_id(paperless_id)

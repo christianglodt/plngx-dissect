@@ -44,7 +44,7 @@ POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
     client = paperless.PaperlessClient()
     async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
-        doc = await get_parsed_document(paperless_doc.id)
+        doc = await get_parsed_document(paperless_doc.id, client=client)
         
         if await pattern.matches(doc, paperless_doc, client):
             yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, date_created=paperless_doc.created)
@@ -75,7 +75,7 @@ async def process_all_documents():
 
     async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
         log.debug(f'Retrieved paperless document {paperless_doc.id}')
-        doc = await get_parsed_document(paperless_doc.id)
+        doc = await get_parsed_document(paperless_doc.id, client=client)
         log.debug(f'Loaded cached text runs for document {doc.id}')
 
         paperless_doc_has_changed = False
