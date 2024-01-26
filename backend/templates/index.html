@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>plngx-dissect</title>
+    <script type="text/javascript">
+      window.plngx_dissect_path_prefix = "{{ path_prefix }}";
+    </script>
+    <script type="module" crossorigin src="{{ js_file }}"></script>
+    {% for css_file in css_files %}
+    <link rel="stylesheet" crossorigin href="{{ css_file }}">
+    {% endfor %}
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

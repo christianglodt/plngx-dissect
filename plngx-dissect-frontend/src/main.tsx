@@ -18,6 +18,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+import { PATH_PREFIX } from './hooks.ts';
 
 const router = createBrowserRouter([
     {
@@ -29,7 +30,7 @@ const router = createBrowserRouter([
             { path: '/', element: <PatternTable /> },
         ]
     },
-]);
+], { basename: PATH_PREFIX });
 
 const darkTheme = createTheme({
     palette: {

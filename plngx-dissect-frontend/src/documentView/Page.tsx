@@ -5,6 +5,7 @@ import RegionBox from "./RegionBox";
 import { produce } from "immer";
 import { DragEvent } from "react";
 import useResizeObserver from "use-resize-observer";
+import { PATH_PREFIX } from "../hooks";
 
 type PagePropsType = {
     document: Document;
@@ -42,7 +43,7 @@ const Page = (props: PagePropsType) => {
     // This uses three DOM nodes to ensure the page is centered with a proper bounding element.
     return (
         <Box sx={{ height: '100%', position: 'relative' }}>
-            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("${PATH_PREFIX}/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
             </Box>
             <div ref={boundingNode} onDragOver={onDragOver} onDrop={onDrop} style={{
                 position: 'absolute',

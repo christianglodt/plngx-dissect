@@ -4,15 +4,23 @@ import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
 
+type WindowGlobals = {
+    plngx_dissect_path_prefix?: string | null;
+}
+console.log(import.meta.env);
+
+export const PATH_PREFIX = (window as WindowGlobals).plngx_dissect_path_prefix || import.meta.env.VITE_PATH_PREFIX || '';
+
+
 async function fetchJson<T>(url: string): Promise<T> {
-    const response = await fetch(url);
+    const response = await fetch(PATH_PREFIX + url);
     if (!response.ok) throw new Error(response.statusText);
     const obj = response.json();
     return obj as T;
 }
 
 async function putJson<T>(url: string, object: T): Promise<T> {
-    const response = await fetch(url, {
+    const response = await fetch(PATH_PREFIX + url, {
         method: 'PUT',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(object)
@@ -22,7 +30,7 @@ async function putJson<T>(url: string, object: T): Promise<T> {
 }
 
 async function postRequest<T, R>(url: string, object: T): Promise<R> {
-    const response = await fetch(url, {
+    const response = await fetch(PATH_PREFIX + url, {
         method: 'POST',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(object)
@@ -32,7 +40,7 @@ async function postRequest<T, R>(url: string, object: T): Promise<R> {
 }
 
 async function deleteRequest(url: string): Promise<void> {
-    const response = await fetch(url, {
+    const response = await fetch(PATH_PREFIX + url, {
         method: 'DELETE'
     });
     if (!response.ok) throw new Error(response.statusText);
