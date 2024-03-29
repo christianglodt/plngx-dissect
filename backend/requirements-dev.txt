@@ -1,1 +1,3 @@
 austin-dist==3.6.0
+austin-web==0.3.0
+austin-tui==1.2.3
