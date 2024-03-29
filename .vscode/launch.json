@@ -11,12 +11,20 @@
         {
             "name": "uvicorn",
             "request": "launch",
-            "type": "python",
+            "type": "debugpy",
             "program": "/home/vscode/.local/bin/uvicorn",
             "cwd": "${workspaceFolder}/backend",
             "args": [
                 "--host", "0.0.0.0", "main:app", "--reload"
             ],
+        },
+        {
+            "name": "tests (backend)",
+            "request": "launch",
+            "type": "debugpy",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "test.py"
         }
+
     ]
 }
