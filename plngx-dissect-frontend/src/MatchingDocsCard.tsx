@@ -24,8 +24,6 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
         setSearchParams(p);
     }
 
-    console.log(error);
-
     return (
         <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
             { matches && !error && matches.map((match) =>
