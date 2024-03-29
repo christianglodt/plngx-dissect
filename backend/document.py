@@ -8,10 +8,15 @@ import subprocess
 from contextlib import asynccontextmanager
 import pathlib
 import pdfplumber
+import pdfminer.psparser
 import cache
 import re
+import logging
 from typing import AsyncIterator
 
+
+logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
+log = logging.getLogger(__name__)
 
 class TextRun(Region):
     text: str
@@ -56,6 +61,11 @@ class Page(pydantic.BaseModel):
         return RegionResult(text=text, group_values=group_values, error=error)
 
 
+class DocumentParseStatus(pydantic.BaseModel):
+    datetime_parsed: pydantic.AwareDatetime
+    error: str | None
+
+
 class DocumentBase(pydantic.BaseModel):
     id: int
     title: str
@@ -64,6 +74,7 @@ class DocumentBase(pydantic.BaseModel):
     paperless_url: pydantic.AnyHttpUrl
     datetime_added: pydantic.AwareDatetime
     date_created: datetime.date
+    parse_status: DocumentParseStatus
 
 
 class Document(DocumentBase):
@@ -92,29 +103,38 @@ async def get_parsed_document(paperless_id: int, client: paperless.PaperlessClie
     correspondents_by_id = await client.correspondents_by_id
     document_types_by_id = await client.document_types_by_id
     paperless_doc = await client.get_document_by_id(paperless_id)
+
     async with get_temporary_pdf_download(paperless_id) as pdf_path:
-        with pdfplumber.open(pdf_path) as pdf:
-            pages: list[Page] = []
-            for page in pdf.pages:
-                runs: list[TextRun] = []
-                pdfplumber_text_runs = page.extract_words(keep_blank_chars=True, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
-                for text_run in pdfplumber_text_runs:
-                    runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
-                pages.append(Page(text_runs=runs, width=page.width, height=page.height))
-            
-            correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
-            document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
-            document = Document(
-                id=paperless_id,
-                title=paperless_doc.title,
-                correspondent=correspondent,
-                document_type=document_type,
-                datetime_added=paperless_doc.added,
-                date_created=paperless_doc.created,
-                paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
-                pages=pages,
-            )
-            return document
+        pages: list[Page] = []
+        error: str | None = None
+
+        try:
+            with pdfplumber.open(pdf_path) as pdf:
+                for page in pdf.pages:
+                    runs: list[TextRun] = []
+                    pdfplumber_text_runs = page.extract_words(keep_blank_chars=True, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
+                    for text_run in pdfplumber_text_runs:
+                        runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
+                    pages.append(Page(text_runs=runs, width=page.width, height=page.height))
+                log.info('Parsed "%s" from %s', paperless_doc.title , pdf_path)
+        except pdfminer.psparser.PSException as e:
+            error = str(e)
+            log.error('Error parsing "%s" from %s: %s', paperless_doc.title , pdf_path, error)
+        
+        correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
+        document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
+        document = Document(
+            id=paperless_id,
+            title=paperless_doc.title,
+            correspondent=correspondent,
+            document_type=document_type,
+            datetime_added=paperless_doc.added,
+            date_created=paperless_doc.created_date,
+            paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
+            pages=pages,
+            parse_status=DocumentParseStatus(datetime_parsed=datetime.datetime.now().astimezone(), error=error)
+        )
+        return document
 
 
 @cache.file_cache('pdf_page_svg', '.svg') # type: ignore
