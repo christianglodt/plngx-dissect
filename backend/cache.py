@@ -73,7 +73,7 @@ class AsyncBaseCache[T](abc.ABC):
             await aiofiles.os.rename(str(f.name), (self.cache_dir / key).with_suffix(self.extension))
 
 
-@lru_cache(maxsize=128)
+@lru_cache(maxsize=1024)
 def parse_yaml(s: str) -> Any:
     return ryaml.loads(s)
 
