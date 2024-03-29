@@ -12,14 +12,52 @@ import pdfminer.psparser
 import cache
 import re
 import logging
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
 log = logging.getLogger(__name__)
 
+
 class TextRun(Region):
     text: str
+
+    def __hash__(self):
+        return hash((TextRun, self.text, hash(super())))
+
+
+def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
+    if not runs:
+        return []
+
+    y_points: list[tuple[Pt, Literal['start', 'end'], TextRun]] = []
+    for run in runs:
+        y_points.append((run.y, 'start', run))
+        y_points.append((run.y2, 'end', run))
+    
+    y_points = sorted(y_points, key=lambda yp: yp[0])
+
+    depth = 0
+    lines: list[list[TextRun]] = []
+    current_line: list[TextRun] = []
+    for _y, kind, run in y_points:
+
+        if kind == 'start':
+            depth += 1
+            current_line.append(run)
+
+        if kind == 'end':
+            depth -= 1
+
+            if depth == 0:
+                # gap starts
+                lines.append(sorted(current_line, key=lambda tr: tr.x))
+                current_line = []
+
+    if current_line:
+        lines.append(sorted(current_line, key=lambda tr: tr.x))
+
+    return lines
 
 
 class Page(pydantic.BaseModel):
@@ -27,23 +65,15 @@ class Page(pydantic.BaseModel):
     height: float
     text_runs: list[TextRun]
 
-    def get_region_text(self, region: Region) -> str:
+    def get_region_text_lines(self, region: Region) -> list[list[str]]:
+        # TODO optimize filtering (bisect?)
         runs_in_region = list(filter(lambda t: region.encloses(t), self.text_runs))
+        text_lines = split_runs_into_lines(runs_in_region)
+        return [[tr.text for tr in line] for line in text_lines]
 
-        text_lines: list[list[str]] = [[]]
-        while len(runs_in_region) > 0:
-            runs_in_region.sort(key=lambda t: (t.y, t.x))
-            first = runs_in_region.pop(0)
-            text_lines[-1].append(first.text)
-            horizontally_colliding = list(filter(lambda t: t.intersects_vertically(first), runs_in_region))
-            for c in horizontally_colliding: # TODO make more efficient
-                runs_in_region.remove(c)
-
-            horizontally_colliding.sort(key=lambda t: t.x)
-            text_lines[-1] += [t.text for t in horizontally_colliding]
-            text_lines.append([])
-        
-        lines = [' '.join(l) for l in text_lines]
+    def get_region_text(self, region: Region) -> str:
+        text_lines = self.get_region_text_lines(region)        
+        lines = [' '.join(word) for word in text_lines]
         text = '\n'.join(lines)
         return text
 

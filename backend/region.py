@@ -30,6 +30,17 @@ class Region(pydantic.BaseModel):
             return False
         return True
 
+    @property
+    def w(self) -> Pt:
+        return typing.cast(Pt, self.x2 - self.x)
+
+    @property
+    def h(self) -> Pt:
+        return typing.cast(Pt, self.y2 - self.y)
+
+    def __hash__(self):
+        return hash((Region, self.x, self.y, self.x2, self. y2))
+
 
 class RegionRegex(Region):
     regex: str
