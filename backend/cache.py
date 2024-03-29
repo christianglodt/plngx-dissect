@@ -1,8 +1,7 @@
 import pathlib
 import pydantic
-import ruamel.yaml
 from typing import Type, Any, NewType, Callable, ParamSpec, Awaitable, cast, TypeVar
-from ruamel.yaml.compat import StringIO
+import ryaml
 from functools import wraps, lru_cache
 import json
 import hashlib
@@ -76,7 +75,7 @@ class AsyncBaseCache[T](abc.ABC):
 
 @lru_cache(maxsize=128)
 def parse_yaml(s: str) -> Any:
-    return ruamel.yaml.YAML().load(StringIO(s))
+    return ryaml.loads(s)
 
 
 PT = TypeVar('PT', bound=pydantic.BaseModel)
@@ -92,9 +91,8 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
         return self.Model.model_validate(obj)
 
     def dump(self, value: PT) -> bytes:
-        stream = StringIO()
-        ruamel.yaml.YAML().dump(value.model_dump(mode='json'), stream)
-        return stream.getvalue().encode('utf-8')
+        s = ryaml.dumps(value.model_dump(mode='json'))
+        return s.encode('utf-8')
 
 
 class file_cache(AsyncBaseCache[bytes]):

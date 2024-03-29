@@ -6,7 +6,7 @@ import aiofiles
 import aiofiles.os
 import pathlib
 import urllib.parse
-import ruamel.yaml
+import ryaml
 import re
 
 import region
@@ -280,23 +280,19 @@ async def list_patterns() -> list[PatternListEntry]:
 async def create_pattern(name: str) -> Pattern:
     pattern = Pattern(name=name, page=0, checks=[], regions=[], fields=[])
     async with aiofiles.open(name_to_path(name), 'x') as f:
-        s = ruamel.yaml.StringIO()
-        ruamel.yaml.YAML().dump(pattern.model_dump(mode='json'), s)
-        await f.write(s.getvalue())
+        await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
     return pattern
 
 
 async def get_pattern(name: str) -> Pattern:
     async with aiofiles.open(name_to_path(name), 'r', encoding='utf-8') as f:
-        obj = ruamel.yaml.YAML().load(ruamel.yaml.StringIO(await f.read()))
+        obj = ryaml.loads(await f.read())
         return Pattern.model_validate(obj)
 
 
 async def put_pattern(pattern: Pattern):
     async with aiofiles.tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=CONFIG_PATH) as f:
-        s = ruamel.yaml.StringIO()
-        ruamel.yaml.YAML().dump(pattern.model_dump(mode='json'), s)
-        await f.write(s.getvalue())
+        await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
         await aiofiles.os.rename(str(f.name), name_to_path(pattern.name))
 
 

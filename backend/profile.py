@@ -2,7 +2,7 @@
 
 import asyncio
 
-import ruamel.yaml
+import ryaml
 
 from pattern import Pattern
 from matching import get_documents_matching_pattern
@@ -37,5 +37,5 @@ fields:
 '''
 
 if __name__ == '__main__':
-    pattern = Pattern.model_validate(ruamel.yaml.YAML().load(ruamel.yaml.StringIO(PATTERN)))
+    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
     print(asyncio.run(pattern_matching(pattern)))
