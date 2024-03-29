@@ -41,15 +41,21 @@ POST_PROCESS_ADD_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_ADD_TAG
 POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
 
 
-async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
-    client = paperless.PaperlessClient()
-    async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
+async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperless.PaperlessDocument], pattern: Pattern, client: paperless.PaperlessClient) -> AsyncIterator[DocumentBase]:
+    async for paperless_doc in paperless_docs:
         doc = await get_parsed_document(paperless_doc.id, client=client)
         
         if await pattern.matches(doc, paperless_doc, client):
             # Return DocumentBase, which is the model used for listing documents (ie. not including page data)
             # TODO find better way to remove pages from returned doc (copy? unparse/parse?)
             yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, date_created=paperless_doc.created, parse_status=doc.parse_status)
+
+
+async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
+    client = paperless.PaperlessClient()
+
+    async for doc in filter_documents_matching_pattern(client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS), pattern, client):
+        yield doc
 
 
 async def process_all_documents():
