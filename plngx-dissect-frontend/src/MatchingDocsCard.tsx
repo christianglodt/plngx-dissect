@@ -1,7 +1,8 @@
-import { CircularProgress, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Pattern } from "./types";
 import ListCard from "./utils/ListCard";
 import { usePatternMatches } from "./hooks";
+import { Error } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
 import { Article } from "@mui/icons-material";
 
@@ -13,7 +14,7 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
 
     const { pattern } = props;
 
-    const { data: matches, isLoading } = usePatternMatches(pattern);
+    const { data: matches, isLoading, error } = usePatternMatches(pattern);
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -23,14 +24,19 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
         setSearchParams(p);
     }
 
+    console.log(error);
+
     return (
         <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
-            { matches && matches.map((match) =>
+            { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
                 <ListItemText primary={match.title} secondary={`${match.document_type}\n${match.correspondent}\n${match.date_created.toString()}`} sx={{ whiteSpace: 'pre' }}/>
             </ListItemButton>
             )}
+            { error &&
+            <Chip label={error.toString()} color="error" icon={<Error/>}/>
+            }
         </ListCard>
     );
 }
