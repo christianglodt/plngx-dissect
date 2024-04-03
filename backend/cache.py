@@ -3,8 +3,6 @@ import pydantic
 from typing import Type, Any, NewType, Callable, ParamSpec, Awaitable, cast, TypeVar
 import ryaml
 from functools import wraps, lru_cache
-import json
-import hashlib
 import aiofiles
 import aiofiles.os
 import abc
@@ -44,10 +42,10 @@ class AsyncBaseCache[T](abc.ABC):
         for ignore_kw in self.ignore_kwargs or []:
             kw.pop(ignore_kw, None)
 
-        key_str = json.dumps({ "args": args, "kwargs": kw })
-        hash = hashlib.sha256()
-        hash.update(key_str.encode('utf-8'))
-        return hash.hexdigest()
+        # TODO ensure all args and remaining kw args have stable hash codes...
+        # print((args, tuple(kw.items())))
+        
+        return str(hash((args, tuple(kw.items()))))
 
     @abc.abstractmethod
     def load(self, data: bytes) -> T:
