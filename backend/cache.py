@@ -14,7 +14,6 @@ NO_VALUE: NoValueType = NoValueType(object())
 P = ParamSpec('P')
 T = TypeVar('T')
 
-
 class AsyncBaseCache[T](abc.ABC):
     def __init__(self, cache_name: str, extension: str = '', ignore_kwargs: list[str] | None = None):
         self.cache_name = cache_name
@@ -70,12 +69,12 @@ class AsyncBaseCache[T](abc.ABC):
             await aiofiles.os.rename(str(f.name), (self.cache_dir / key).with_suffix(self.extension))
 
 
-@lru_cache(maxsize=1024)
-def parse_yaml(s: str) -> Any:
-    return ryaml.loads(s)
-
-
 PT = TypeVar('PT', bound=pydantic.BaseModel)
+
+
+@lru_cache(maxsize=1024)
+def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
+    return Model.model_validate(ryaml.loads(s.decode('utf-8')))
 
 
 class pydantic_yaml_cache(AsyncBaseCache[PT]):
@@ -84,8 +83,7 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
         self.Model = Model
 
     def load(self, data: bytes) -> PT:
-        obj = parse_yaml(data.decode('utf-8'))
-        return self.Model.model_validate(obj)
+        return parse_yaml_and_validate_model(self.Model, data) # type: ignore # ignore typing problem caused by lru_cache
 
     def dump(self, value: PT) -> bytes:
         s = ryaml.dumps(value.model_dump(mode='json'))
