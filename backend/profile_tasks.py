@@ -6,7 +6,7 @@ import ryaml
 
 from pattern import Pattern
 from matching import filter_documents_matching_pattern, PAPERLESS_REQUIRED_TAGS
-from document import DocumentBase
+from document import DocumentBase, get_parsed_document
 
 from typing import AsyncIterator, TypeVar
 import paperless
@@ -32,8 +32,15 @@ async def profile():
         
     pattern = Pattern.model_validate(ryaml.loads(PATTERN))
 
-    for _ in range(50):
-      print(await pattern_matching(async_iter(paperless_docs), pattern, client))
+    region = pattern.regions[0]
+    docs = [await get_parsed_document(pl.id, client=client) for pl in paperless_docs]
+    for _ in range(1000):
+        for doc in docs:
+            if doc.pages:
+              _text = doc.pages[0].get_region_text(region)
+
+    # for _ in range(50):
+    #   print(await pattern_matching(async_iter(paperless_docs), pattern, client))
     
 
 
