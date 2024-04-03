@@ -88,8 +88,10 @@ class Page(pydantic.BaseModel):
         x2_index = bisect.bisect(self.text_run_indexes_ordered_by_x2, region.x2, key=x2_key)
         y2_index = bisect.bisect(self.text_run_indexes_ordered_by_y2, region.y2, key=y2_key)
         
-        result_indexes = set(self.text_run_indexes_ordered_by_x[x_index:]) & set(self.text_run_indexes_ordered_by_x2[:x2_index]) & \
-                         set(self.text_run_indexes_ordered_by_y[y_index:]) & set(self.text_run_indexes_ordered_by_y2[:y2_index])
+        result_indexes = set(self.text_run_indexes_ordered_by_x[x_index:]) & \
+                         set(self.text_run_indexes_ordered_by_x2[:x2_index]) & \
+                         set(self.text_run_indexes_ordered_by_y[y_index:]) & \
+                         set(self.text_run_indexes_ordered_by_y2[:y2_index])
         
         runs_in_region = [self.text_runs[i] for i in result_indexes]
 
