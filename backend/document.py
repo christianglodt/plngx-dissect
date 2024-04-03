@@ -12,6 +12,7 @@ import pdfminer.psparser
 import cache
 import re
 import logging
+import bisect
 from typing import AsyncIterator, Literal
 
 
@@ -64,10 +65,34 @@ class Page(pydantic.BaseModel):
     width: float
     height: float
     text_runs: list[TextRun]
+    text_run_indexes_ordered_by_x: list[int]
+    text_run_indexes_ordered_by_y: list[int]
+    text_run_indexes_ordered_by_x2: list[int]
+    text_run_indexes_ordered_by_y2: list[int]
 
     def get_region_text_lines(self, region: Region) -> list[list[str]]:
-        # TODO optimize filtering (bisect?)
-        runs_in_region = list(filter(lambda t: region.encloses(t), self.text_runs))
+        def x_key(index: int) -> Pt:
+            return self.text_runs[index].x
+        
+        def x2_key(index: int) -> Pt:
+            return self.text_runs[index].x2
+        
+        def y_key(index: int) -> Pt:
+            return self.text_runs[index].y
+
+        def y2_key(index: int) -> Pt:
+            return self.text_runs[index].y2
+
+        x_index =  bisect.bisect(self.text_run_indexes_ordered_by_x,  region.x,  key=x_key)
+        y_index =  bisect.bisect(self.text_run_indexes_ordered_by_y,  region.y,  key=y_key)
+        x2_index = bisect.bisect(self.text_run_indexes_ordered_by_x2, region.x2, key=x2_key)
+        y2_index = bisect.bisect(self.text_run_indexes_ordered_by_y2, region.y2, key=y2_key)
+        
+        result_indexes = set(self.text_run_indexes_ordered_by_x[x_index:]) & set(self.text_run_indexes_ordered_by_x2[:x2_index]) & \
+                         set(self.text_run_indexes_ordered_by_y[y_index:]) & set(self.text_run_indexes_ordered_by_y2[:y2_index])
+        
+        runs_in_region = [self.text_runs[i] for i in result_indexes]
+
         text_lines = split_runs_into_lines(runs_in_region)
         return [[tr.text for tr in line] for line in text_lines]
 
@@ -128,7 +153,7 @@ X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
 @cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client']) # TODO cache should consider last_modified time from paperless document # type: ignore
-async def get_parsed_document(paperless_id: int, client: paperless.PaperlessClient | None = None) -> Document:
+async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
     client = client or paperless.PaperlessClient()
     correspondents_by_id = await client.correspondents_by_id
     document_types_by_id = await client.document_types_by_id
@@ -145,7 +170,11 @@ async def get_parsed_document(paperless_id: int, client: paperless.PaperlessClie
                     pdfplumber_text_runs = page.extract_words(keep_blank_chars=True, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
                     for text_run in pdfplumber_text_runs:
                         runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
-                    pages.append(Page(text_runs=runs, width=page.width, height=page.height))
+                    indexes_by_x = sorted(list(range(len(runs))), key=lambda i: runs[i].x)
+                    indexes_by_y = sorted(list(range(len(runs))), key=lambda i: runs[i].y)
+                    indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
+                    indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
+                    pages.append(Page(text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
                 log.info('Parsed "%s" from %s', paperless_doc.title , pdf_path)
         except pdfminer.psparser.PSException as e:
             error = str(e)
