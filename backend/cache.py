@@ -10,9 +10,8 @@ import aiofiles.os
 import abc
 
 
-NoValueType = NewType('NoValue', object)
+NoValueType = NewType('NoValueType', object)
 NO_VALUE: NoValueType = NoValueType(object())
-
 
 P = ParamSpec('P')
 T = TypeVar('T')
