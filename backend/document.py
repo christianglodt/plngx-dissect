@@ -53,7 +53,7 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
             if depth == 0:
                 # gap starts
                 lines.append(current_line)
-                current_line.clear()
+                current_line = []
 
     if current_line:
         lines.append(current_line)
