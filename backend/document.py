@@ -40,23 +40,23 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
 
     depth = 0
     lines: list[list[TextRun]] = []
-    current_line: list[TextRun] = []
+    current_line: list[TextRun] = [] # This list is maintained in sorted-by-x order
     for _y, kind, run in y_points:
 
         if kind == 'start':
             depth += 1
-            current_line.append(run)
+            bisect.insort(current_line, run, key=lambda tr: tr.x)
 
         if kind == 'end':
             depth -= 1
 
             if depth == 0:
                 # gap starts
-                lines.append(sorted(current_line, key=lambda tr: tr.x))
-                current_line = []
+                lines.append(current_line)
+                current_line.clear()
 
     if current_line:
-        lines.append(sorted(current_line, key=lambda tr: tr.x))
+        lines.append(current_line)
 
     return lines
 
