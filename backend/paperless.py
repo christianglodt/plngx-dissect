@@ -235,12 +235,12 @@ class PaperlessClient:
 
         if correspondents:
             correspondents_by_name = await self.correspondents_by_name
-            correspondent_ids = [str(correspondents_by_name[c].id) for c in correspondents]
+            correspondent_ids = [str(correspondents_by_name[c].id) for c in correspondents if c in correspondents_by_name]
             url_params['correspondent__id__in'] = ",".join(correspondent_ids)
         
         if document_types:
             document_types_by_name = await self.document_types_by_name
-            document_type_ids = [str(document_types_by_name[t].id) for t in document_types]
+            document_type_ids = [str(document_types_by_name[t].id) for t in document_types if t in document_types_by_name]
             url_params['document_type__id__in'] = ",".join(document_type_ids)
 
         query_string = urllib.parse.urlencode(url_params)
