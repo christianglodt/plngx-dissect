@@ -88,7 +88,7 @@ async def get_document(document_id: int) -> document.Document:
 
 @api_app.post('/documents/matching_pattern')
 async def get_documents_matching_pattern(p: pattern.Pattern) -> list[document.DocumentBase]:
-    MAX_RESULTS = 20
+    MAX_RESULTS = 50
 
     res: list[document.DocumentBase] = []
     async for d in matching.get_documents_matching_pattern(p):

@@ -54,7 +54,7 @@ async def profile_pattern_matching():
 
 async def profile_get_documents_matching_pattern():
     pattern = Pattern.model_validate(ryaml.loads(PATTERN))
-    MAX_RESULTS = 20
+    MAX_RESULTS = 50
 
     res: list[DocumentBase] = []
     async for d in get_documents_matching_pattern(pattern):
