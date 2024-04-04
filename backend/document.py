@@ -13,7 +13,7 @@ import cache
 import re
 import logging
 import bisect
-from typing import AsyncIterator, Literal
+from typing import AsyncIterator, Literal, cast
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
@@ -31,11 +31,14 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
     if not runs:
         return []
 
-    y_points: list[tuple[Pt, Literal['start', 'end'], TextRun]] = []
+    y_points: list[tuple[Pt, Literal['s', 'e'], TextRun]] = []
     for run in runs:
-        y_points.append((run.y, 'start', run))
-        y_points.append((run.y2, 'end', run))
-    
+        # Adjust top y-coord down by 25%, reducing considered height of text for this step.
+        # This reduces failures to detect y-gaps due to page skew, etc.
+        adjusted_y = cast(Pt, run.y + run.h * 0.75)
+        y_points.append((adjusted_y, 's', run))
+        y_points.append((run.y2, 'e', run))    
+
     y_points = sorted(y_points, key=lambda yp: yp[0])
 
     depth = 0
@@ -43,11 +46,11 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
     current_line: list[TextRun] = [] # This list is maintained in sorted-by-x order
     for _y, kind, run in y_points:
 
-        if kind == 'start':
+        if kind == 's':
             depth += 1
             bisect.insort(current_line, run, key=lambda tr: tr.x)
 
-        if kind == 'end':
+        if kind == 'e':
             depth -= 1
 
             if depth == 0:
