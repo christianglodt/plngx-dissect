@@ -207,7 +207,7 @@ class Pattern(pydantic.BaseModel):
 
         check_results = await self.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)
 
-        custom_fields_by_name = await client.custom_fields_by_name()
+        custom_fields_by_name = await client.custom_fields_by_name
 
         region_results: list[region.RegionResult|None] = []
         field_results: list[field.FieldResult|None] = []
@@ -237,6 +237,26 @@ class Pattern(pydantic.BaseModel):
                 field_results.append(field_result)
 
         return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
+
+    def get_required_correspondents_and_document_types(self) -> tuple[list[str], list[str]]:
+        # Most patterns have simple checks (eg. one document type and one correspondent).
+        # This method extracts these checks from the pattern so that they can be used
+        # as url parameters when querying paperless, reducing the number of documents that
+        # need to be checked when getting the list of documents matching a pattern.
+
+        correspondents: list[str] = []
+        document_types: list[str] = []
+
+        for check in self.checks:
+            # simple non-recursive loop to find
+
+            if isinstance(check, CorrespondentCheck):
+                correspondents.append(check.name)
+
+            if isinstance(check, DocumentTypeCheck):
+                document_types.append(check.name)
+
+        return (correspondents, document_types)
 
 
 class PatternListEntry(pydantic.BaseModel):

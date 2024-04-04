@@ -54,7 +54,13 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
     client = paperless.PaperlessClient()
 
-    async for doc in filter_documents_matching_pattern(client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS), pattern, client):
+    # Find topmost correspondent and document checks and use them in paperless query.
+    # This reduces the number of results needing to be checked significantly in the most common case.
+    correspondents, document_types = pattern.get_required_correspondents_and_document_types()
+
+    paperless_docs = client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, correspondents=correspondents, document_types=document_types)
+
+    async for doc in filter_documents_matching_pattern(paperless_docs, pattern, client):
         yield doc
 
 
@@ -67,10 +73,10 @@ async def process_all_documents():
     log.debug(f'Loaded {len(patterns)} patterns')
 
     client = paperless.PaperlessClient()
-    tags_by_name = await client.tags_by_name()
+    tags_by_name = await client.tags_by_name
     log.debug(f'Retrieved tags by name from Paperless')
     custom_fields_by_id = await client.custom_fields_by_id
-    custom_fields_by_name = await client.custom_fields_by_name()
+    custom_fields_by_name = await client.custom_fields_by_name
     log.debug(f'Retrieved custom fields by name from Paperless')
 
     try:

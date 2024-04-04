@@ -158,6 +158,7 @@ class PaperlessClient:
             if PAPERLESS_FORCE_SSL:
                 url = ensure_https(url)
             async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+                print('Got', url)
                 response.raise_for_status()
                 yield response
 
@@ -184,6 +185,7 @@ class PaperlessClient:
     async def tags_by_id(self) -> Mapping[int, PaperlessTag]:
         return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/tags/', PaperlessTag) }
 
+    @asyncstdlib.cached_property
     async def tags_by_name(self) -> Mapping[str, PaperlessTag]:
         return { t.name: t for t in (await self.tags_by_id).values() }
 
@@ -191,16 +193,25 @@ class PaperlessClient:
     async def custom_fields_by_id(self) -> Mapping[int, PaperlessCustomField]:
         return { f.id: f async for f in self._iter_paginated_results(f'{self.base_url}/api/custom_fields/', PaperlessCustomField) }
 
+    @asyncstdlib.cached_property
     async def custom_fields_by_name(self) -> Mapping[str, PaperlessCustomField]:
         return { t.name: t for t in (await self.custom_fields_by_id).values() }
 
     @asyncstdlib.cached_property
     async def correspondents_by_id(self) -> Mapping[int, PaperlessCorrespondent]:
         return { c.id: c async for c in self._iter_paginated_results(f'{self.base_url}/api/correspondents/', PaperlessCorrespondent) }
+    
+    @asyncstdlib.cached_property
+    async def correspondents_by_name(self) -> Mapping[str, PaperlessCorrespondent]:
+        return { c.name: c for c in (await self.correspondents_by_id).values() }
 
     @asyncstdlib.cached_property
     async def document_types_by_id(self) -> Mapping[int, PaperlessDocumentType]:
         return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/document_types/', PaperlessDocumentType) }
+
+    @asyncstdlib.cached_property
+    async def document_types_by_name(self) -> Mapping[str, PaperlessDocumentType]:
+        return { t.name: t for t in (await self.document_types_by_id).values() }
 
     @asyncstdlib.cached_property
     async def storage_paths_by_id(self) -> Mapping[int, PaperlessStoragePath]:
@@ -215,10 +226,26 @@ class PaperlessClient:
         async with self._put(f'{self.base_url}/api/documents/{document.id}/', document):
             return
 
-    async def get_documents_with_tags(self, tags: Collection[str]) -> AsyncIterator[PaperlessDocument]:
-        tags_by_name = await self.tags_by_name()
-        tag_ids = [tags_by_name[tag].id for tag in tags]
-        url = f'{self.base_url}/api/documents/?tags__id__all={",".join(str(tag_id) for tag_id in tag_ids)}'
+    async def get_documents_with_tags(self, tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> AsyncIterator[PaperlessDocument]:
+        tags_by_name = await self.tags_by_name
+        tag_ids = [str(tags_by_name[tag].id) for tag in tags]
+
+        url_params: dict[str, str] = {}
+        url_params['tags__id__all'] = ",".join(tag_ids)
+
+        if correspondents:
+            correspondents_by_name = await self.correspondents_by_name
+            correspondent_ids = [str(correspondents_by_name[c].id) for c in correspondents]
+            url_params['correspondent__id__in'] = ",".join(correspondent_ids)
+        
+        if document_types:
+            document_types_by_name = await self.document_types_by_name
+            document_type_ids = [str(document_types_by_name[t].id) for t in document_types]
+            url_params['document_type__id__in'] = ",".join(document_type_ids)
+
+        query_string = urllib.parse.urlencode(url_params)
+
+        url = f'{self.base_url}/api/documents/?{query_string}'
         async for d in self._iter_paginated_results(url, PaperlessDocument):
             yield d
 
