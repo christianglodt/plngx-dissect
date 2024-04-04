@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, OpenInNew } from "@mui/icons-material";
-import { Alert, AlertTitle, Box, IconButton, Skeleton, Stack } from "@mui/material";
+import { Alert, AlertTitle, Box, IconButton, Stack, CircularProgress } from "@mui/material";
 import { useDocument } from "../hooks";
 import { Pattern } from "../types";
 import Page from "./Page";
@@ -37,7 +37,11 @@ const DocumentView = (props: DocumentPropsType) => {
     }
 
     if (!document) {
-        return <Skeleton variant="rectangular" sx={{ width: '100%', height: '100%' }}/>;
+        return (
+            <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress/>
+            </Box>
+        );
     }
 
     const pageNr = Number(searchParams.get('page') || '1') - 1;
