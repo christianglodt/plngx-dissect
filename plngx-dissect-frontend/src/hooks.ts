@@ -7,7 +7,6 @@ import { useDebounce } from 'use-debounce';
 type WindowGlobals = {
     plngx_dissect_path_prefix?: string | null;
 }
-console.log(import.meta.env);
 
 export const PATH_PREFIX = (window as WindowGlobals).plngx_dissect_path_prefix || import.meta.env.PATH_PREFIX || '';
 
