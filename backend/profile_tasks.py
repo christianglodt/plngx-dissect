@@ -7,6 +7,7 @@ import ryaml
 from pattern import Pattern
 from matching import filter_documents_matching_pattern, PAPERLESS_REQUIRED_TAGS
 from document import DocumentBase, get_parsed_document
+from matching import get_documents_matching_pattern
 
 from typing import AsyncIterator, TypeVar
 import paperless
@@ -25,7 +26,7 @@ async def async_iter(l: list[T]) -> AsyncIterator[T]:
         yield o
 
 
-async def profile():
+async def profile_region_text():
     client = paperless.PaperlessClient()
 
     paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS)]
@@ -39,9 +40,29 @@ async def profile():
             if doc.pages:
               _text = doc.pages[0].get_region_text(region)
 
-    # for _ in range(50):
-    #   print(await pattern_matching(async_iter(paperless_docs), pattern, client))
-    
+
+async def profile_pattern_matching():
+    client = paperless.PaperlessClient()
+
+    paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS)]
+        
+    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+
+    for _ in range(50):
+      print(await pattern_matching(async_iter(paperless_docs), pattern, client))
+
+
+async def profile_get_documents_matching_pattern():
+    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+    MAX_RESULTS = 20
+
+    res: list[DocumentBase] = []
+    async for d in get_documents_matching_pattern(pattern):
+        res.append(d)
+
+        if len(res) == MAX_RESULTS:
+            break
+    print(res)
 
 
 PATTERN = '''
@@ -65,4 +86,4 @@ fields:
 '''
 
 if __name__ == '__main__':
-    asyncio.run(profile())
+    asyncio.run(profile_get_documents_matching_pattern())
