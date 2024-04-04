@@ -48,7 +48,7 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
         if await pattern.matches(doc, paperless_doc, client):
             # Return DocumentBase, which is the model used for listing documents (ie. not including page data)
             # TODO find better way to remove pages from returned doc (copy? unparse/parse?)
-            yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, date_created=paperless_doc.created, parse_status=doc.parse_status)
+            yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, datetime_created=paperless_doc.created, parse_status=doc.parse_status)
 
 
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:

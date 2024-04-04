@@ -133,7 +133,7 @@ class DocumentBase(pydantic.BaseModel):
     document_type: str | None
     paperless_url: pydantic.AnyHttpUrl
     datetime_added: pydantic.AwareDatetime
-    date_created: datetime.date
+    datetime_created: pydantic.AwareDatetime
     parse_status: DocumentParseStatus
 
 
@@ -193,7 +193,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
             correspondent=correspondent,
             document_type=document_type,
             datetime_added=paperless_doc.added,
-            date_created=paperless_doc.created_date,
+            datetime_created=paperless_doc.created,
             paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
             pages=pages,
             parse_status=DocumentParseStatus(datetime_parsed=datetime.datetime.now().astimezone(), error=error)

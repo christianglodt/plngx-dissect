@@ -29,7 +29,7 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
             { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={match.title} secondary={`${match.document_type}\n${match.correspondent}\n${match.date_created.toString()}`} sx={{ whiteSpace: 'pre' }}/>
+                <ListItemText primary={match.title} secondary={`${match.document_type}\n${match.correspondent}\n${new Date(match.datetime_created).toLocaleDateString()}`} sx={{ whiteSpace: 'pre' }}/>
             </ListItemButton>
             )}
             { error &&
