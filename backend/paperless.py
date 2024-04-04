@@ -158,7 +158,6 @@ class PaperlessClient:
             if PAPERLESS_FORCE_SSL:
                 url = ensure_https(url)
             async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
-                print('Got', url)
                 response.raise_for_status()
                 yield response
 
