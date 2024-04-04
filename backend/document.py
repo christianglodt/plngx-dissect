@@ -33,9 +33,9 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
 
     y_points: list[tuple[Pt, Literal['s', 'e'], TextRun]] = []
     for run in runs:
-        # Adjust top y-coord down by 25%, reducing considered height of text for this step.
+        # Adjust top y-coord down by 25% of text height to reduce considered height of text for this step.
         # This reduces failures to detect y-gaps due to page skew, etc.
-        adjusted_y = cast(Pt, run.y + run.h * 0.75)
+        adjusted_y = cast(Pt, run.y + run.h * 0.25)
         y_points.append((adjusted_y, 's', run))
         y_points.append((run.y2, 'e', run))    
 
