@@ -88,6 +88,8 @@ async def get_document(document_id: int) -> document.Document:
 
 @api_app.post('/documents/matching_pattern')
 async def get_documents_matching_pattern(p: pattern.Pattern) -> list[document.DocumentBase]:
+    # FastAPI will use the serializer for the declared return type (DocumentBase), not the one
+    # for the actual type (Document). We rely on this to omit the bulky page data from this endpoint.
     MAX_RESULTS = 50
 
     res: list[document.DocumentBase] = []
