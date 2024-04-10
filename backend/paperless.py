@@ -1,5 +1,6 @@
 import aiohttp
 import os
+import aiohttp.client_exceptions
 import pydantic
 from typing import TypeVar, Mapping, Any, Literal, Generic, Type, Collection, AsyncIterator, AsyncGenerator
 import datetime
@@ -7,6 +8,7 @@ import decimal
 import dotenv
 import asyncstdlib
 import urllib.parse
+import asyncio
 from contextlib import asynccontextmanager
 
 
@@ -157,9 +159,19 @@ class PaperlessClient:
         async with aiohttp.ClientSession() as session:
             if PAPERLESS_FORCE_SSL:
                 url = ensure_https(url)
-            async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
-                response.raise_for_status()
-                yield response
+            
+            tries = 5
+            for _ in range(tries):
+                async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+                    try:
+                        response.raise_for_status()
+                        yield response
+                        return
+                    except aiohttp.client_exceptions.ClientResponseError as e:
+                        if e.status == 500:
+                            # Paperless db connection can raise "sorry, too many clients already" error,
+                            # try again after delay.
+                            await asyncio.sleep(1)
 
     @asynccontextmanager
     async def _put(self, url: str | pydantic.AnyHttpUrl, obj: pydantic.BaseModel) -> AsyncIterator[aiohttp.ClientResponse]:
