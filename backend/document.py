@@ -183,7 +183,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                 log.info('Parsed "%s" from %s', paperless_doc.title , pdf_path)
         except pdfminer.psparser.PSException as e:
             error = str(e)
-            log.error('Error parsing "%s" from %s: %s', paperless_doc.title , pdf_path, error)
+            log.error('Error parsing "%s" (%i) from %s: %s', paperless_doc.title, paperless_doc.id, pdf_path, error)
         
         correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
         document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
