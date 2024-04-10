@@ -53,7 +53,7 @@ async def profile_pattern_matching():
 
 
 async def profile_get_documents_matching_pattern():
-    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+    pattern = Pattern.model_validate(ryaml.loads(PATTERN2))
     MAX_RESULTS = 50
 
     res: list[DocumentBase] = []
@@ -62,7 +62,7 @@ async def profile_get_documents_matching_pattern():
 
         if len(res) == MAX_RESULTS:
             break
-    print(res)
+    print(len(res))
 
 
 PATTERN = '''
@@ -73,6 +73,22 @@ checks:
   name: SoloMedGmbH
 - type: document_type
   name: Bill
+regions:
+- x: 62.0
+  y: 416.0
+  x2: 546.0
+  y2: 707.0
+  regex: Invoice amount € (?P<Amount>[\\d,]+)
+fields:
+- name: Amount
+  template: '{{ Amount | replace(",", ".") }}'
+
+'''
+
+PATTERN2 = '''
+page: 0
+name: SoloMed Invoice
+checks: []
 regions:
 - x: 62.0
   y: 416.0
