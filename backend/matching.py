@@ -2,9 +2,10 @@
 
 import os
 import logging
-from typing import AsyncIterator, Annotated, Literal
+from typing import AsyncIterator, Annotated, Literal, Awaitable
 from pydantic import BaseModel, Field, NaiveDatetime
-
+# import aiomultiprocess
+import asyncio
 import paperless
 from document import DocumentBase, get_parsed_document
 from pattern import Pattern, list_patterns, get_pattern
@@ -49,6 +50,28 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
             # Return DocumentBase, which is the model used for listing documents (ie. not including page data)
             # TODO find better way to remove pages from returned doc (copy? unparse/parse?)
             yield DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, datetime_created=paperless_doc.created, parse_status=doc.parse_status)
+
+
+
+# aiomultiprocess-using parallel download and parsing of pdfs. Currently not usable because paperless PDF downloads
+# occasionally fail when doing multiple downloads with a large number of parallel requests.
+# async def get_doc_for_paperless_doc_if_pattern_matches(paperless_doc: paperless.PaperlessDocument, pattern: Pattern, client: paperless.PaperlessClient) -> DocumentBase | None:
+#     doc = await get_parsed_document(paperless_doc.id, client=client)
+#     if await pattern.matches(doc, paperless_doc, client):
+#         # Return DocumentBase, which is the model used for listing documents (ie. not including page data)
+#         # TODO find better way to remove pages from returned doc (copy? unparse/parse?)
+#         return DocumentBase(id=doc.id, paperless_url=doc.paperless_url, title=doc.title, correspondent=doc.correspondent, document_type=doc.document_type, datetime_added=paperless_doc.added, datetime_created=paperless_doc.created, parse_status=doc.parse_status)
+#
+#
+# async def filter_documents_matching_pattern_mp(paperless_docs: AsyncIterator[paperless.PaperlessDocument], pattern: Pattern, client: paperless.PaperlessClient) -> AsyncIterator[DocumentBase]:
+#     async with aiomultiprocess.Pool() as pool:
+#         coroutines: list[Awaitable[DocumentBase | None]] = []
+#         async for pl_doc in paperless_docs:
+#             cr = pool.apply(get_doc_for_paperless_doc_if_pattern_matches, [pl_doc, pattern, client])
+#             coroutines.append(cr)
+#         for doc in await asyncio.gather(*coroutines):
+#             if doc:
+#                 yield doc
 
 
 async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[DocumentBase]:
