@@ -2,7 +2,7 @@
 
 import os
 import logging
-from typing import AsyncIterator, Annotated, Literal, Awaitable
+from typing import AsyncIterator, Annotated, Literal
 from pydantic import BaseModel, Field, NaiveDatetime
 # import aiomultiprocess
 import asyncio
