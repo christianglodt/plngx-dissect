@@ -83,12 +83,16 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
         for (const [h, nextH] of pairWiseIteration(highlights)) {
             if (h) {
                 const text = props.text.slice(h.startIndex, h.endIndex);
-                nodes.push(<Typography key={`${h.startIndex}-${h.endIndex}`} title={h.group} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }} {...typographyProps}>{text}</Typography>);
+                if (text.length > 0) {
+                    nodes.push(<Typography key={`${h.startIndex}-${h.endIndex}`} title={h.group} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }} {...typographyProps}>{text}</Typography>);
+                }
 
                 if (nextH) {
                     // Add text between highlights
                     const textBetween = props.text.slice(h.endIndex, nextH.startIndex);
-                    nodes.push(<Typography key={`${h.endIndex}-${nextH.startIndex}`} {...typographyProps}>{textBetween}</Typography>);
+                    if (textBetween.length > 0) {
+                        nodes.push(<Typography key={`${h.endIndex}-${nextH.startIndex}`} {...typographyProps}>{textBetween}</Typography>);
+                    }
                 }
             }
         }
