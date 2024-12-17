@@ -132,7 +132,7 @@ class PaperlessDocument(pydantic.BaseModel):
 
 
 class PaperlessCorrespondent(PaperlessElementBase):
-    last_correspondence: pydantic.AwareDatetime
+    pass # last_correspondence: pydantic.AwareDatetime
 
 
 class PaperlessDocumentType(PaperlessElementBase):
