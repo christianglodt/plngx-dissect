@@ -47,8 +47,8 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
         <DialogListItem dialogTitle="Check Date Created" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
-                    <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={afterSlotProps}/>
-                    <DatePicker<Dayjs> label="Date Is After"  value={dayjs(after)}  onChange={(value) => setAfter(value ? value.toDate() : null)} format="D.M.YYYY" slotProps={beforeSlotProps}/>
+                    <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.format('YYYY-MM-DD') : null)} format="D.M.YYYY" slotProps={afterSlotProps}/>
+                    <DatePicker<Dayjs> label="Date Is After"  value={dayjs(after)}  onChange={(value) => setAfter(value ? value.format('YYYY-MM-DD') : null)} format="D.M.YYYY" slotProps={beforeSlotProps}/>
                     <TextField type="number" label="Year is" value={year || ''} onChange={(event) => setYear(Number(event.target.value))}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>

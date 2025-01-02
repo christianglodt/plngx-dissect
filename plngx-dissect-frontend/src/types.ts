@@ -54,8 +54,8 @@ export type TagCheck = {
 
 export type DateCreatedCheck = {
     type: CheckTypeId.DateCreated;
-    before: Date | null;
-    after: Date | null;
+    before: string | null;
+    after: string | null;
     year: number | null;
 }
 
