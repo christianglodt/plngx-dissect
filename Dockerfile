@@ -12,6 +12,8 @@ RUN npm run build
 
 FROM python:3.12-bookworm
 
+LABEL org.opencontainers.image.source https://github.com/christianglodt/plngx-dissect
+
 RUN apt update -y && apt install -y poppler-utils && rm -rf /var/apt/lists
 
 # Create virtual env
