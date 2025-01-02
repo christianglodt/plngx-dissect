@@ -24,7 +24,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY backend/requirements.txt /app/backend/requirements.txt
 
 # Install Python packages
-RUN pip install wheel && pip install -r /app/backend/requirements.txt
+RUN pip install --no-cache-dir wheel && pip install --no-cache-dir -r /app/backend/requirements.txt
 
 COPY . /app
 
