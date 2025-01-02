@@ -239,7 +239,10 @@ class PaperlessClient:
 
     async def get_documents_with_tags(self, tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> AsyncIterator[PaperlessDocument]:
         tags_by_name = await self.tags_by_name
-        tag_ids = [str(tags_by_name[tag].id) for tag in tags]
+        try:
+            tag_ids = [str(tags_by_name[tag].id) for tag in tags]
+        except KeyError:
+            return
 
         url_params: dict[str, str] = {}
         url_params['page_size'] = '50'
