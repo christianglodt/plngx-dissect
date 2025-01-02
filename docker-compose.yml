@@ -1,5 +1,6 @@
 services:
   plngx-dissect:
+    image: ghcr.io/christianglodt/plngx-dissect
     build: .
     ports:
       - 8000:8000
