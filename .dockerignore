@@ -1,3 +1,10 @@
 plngx-dissect-frontend/node_modules/
 backend/test_private/
 *.perf
+cache/
+config/
+.devcontainer/
+.vscode/
+Dockerfile
+.gitignore
+.git
