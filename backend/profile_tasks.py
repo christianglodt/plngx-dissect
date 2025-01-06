@@ -5,7 +5,7 @@ import asyncio
 import ryaml
 
 from pattern import Pattern
-from matching import filter_documents_matching_pattern, PAPERLESS_REQUIRED_TAGS
+from matching import filter_documents_matching_pattern, PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS
 from document import DocumentBase, get_parsed_document
 from matching import get_documents_matching_pattern
 
@@ -29,7 +29,7 @@ async def async_iter(l: list[T]) -> AsyncIterator[T]:
 async def profile_region_text():
     client = paperless.PaperlessClient()
 
-    paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS)]
+    paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS)]
         
     pattern = Pattern.model_validate(ryaml.loads(PATTERN))
 
@@ -44,7 +44,7 @@ async def profile_region_text():
 async def profile_pattern_matching():
     client = paperless.PaperlessClient()
 
-    paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS)]
+    paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS)]
         
     pattern = Pattern.model_validate(ryaml.loads(PATTERN))
 

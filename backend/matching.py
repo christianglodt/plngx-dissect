@@ -36,7 +36,8 @@ class SchedulerPattern(BaseModel): # https://apscheduler.readthedocs.io/en/lates
 DEFAULT_SCHEDULER_PATTERN = SchedulerPattern(hour='*')
 SCHEDULER_PATTERN = SchedulerPattern.model_validate_json(os.environ.get('SCHEDULER_PATTERN', DEFAULT_SCHEDULER_PATTERN.model_dump_json())).model_dump()
 
-PAPERLESS_REQUIRED_TAGS = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '']
+PAPERLESS_REQUIRED_TAGS: list[str] = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '' and not t.strip().startswith('-')]
+PAPERLESS_EXCLUDED_TAGS: list[str] = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '' and t.strip().startswith('-')]
 POST_PROCESS_REMOVE_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_REMOVE_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_ADD_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_ADD_TAGS', '').split(',') if t.strip() != '']
 POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
@@ -76,7 +77,7 @@ async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[Docu
     # This reduces the number of results needing to be checked significantly in the most common case.
     correspondents, document_types = pattern.get_required_correspondents_and_document_types()
 
-    paperless_docs = client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, correspondents=correspondents, document_types=document_types)
+    paperless_docs = client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS, correspondents=correspondents, document_types=document_types)
 
     async for doc in filter_documents_matching_pattern(paperless_docs, pattern, client):
         yield doc
@@ -105,7 +106,7 @@ async def process_all_documents():
         log.error(f'Tag with name "{e.args[0]}" used in PAPERLESS_REQUIRED_TAGS, POST_PROCESS_REMOVE_TAGS or POST_PROCESS_ADD_TAGS does not exist')
         return
 
-    async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS):
+    async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
         log.debug(f'Retrieved paperless document {paperless_doc.id}')
         doc = await get_parsed_document(paperless_doc.id, client=client)
         log.debug(f'Loaded cached text runs for document {doc.id}')

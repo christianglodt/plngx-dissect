@@ -243,16 +243,18 @@ class PaperlessClient:
         async with self._put(f'{self.base_url}/api/documents/{document.id}/', document):
             return
 
-    async def get_documents_with_tags(self, tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> AsyncIterator[PaperlessDocument]:
+    async def get_documents_with_tags(self, required_tags: Collection[str], excluded_tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> AsyncIterator[PaperlessDocument]:
         tags_by_name = await self.tags_by_name
         try:
-            tag_ids = [str(tags_by_name[tag].id) for tag in tags]
+            required_tag_ids = [str(tags_by_name[tag].id) for tag in required_tags]
+            excluded_tag_ids = [str(tags_by_name[tag].id) for tag in excluded_tags]
         except KeyError:
             return
 
         url_params: dict[str, str] = {}
         url_params['page_size'] = '50'
-        url_params['tags__id__all'] = ",".join(tag_ids)
+        url_params['tags__id__all'] = ",".join(required_tag_ids)
+        url_params['tags__id__none'] = ",".join(excluded_tag_ids)
 
         if correspondents:
             correspondents_by_name = await self.correspondents_by_name
