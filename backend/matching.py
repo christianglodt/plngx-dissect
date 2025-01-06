@@ -37,9 +37,9 @@ DEFAULT_SCHEDULER_PATTERN = SchedulerPattern(hour='*')
 SCHEDULER_PATTERN = SchedulerPattern.model_validate_json(os.environ.get('SCHEDULER_PATTERN', DEFAULT_SCHEDULER_PATTERN.model_dump_json())).model_dump()
 
 PAPERLESS_REQUIRED_TAGS: list[str] = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '' and not t.strip().startswith('-')]
-PAPERLESS_EXCLUDED_TAGS: list[str] = [t.strip() for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '' and t.strip().startswith('-')]
+PAPERLESS_EXCLUDED_TAGS: list[str] = [t.strip().lstrip('-') for t in os.environ.get('PAPERLESS_REQUIRED_TAGS', '').split(',') if t.strip() != '' and t.strip().startswith('-')]
 POST_PROCESS_ADD_TAGS =    [t.strip() for t in os.environ.get('POST_PROCESS_CHANGE_TAGS', '').split(',') if t.strip() != '' and not t.strip().startswith('-')]
-POST_PROCESS_REMOVE_TAGS = [t.strip() for t in os.environ.get('POST_PROCESS_CHANGE_TAGS', '').split(',') if t.strip() != '' and t.strip().startswith('-')]
+POST_PROCESS_REMOVE_TAGS = [t.strip().lstrip('-') for t in os.environ.get('POST_PROCESS_CHANGE_TAGS', '').split(',') if t.strip() != '' and t.strip().startswith('-')]
 POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
 
 
