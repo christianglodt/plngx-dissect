@@ -155,3 +155,6 @@ async def process_patterns():
     await matching.process_all_documents()
 
 scheduler.start()
+
+# Uncomment this line to test processing all documents immediately on startup:
+# import asyncio; asyncio.create_task(matching.process_all_documents())

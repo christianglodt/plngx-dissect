@@ -8,12 +8,14 @@ import pathlib
 import urllib.parse
 import ryaml
 import re
+import logging
 
 import region
 import document
 import field
 from paperless import PaperlessClient, PaperlessDocument, CustomFieldValueConversionException
 
+log = logging.getLogger('uvicorn')
 
 class Check(pydantic.BaseModel, abc.ABC):
     @abc.abstractmethod
@@ -175,8 +177,8 @@ class Pattern(pydantic.BaseModel):
             try:
                 if not await check.matches(page, doc, paperless_doc, client):
                     return False
-            except Exception as e:
-                print(e)
+            except Exception:
+                log.exception(f'Exception while running check {check}')
                 return False
 
         return True

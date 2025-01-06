@@ -9,10 +9,12 @@ import dotenv
 import asyncstdlib
 import urllib.parse
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 
-
 dotenv.load_dotenv('../.env')
+
+log = logging.getLogger('uvicorn')
 
 PAPERLESS_URL: str = os.environ.get('PAPERLESS_URL', 'http://localhost').rstrip('/')
 PAPERLESS_API_TOKEN: str = os.environ.get('PAPERLESS_API_TOKEN', '')
@@ -249,7 +251,7 @@ class PaperlessClient:
             required_tag_ids = [str(tags_by_name[tag].id) for tag in required_tags]
             excluded_tag_ids = [str(tags_by_name[tag].id) for tag in excluded_tags]
         except KeyError as e:
-            print(f'Unknown tag encountered: {e}')
+            log.error(f'Tag "{e}" not found in paperless, no documents returned')
             return
 
         url_params: dict[str, str] = {}
