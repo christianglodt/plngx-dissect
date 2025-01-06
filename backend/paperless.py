@@ -267,7 +267,7 @@ class PaperlessClient:
             document_type_ids = [str(document_types_by_name[t].id) for t in document_types if t in document_types_by_name]
             url_params['document_type__id__in'] = ",".join(document_type_ids)
 
-        query_string = urllib.parse.urlencode(url_params)
+        query_string = urllib.parse.urlencode(url_params, safe=",")
 
         url = f'{self.base_url}/api/documents/?{query_string}'
         async for d in self._iter_paginated_results(url, PaperlessDocument):
