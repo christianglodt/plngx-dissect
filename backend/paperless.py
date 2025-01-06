@@ -162,16 +162,22 @@ class PaperlessClient:
             
             tries = 5
             for _ in range(tries):
-                async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
-                    try:
-                        response.raise_for_status()
-                        yield response
-                        return
-                    except aiohttp.client_exceptions.ClientResponseError as e:
-                        if e.status == 500:
-                            # Paperless db connection can raise "sorry, too many clients already" error,
-                            # try again after delay.
-                            await asyncio.sleep(1)
+                try:
+                    async with session.get(str(url), headers={'Authorization': f'Token {self.api_token}'}) as response:
+                        try:
+                            response.raise_for_status()
+                            yield response
+                            return
+                        except aiohttp.client_exceptions.ClientResponseError as e:
+                            if e.status == 500:
+                                # Paperless db connection can raise "sorry, too many clients already" error,
+                                # try again after delay.
+                                await asyncio.sleep(1)
+                except aiohttp.client_exceptions.ClientConnectorError as e:
+                    if 'host.docker.internal:8009' in str(e):
+                        raise IOError('When ssh-tunneling to paperless-ngx, ensure to use "ssh -L 0.0.0.0:8009:localhost:8009 <user@server>"') from e
+                    raise
+
 
     @asynccontextmanager
     async def _put(self, url: str | pydantic.AnyHttpUrl, obj: pydantic.BaseModel) -> AsyncIterator[aiohttp.ClientResponse]:
