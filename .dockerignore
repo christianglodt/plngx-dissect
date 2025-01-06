@@ -8,3 +8,6 @@ config/
 Dockerfile
 .gitignore
 .git
+.env
+.env.tmpl
+.dockerignore
