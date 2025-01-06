@@ -248,7 +248,8 @@ class PaperlessClient:
         try:
             required_tag_ids = [str(tags_by_name[tag].id) for tag in required_tags]
             excluded_tag_ids = [str(tags_by_name[tag].id) for tag in excluded_tags]
-        except KeyError:
+        except KeyError as e:
+            print(f'Unknown tag encountered: {e}')
             return
 
         url_params: dict[str, str] = {}
