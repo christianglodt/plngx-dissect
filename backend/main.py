@@ -20,7 +20,7 @@ dotenv.load_dotenv('../.env')
 RAW_PATH_PREFIX = '/' + os.environ.get('PATH_PREFIX', '').strip('/')
 PATH_PREFIX = '' if RAW_PATH_PREFIX == '/' else RAW_PATH_PREFIX
 
-app = FastAPI(docs_url=PATH_PREFIX + '/docs', redoc_url=PATH_PREFIX + '/redoc')
+app = FastAPI(root_path=PATH_PREFIX)
 
 api_app = FastAPI()
 
@@ -113,8 +113,8 @@ async def config_js(request: Request):
     return templates.TemplateResponse(request=request, name="config.js", context={"path_prefix": PATH_PREFIX}, media_type='text/javascript')
 
 
-app.mount(PATH_PREFIX + '/api', api_app)
-app.mount(PATH_PREFIX + '/static', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
+app.mount('/api', api_app)
+app.mount('/static', StaticFiles(directory='../plngx-dissect-frontend/dist/', html=True, check_dir=False))
 
 templates = Jinja2Templates(directory="templates")
 
@@ -134,7 +134,7 @@ async def catch_all(request: Request, path_name: str):
     if not path_name.endswith('/'):
         p = p.parent
 
-    relative_path = str(pathlib.Path((PATH_PREFIX + '/static').lstrip('/')).relative_to(p, walk_up=True))
+    relative_path = str(pathlib.Path('static').relative_to(p, walk_up=True))
     css_files = [relative_path + '/' + c for c in manifest['index.html']['css']]
     js_file = relative_path + '/' + manifest['index.html']['file']
     return templates.TemplateResponse(request=request, name="index.html", context={"path_prefix": PATH_PREFIX, 'css_files': css_files, 'js_file': js_file}, media_type='text/html')
