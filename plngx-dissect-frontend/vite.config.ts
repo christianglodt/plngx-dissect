@@ -8,7 +8,7 @@ const API_PATH = PATH_PREFIX + '/api';
 
 const PROXY_CONFIG = {};
 PROXY_CONFIG[API_PATH] = {
-  target: 'http://127.0.0.1:8000',
+  target: 'http://localhost:8000',
   changeOrigin: true,
   //rewrite: (path) => path.replace(/^\/api/, ''),
 };
@@ -18,6 +18,7 @@ export default defineConfig({
   base: './',
   plugins: [react()],
   server: {
+    host: "0.0.0.0",
     proxy: PROXY_CONFIG
   },
   envDir: '..',
