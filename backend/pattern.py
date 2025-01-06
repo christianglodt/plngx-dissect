@@ -104,9 +104,9 @@ class DateCreatedCheck(Check):
     year: int | None = None
 
     async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        if self.before is not None and doc.datetime_created >= self.before:
+        if self.before is not None and doc.datetime_created.date() >= self.before:
             return False
-        if self.after is not None and doc.datetime_created <= self.after:
+        if self.after is not None and doc.datetime_created.date() <= self.after:
             return False
         if self.year and doc.datetime_created.year != self.year:
             return False
@@ -175,7 +175,8 @@ class Pattern(pydantic.BaseModel):
             try:
                 if not await check.matches(page, doc, paperless_doc, client):
                     return False
-            except:
+            except Exception as e:
+                print(e)
                 return False
 
         return True
