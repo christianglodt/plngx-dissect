@@ -129,7 +129,7 @@ async def process_all_documents():
                         paperless_doc.tags.append(t_id)
                         log.debug(f'Added tag {tags_by_id[t_id]} to document {doc.id}')
 
-                custom_fields_have_changed = False
+                custom_field_set_has_changed = False
                 for field, field_result in zip(pattern.fields, result.fields):
                     field_id = custom_fields_by_name[field.name].id
                     if field_result is not None:
@@ -144,8 +144,8 @@ async def process_all_documents():
 
                         if field_id not in [f.field for f in paperless_doc.custom_fields]:
                             paperless_doc_has_changed = True
+                            custom_field_set_has_changed = True
 
-                        custom_fields_have_changed = True
                         new_value = paperless.PaperlessCustomFieldValue(field=field_id, value=field_value) # TODO check value against expected type (also in UI)
                         try:
                             index = next(i for i, v in enumerate(paperless_doc.custom_fields) if v.field == field_id)
@@ -153,7 +153,7 @@ async def process_all_documents():
                         except StopIteration:
                             paperless_doc.custom_fields.append(new_value)
 
-                if custom_fields_have_changed:
+                if custom_field_set_has_changed:
                     log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
         
         if paperless_doc_has_changed:
