@@ -102,7 +102,7 @@ class PaperlessElementBase(PaperlessNamedElement):
 
 
 class PaperlessTag(PaperlessElementBase):
-    colour: int
+    color: str
     is_inbox_tag: bool
 
 
