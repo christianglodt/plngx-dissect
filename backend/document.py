@@ -172,7 +172,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
             with pdfplumber.open(pdf_path) as pdf:
                 for page in pdf.pages:
                     runs: list[TextRun] = []
-                    pdfplumber_text_runs = page.extract_words(keep_blank_chars=True, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
+                    pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
                     for text_run in pdfplumber_text_runs:
                         runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
                     indexes_by_x = sorted(list(range(len(runs))), key=lambda i: runs[i].x)
