@@ -21,6 +21,7 @@
     margin-top: calc(-1em - 10px);
     margin-left: -3px;
     padding: 2px;
+    text-wrap: nowrap;
 }
 
 .RegionBox > .ResizeHandle {
