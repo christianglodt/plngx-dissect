@@ -14,6 +14,8 @@ const RenamePatternButton = () => {
     }
 
     const onRenamePatternConfirmed = (newName: string) => {
+        if (patternId === newName) return;
+
         renamePatternMutation.mutate({ oldName: patternId, newName }, {
             onSuccess: () => {
                 navigate(`/pattern/${encodeURIComponent(newName)}?${searchParams.toString()}`);
