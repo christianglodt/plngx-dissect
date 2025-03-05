@@ -2,8 +2,11 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useRenamePatternMutation } from "./hooks";
 import InputDialogButton from "./utils/InputDialogButton";
 
+type RenamePatternButtonPropsType = {
+    name: string;
+};
 
-const RenamePatternButton = () => {
+const RenamePatternButton = (props: RenamePatternButtonPropsType) => {
 
     const renamePatternMutation = useRenamePatternMutation();
     const navigate = useNavigate();
@@ -24,7 +27,7 @@ const RenamePatternButton = () => {
     }
 
     return (
-        <InputDialogButton label="Rename" dialogTitle="Rename Pattern" dialogText="New name" onConfirmed={onRenamePatternConfirmed}/>
+        <InputDialogButton label="Rename" dialogTitle="Rename Pattern" dialogText="New name" value={props.name} onConfirmed={onRenamePatternConfirmed}/>
     );
 };
 

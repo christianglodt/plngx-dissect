@@ -72,7 +72,7 @@ const PatternEditor = () => {
                     { (savePatternMutation.isError || deletePatternMutation.isError) &&
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
-                    <RenamePatternButton/>
+                    <RenamePatternButton name={pattern.name}/>
                     <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
                 </Stack>
