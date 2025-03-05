@@ -76,7 +76,7 @@ const RegionBox = <RegionType extends Region,>(props: RegionBoxPropsType<RegionT
 
     return (
         <div className="RegionBox" style={style} {...dragBind()}>
-            {props.text}
+            <div className="Label">{props.text}</div>
             <div className="ResizeHandle" {...resizeBind()} style={{ touchAction: 'none' }}/>
         </div>
     );
