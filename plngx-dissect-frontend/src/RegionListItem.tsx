@@ -77,7 +77,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     <TextField label="Bottom Right X Coordinate" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                     <TextField label="Bottom Right Y Coordinate" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     <RegexPreview regex={regex} text={props.result?.text || ''}/>
-                    <TextField label="Regular Expression" value={regex} multiline onChange={(event) => setRegex(event.target.value)} error={regexError != null} helperText={regexError}></TextField>
+                    <TextField label="Regular Expression" value={regex} multiline onChange={(event) => setRegex(event.target.value)} error={regexError != null} helperText={regexError || <div style={{ height: '2lh' }}></div>}></TextField>
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
