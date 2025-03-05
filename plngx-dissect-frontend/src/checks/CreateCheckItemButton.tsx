@@ -28,7 +28,7 @@ const CHECK_ITEM_FACTORIES: Record<CheckTypeId, FactoryEntry> = { // Typescript 
     },
     [CheckTypeId.Correspondent]: {
         label: 'Correspondent Check',
-        factory: () => { return { type: CheckTypeId.Correspondent, name: 'Correspondent' }; }
+        factory: () => { return { type: CheckTypeId.Correspondent, name: '' }; }
     },
     [CheckTypeId.DocumentType]: {
         label: 'Document Type Check',
