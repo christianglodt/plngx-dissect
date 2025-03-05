@@ -6,6 +6,7 @@ from functools import wraps, lru_cache
 import aiofiles
 import aiofiles.os
 import abc
+import sys
 
 
 NoValueType = NewType('NoValueType', object)
@@ -44,7 +45,10 @@ class AsyncBaseCache[T](abc.ABC):
         # TODO ensure all args and remaining kw args have stable hash codes...
         # print((args, tuple(kw.items())))
         
-        return str(hash((args, tuple(sorted(kw.items())))))
+        hash_int = hash((args, tuple(sorted(kw.items()))))
+        # Ensure hash is positive because file names starting with '-' are inconvenient in the shell.
+        hash_int = hash_int % 2**sys.hash_info.width
+        return str(hash_int)
 
     @abc.abstractmethod
     def load(self, data: bytes) -> T:
