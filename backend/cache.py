@@ -44,7 +44,7 @@ class AsyncBaseCache[T](abc.ABC):
         # TODO ensure all args and remaining kw args have stable hash codes...
         # print((args, tuple(kw.items())))
         
-        return str(hash((args, tuple(kw.items()))))
+        return str(hash((args, tuple(sorted(kw.items())))))
 
     @abc.abstractmethod
     def load(self, data: bytes) -> T:
