@@ -102,7 +102,7 @@ class Page(pydantic.BaseModel):
         return [[tr.text for tr in line] for line in text_lines]
 
     def get_region_text(self, region: Region) -> str:
-        text_lines = self.get_region_text_lines(region)        
+        text_lines = self.get_region_text_lines(region)
         lines = [' '.join(word) for word in text_lines]
         text = '\n'.join(lines)
         return text
