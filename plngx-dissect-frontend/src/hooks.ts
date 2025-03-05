@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
@@ -129,12 +129,20 @@ export const useDocument = (id: number | null) => {
 }
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
-    return useQuery({queryKey: ['paperless', 'elements', slug], queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`)});
+    return useQuery({
+        queryKey: ['paperless', 'elements', slug],
+        queryFn: async () => fetchJson<T[]>(`/api/paperless_element/${encodeURIComponent(slug)}`),
+        placeholderData: keepPreviousData
+    });
 }
 
 export const usePatternMatches = (pattern: Pattern) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
-    return useQuery({queryKey: ['patterns', 'matches', debouncedPattern], queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern) });
+    return useQuery({
+        queryKey: ['patterns', 'matches', debouncedPattern],
+        queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern),
+        placeholderData: keepPreviousData
+    });
 }
 
 export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null, pageNr: number) => {
@@ -144,5 +152,10 @@ export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|
     const qfn = async() => {
         return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern!);
     }
-    return useQuery({queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr], enabled: !!docId && !!debouncedPattern, queryFn: qfn });
+    return useQuery({
+        queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr],
+        enabled: !!docId && !!debouncedPattern,
+        queryFn: qfn,
+        placeholderData: keepPreviousData
+    });
 }
