@@ -142,7 +142,9 @@ async def process_all_documents():
                             log.error(f'Invalid value {field_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                             continue
 
-                        if field_id not in [f.field for f in paperless_doc.custom_fields]:
+                        existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
+                        existing_field_value = existing_field.value if existing_field else object()
+                        if existing_field_value != field_value:
                             paperless_doc_has_changed = True
                             custom_field_set_has_changed = True
 
