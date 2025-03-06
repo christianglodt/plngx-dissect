@@ -300,7 +300,7 @@ async def list_patterns() -> list[PatternListEntry]:
 
         res.append(PatternListEntry(name=name))
 
-    return res
+    return sorted(res, key=lambda e: e.name)
 
 
 async def create_pattern(name: str) -> Pattern:
