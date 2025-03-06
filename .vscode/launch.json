@@ -24,7 +24,13 @@
             "type": "debugpy",
             "cwd": "${workspaceFolder}/backend",
             "program": "test.py"
-        }
-
+        },
+        {
+            "name": "matching (backend)",
+            "request": "launch",
+            "type": "debugpy",
+            "cwd": "${workspaceFolder}/backend",
+            "program": "matching.py"
+        },
     ]
 }
