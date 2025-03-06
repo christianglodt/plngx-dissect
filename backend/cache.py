@@ -15,12 +15,14 @@ NO_VALUE: NoValueType = NoValueType(object())
 P = ParamSpec('P')
 T = TypeVar('T')
 
+CACHE_PATH = pathlib.Path('../cache').resolve()
+
 class AsyncBaseCache[T](abc.ABC):
     def __init__(self, cache_name: str, extension: str = '', ignore_kwargs: list[str] | None = None):
         self.cache_name = cache_name
         self.extension = extension
         self.ignore_kwargs = ignore_kwargs
-        self.cache_dir = pathlib.Path(f'/cache') / cache_name
+        self.cache_dir = CACHE_PATH / cache_name
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
