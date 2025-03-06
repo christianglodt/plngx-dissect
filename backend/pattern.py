@@ -269,7 +269,7 @@ class PatternListEntry(pydantic.BaseModel):
     name: str
 
 
-CONFIG_PATH = pathlib.Path('../config').resolve()
+CONFIG_PATH = pathlib.Path('../data/config').resolve()
 
 
 def escape_name(name: str) -> str:

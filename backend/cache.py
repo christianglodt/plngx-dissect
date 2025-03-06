@@ -15,7 +15,7 @@ NO_VALUE: NoValueType = NoValueType(object())
 P = ParamSpec('P')
 T = TypeVar('T')
 
-CACHE_PATH = pathlib.Path('../cache').resolve()
+CACHE_PATH = pathlib.Path('../data/cache').resolve()
 
 class AsyncBaseCache[T](abc.ABC):
     def __init__(self, cache_name: str, extension: str = '', ignore_kwargs: list[str] | None = None):
