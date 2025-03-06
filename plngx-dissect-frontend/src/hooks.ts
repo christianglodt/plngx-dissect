@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult, HistoryItem } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -156,6 +156,14 @@ export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|
         queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr],
         enabled: !!docId && !!debouncedPattern,
         queryFn: qfn,
+        placeholderData: keepPreviousData
+    });
+}
+
+export const useHistory = () => {
+    return useQuery({
+        queryKey: ['history'],
+        queryFn: async () => fetchJson<Array<HistoryItem>>('/api/history'),
         placeholderData: keepPreviousData
     });
 }

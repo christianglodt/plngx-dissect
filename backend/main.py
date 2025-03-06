@@ -10,6 +10,7 @@ import paperless
 import pattern
 import document
 import matching
+import history
 import pathlib
 import os
 
@@ -101,16 +102,18 @@ async def get_documents_matching_pattern(p: pattern.Pattern) -> list[document.Do
     return res
 
 
+class ResponseHistoryItem(history.HistoryItem):
+    paperless_url: str
+
+@api_app.get('/history')
+async def get_history() -> list[ResponseHistoryItem]:
+    h = await history.get_history()
+    return [ResponseHistoryItem(paperless_url=f'{paperless.PAPERLESS_URL}/documents/{item.id}/details', **item.model_dump()) for item in h.root]
+
+
 @api_app.get('/paperless_element/{slug}')
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement]:
     return await paperless.PaperlessClient().get_element_list(slug)
-
-
-templates = Jinja2Templates(directory="templates")
- 
-@api_app.get('/config.js')
-async def config_js(request: Request):
-    return templates.TemplateResponse(request=request, name="config.js", context={"path_prefix": PATH_PREFIX}, media_type='text/javascript')
 
 
 prefix_app.mount('/api', api_app)
@@ -137,7 +140,11 @@ async def catch_all(request: Request, path_name: str):
     relative_path = str(pathlib.Path('static').relative_to(p, walk_up=True))
     css_files = [relative_path + '/' + c for c in manifest['index.html']['css']]
     js_file = relative_path + '/' + manifest['index.html']['file']
-    return templates.TemplateResponse(request=request, name="index.html", context={"path_prefix": PATH_PREFIX, 'css_files': css_files, 'js_file': js_file}, media_type='text/html')
+    return templates.TemplateResponse(request=request, name="index.html", context={
+        "path_prefix": PATH_PREFIX,
+        'css_files': css_files,
+        'js_file': js_file
+    }, media_type='text/html')
 
 
 if PATH_PREFIX:

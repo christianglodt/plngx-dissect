@@ -15,7 +15,7 @@ const App = () => {
     const params = useParams();
 
     const icon = params.patternId ? <ChevronLeftIcon /> : <MenuIcon />
-    const title = params.patternId ? `Pattern “${params.patternId}”` : 'Patterns';
+    const title = params.patternId ? `Pattern “${params.patternId}”` : 'plngx-dissect';
 
     const extraAppToolbarItemsRef = useRef(null);
 

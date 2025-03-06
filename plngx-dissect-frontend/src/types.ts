@@ -186,3 +186,12 @@ export type PatternEvaluationResult = {
     regions: Array<RegionResult | null>;
     fields: Array<FieldResult | null>;
 }
+
+export type HistoryItem = {
+    paperless_id: number;
+    title: string;
+    datetime: Date;
+    operation: 'updated';
+    details: string;
+    paperless_url: string;
+}

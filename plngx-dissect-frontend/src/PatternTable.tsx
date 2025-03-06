@@ -11,6 +11,8 @@ import { useCreatePatternMutation, usePatternList } from "./hooks";
 import { Pattern } from './types';
 import InputDialogButton from './utils/InputDialogButton';
 import PortalBox from './utils/PortalBox';
+import { Stack } from '@mui/material';
+import HistoryCard from './HistoryCard';
 
 
 const PatternTable = () => {
@@ -33,22 +35,25 @@ const PatternTable = () => {
             <PortalBox>
                 <InputDialogButton label="New" dialogTitle="Create new Pattern" dialogText="Enter new Pattern name" onConfirmed={onCreatePatternConfirmed}/>
             </PortalBox>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Pattern Name</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {!isLoading && patterns?.map(p =>
-                            <TableRow key={p.name}>
-                                <TableCell><Link to={`/pattern/${encodeURIComponent(p.name)}`}>{p.name}</Link></TableCell>
+            <Stack direction="row" gap="1rem"  alignItems="flex-start">
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Pattern Name</TableCell>
                             </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {!isLoading && patterns?.map(p =>
+                                <TableRow key={p.name}>
+                                    <TableCell><Link to={`/pattern/${encodeURIComponent(p.name)}`}>{p.name}</Link></TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <HistoryCard/>
+            </Stack>
         </>
     );
 };

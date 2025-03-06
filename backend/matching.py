@@ -9,7 +9,9 @@ import asyncio
 import paperless
 from document import Document, get_parsed_document
 from pattern import Pattern, list_patterns, get_pattern
+from history import history_log_update
 
+logging.basicConfig()
 log = logging.getLogger('uvicorn')
 
 import dotenv
@@ -121,13 +123,13 @@ async def process_all_documents():
                     if t_id in paperless_doc.tags:
                         paperless_doc_has_changed = True
                         paperless_doc.tags.remove(t_id)
-                        log.debug(f'Removed tag {tags_by_id[t_id]} from document {doc.id}')
+                        log.debug(f'Removed tag "{tags_by_id[t_id].name}" from document {doc.id}')
                 
                 for t_id in add_tag_ids:
                     if t_id not in paperless_doc.tags:
                         paperless_doc_has_changed = True
                         paperless_doc.tags.append(t_id)
-                        log.debug(f'Added tag {tags_by_id[t_id]} to document {doc.id}')
+                        log.debug(f'Added tag "{tags_by_id[t_id].name}" to document {doc.id}')
 
                 custom_field_set_has_changed = False
                 for field, field_result in zip(pattern.fields, result.fields):
@@ -160,17 +162,23 @@ async def process_all_documents():
         
         if paperless_doc_has_changed:
             pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
-            
+
+            history_field_desc = [f'{custom_fields_by_id[f.field].name}: {f.value}' for f in paperless_doc.custom_fields]
+            history_details = f'Set fields to {", ".join(history_field_desc)}'
             if POST_PROCESS_DONT_SAVE:
                 log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
+                log.debug(f'History details: {history_details}')
             else:
                 await client.put_document(paperless_doc)
                 log.info(f'Saved document {paperless_doc.id} to Paperless')
+                await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
 
 
 if __name__ == '__main__':
     import asyncio
     import pathlib
+    log.setLevel(logging.DEBUG)
+    log.root.setLevel(logging.DEBUG)
     if pathlib.Path(os.getcwd()).resolve() != pathlib.Path(__file__).parent.resolve():
         raise Exception('Must be run from directory containing matching.py')
     asyncio.run(process_all_documents())
