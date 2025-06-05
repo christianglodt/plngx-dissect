@@ -1,4 +1,4 @@
-FROM node:21-bookworm as build_stage
+FROM node:22-bookworm AS build_stage
 
 COPY plngx-dissect-frontend/package.json /app/plngx-dissect-frontend/
 
