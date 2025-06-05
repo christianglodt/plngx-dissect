@@ -120,7 +120,7 @@ export type DocumentBase = {
      correspondent: string | null;
      document_type: string | null;
      datetime_added: Date;
-     datetime_created: Date;
+     date_created: Date;
      paperless_url: string;
      pages: Page[];
 }

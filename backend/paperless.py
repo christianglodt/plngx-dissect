@@ -119,7 +119,7 @@ class PaperlessDocument(pydantic.BaseModel):
     title: str
     content: str
     tags: list[int]
-    created: pydantic.AwareDatetime
+    created: datetime.date
     created_date: datetime.date
     modified: pydantic.AwareDatetime
     added: pydantic.AwareDatetime

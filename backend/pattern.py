@@ -106,11 +106,11 @@ class DateCreatedCheck(Check):
     year: int | None = None
 
     async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        if self.before is not None and doc.datetime_created.date() >= self.before:
+        if self.before is not None and doc.date_created >= self.before:
             return False
-        if self.after is not None and doc.datetime_created.date() <= self.after:
+        if self.after is not None and doc.date_created <= self.after:
             return False
-        if self.year and doc.datetime_created.year != self.year:
+        if self.year and doc.date_created.year != self.year:
             return False
         return True
 
