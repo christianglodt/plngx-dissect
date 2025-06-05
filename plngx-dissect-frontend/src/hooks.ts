@@ -82,7 +82,7 @@ export const useSavePatternMutation = (patternId: string) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (pattern: Pattern) => putJson<Pattern>(`/api/pattern/${patternId}`, pattern),
-        onSuccess: (data) => queryClient.setQueryData(['patterns', data.name], data)
+        onSuccess: (data) => { queryClient.setQueryData(['patterns', data.name], data) }
     });
 }
 
