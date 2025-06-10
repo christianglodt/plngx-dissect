@@ -3,13 +3,13 @@
         
         {
             "command": "npm run dev",
-            "name": "vite dev",
+            "name": "frontend (vite dev)",
             "request": "launch",
             "type": "node-terminal",
             "cwd": "${workspaceFolder}/plngx-dissect-frontend"
         },
         {
-            "name": "uvicorn",
+            "name": "backend (uvicorn)",
             "request": "launch",
             "type": "debugpy",
             "program": "/home/vscode/.local/bin/uvicorn",
