@@ -88,6 +88,7 @@ export type RegionRegex = Region & {
 }
 
 export type Field = {
+    kind: 'attr' | 'custom';
     name: string;
     template: string;
 }

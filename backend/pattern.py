@@ -1,5 +1,5 @@
 import pydantic
-from typing import Literal
+from typing import Literal, cast
 import abc
 import datetime
 import aiofiles
@@ -13,7 +13,7 @@ import logging
 import region
 import document
 import field
-from paperless import PaperlessClient, PaperlessDocument, CustomFieldValueConversionException
+from paperless import PaperlessClient, PaperlessDocument, PaperlessValueConversionException, PaperlessAttribute, value_to_paperless
 
 log = logging.getLogger('uvicorn')
 
@@ -228,18 +228,35 @@ class Pattern(pydantic.BaseModel):
             for f in self.fields:
                 field_result = f.get_result(region_results)
                 if not field_result.error:
-                    if not f.name in custom_fields_by_name:
-                        field_result.error = f'Field {f.name} not found'
-                    else:
-                        field_def = custom_fields_by_name[f.name]
-                        field_result.data_type = field_def.data_type
-                        try:
-                            if field_result.value is not None:
-                                converted_value = field_def.convert_value_to_paperless(field_result.value)
-                                field_result.value = str(converted_value)
-                        except CustomFieldValueConversionException as e:
-                            field_result.value = None
-                            field_result.error = str(e)
+                    if f.kind == 'custom':
+                        if not f.name in custom_fields_by_name:
+                            field_result.error = f'Field {f.name} not found'
+                        else:
+                            field_def = custom_fields_by_name[f.name]
+                            field_result.data_type = field_def.data_type
+                            try:
+                                if field_result.value is not None:
+                                    converted_value = field_def.convert_value_to_paperless(field_result.value)
+                                    field_result.value = str(converted_value)
+                            except PaperlessValueConversionException as e:
+                                field_result.value = None
+                                field_result.error = str(e)
+
+                    if f.kind == 'attr':
+                        attributes = await client.get_element_list('attributes')
+                        attribute = next(iter(filter(lambda a: a.name == f.name, attributes)), None)
+                        if attribute is None:
+                            field_result.error = f'Attribute {f.name} not found'
+                        else:
+                            attribute = cast(PaperlessAttribute, attribute)
+                            try:
+                                if field_result.value is not None:
+                                    converted_value = value_to_paperless(attribute.data_type, field_result.value)
+                                    field_result.value = str(converted_value)
+                            except PaperlessValueConversionException as e:
+                                field_result.value = None
+                                field_result.error = str(e)
+
                 field_results.append(field_result)
 
         return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)

@@ -2,7 +2,7 @@
 
 import os
 import logging
-from typing import AsyncIterator, Annotated, Literal
+from typing import AsyncIterator, Annotated, Literal, cast
 from pydantic import BaseModel, Field, NaiveDatetime
 # import aiomultiprocess
 import asyncio
@@ -133,18 +133,22 @@ async def process_all_documents():
 
                 custom_field_set_has_changed = False
                 for field, field_result in zip(pattern.fields, result.fields):
-                    field_id = custom_fields_by_name[field.name].id
-                    if field_result is not None:
+                    if field_result is None:
+                        continue
+
+                    if field.kind == 'custom':
+                        field_id = custom_fields_by_name[field.name].id
                         field_def = custom_fields_by_id[field_id]
                         field_value = field_result.value
                         try:
                             if field_value is not None:
                                 field_value = field_def.convert_value_to_paperless(field_value)
-                        except paperless.CustomFieldValueConversionException as e:
+                        except paperless.PaperlessValueConversionException as e:
                             log.error(f'Invalid value {field_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                             continue
 
                         existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
+                        #paperless.value_to_paperless(field_def.data_type, existing_field.value)
                         existing_field_value = existing_field.value if existing_field else object()
                         if existing_field_value != field_value:
                             paperless_doc_has_changed = True
@@ -156,6 +160,22 @@ async def process_all_documents():
                             paperless_doc.custom_fields[index] = new_value
                         except StopIteration:
                             paperless_doc.custom_fields.append(new_value)
+
+                    if field.kind == 'attr':
+                        attributes = await client.get_element_list('attributes')
+                        attribute = next(iter(filter(lambda a: a.name == field.name, attributes)), None)
+                        if attribute:
+                            attribute = cast(paperless.PaperlessAttribute, attribute)
+                            try:
+                                if field_result.value is not None:
+                                    value = paperless.value_to_paperless(attribute.data_type, field_result.value)
+                                    if getattr(paperless_doc, attribute.name, None) != value:
+                                        setattr(paperless_doc, attribute.name, value)
+                                        log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to {value}')
+
+                            except paperless.PaperlessValueConversionException as e:
+                                log.error(f'Invalid value {field_result.value!r} for attribute "{attribute.name}" of data type "{attribute.data_type}"')
+                                continue
 
                 if custom_field_set_has_changed:
                     log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
@@ -177,8 +197,8 @@ async def process_all_documents():
 if __name__ == '__main__':
     import asyncio
     import pathlib
-    log.setLevel(logging.DEBUG)
-    log.root.setLevel(logging.DEBUG)
+    log.setLevel(logging.INFO)
+    log.root.setLevel(logging.INFO)
     if pathlib.Path(os.getcwd()).resolve() != pathlib.Path(__file__).parent.resolve():
         raise Exception('Must be run from directory containing matching.py')
     asyncio.run(process_all_documents())

@@ -10,6 +10,7 @@ import asyncstdlib
 import urllib.parse
 import asyncio
 import logging
+import re
 from contextlib import asynccontextmanager
 
 dotenv.load_dotenv('../.env')
@@ -32,59 +33,70 @@ class PaperlessResponse(pydantic.BaseModel, Generic[PaperlessDataT]):
     previous: pydantic.AnyHttpUrl | None
 
 
-class CustomFieldValueConversionException(Exception):
+class PaperlessValueConversionException(Exception):
     pass
 
 
-PaperlessCustomFieldValueType = str | datetime.date | bool | int | float | decimal.Decimal | list[int] | None
+PaperlessCustomFieldValueType = datetime.date | bool | int | float | decimal.Decimal | list[int] | str | None
+
+
+PaperlessDataType = Literal['string', 'url', 'date', 'boolean', 'integer', 'float', 'monetary', 'documentlink']
+
+
+def value_to_paperless(data_type: PaperlessDataType, value: str) -> PaperlessCustomFieldValueType:
+    match data_type:
+        case 'string':
+            return str(value)
+        case 'url':
+            try:
+                pydantic.AnyHttpUrl(value)
+                return value
+            except pydantic.ValidationError as e:
+                raise PaperlessValueConversionException('Invalid URL') from e
+        case 'date':
+            try:
+                return datetime.date.fromisoformat(value)
+            except ValueError as e:
+                raise PaperlessValueConversionException('Invalid date (expected ISO YYYY-MM-DD)') from e
+        case 'boolean':
+            try:
+                return { 'true': True, 'false': False, 'yes': True, 'no': False }[value.lower()]
+            except KeyError:
+                raise PaperlessValueConversionException('Invalid boolean (expected true, false, yes or no)')
+        case 'integer':
+            try:
+                return int(value)
+            except ValueError:
+                raise PaperlessValueConversionException('Invalid integer')
+        case 'float':
+            try:
+                return float(value)
+            except ValueError:
+                raise PaperlessValueConversionException('Invalid float')
+        case 'monetary':
+            # TODO
+            if re.match(r'[A-Z]{3}[\d,\. ]+', value):
+                value = value[3:]
+
+            try:
+                return decimal.Decimal(value)
+            except decimal.InvalidOperation as e:
+                raise PaperlessValueConversionException(f'Invalid monetary/decimal value')
+        case 'documentlink':
+            PaperlessCustomFieldDocumentLinkValue = pydantic.RootModel[list[int]]
+            try:
+                return PaperlessCustomFieldDocumentLinkValue.model_validate_json(value).model_dump()
+            except pydantic.ValidationError:
+                raise PaperlessValueConversionException('Invalid document link (expected JSON list of integers)')
 
 
 class PaperlessCustomField(pydantic.BaseModel):
     id: int
     name: str
-    data_type: Literal['string', 'url', 'date', 'boolean', 'integer', 'float', 'monetary', 'documentlink']
+    data_type: PaperlessDataType
 
     def convert_value_to_paperless(self, value: str) -> PaperlessCustomFieldValueType:
-        match self.data_type:
-            case 'string':
-                return str(value)
-            case 'url':
-                try:
-                    pydantic.AnyHttpUrl(value)
-                    return value
-                except pydantic.ValidationError as e:
-                    raise CustomFieldValueConversionException('Invalid URL') from e
-            case 'date':
-                try:
-                    return datetime.date.fromisoformat(value)
-                except ValueError as e:
-                    raise CustomFieldValueConversionException('Invalid date (expected ISO YYYY-MM-DD)') from e
-            case 'boolean':
-                try:
-                    return { 'true': True, 'false': False, 'yes': True, 'no': False }[value.lower()]
-                except KeyError:
-                    raise CustomFieldValueConversionException('Invalid boolean (expected true, false, yes or no)')
-            case 'integer':
-                try:
-                    return int(value)
-                except ValueError:
-                    raise CustomFieldValueConversionException('Invalid integer')
-            case 'float':
-                try:
-                    return float(value)
-                except ValueError:
-                    raise CustomFieldValueConversionException('Invalid float')
-            case 'monetary':
-                try:
-                    return decimal.Decimal(value)
-                except decimal.InvalidOperation as e:
-                    raise CustomFieldValueConversionException(f'Invalid monetary/decimal value')
-            case 'documentlink':
-                PaperlessCustomFieldDocumentLinkValue = pydantic.RootModel[list[int]]
-                try:
-                    return PaperlessCustomFieldDocumentLinkValue.model_validate_json(value).model_dump()
-                except pydantic.ValidationError:
-                    raise CustomFieldValueConversionException('Invalid document link (expected JSON list of integers)')
+        return value_to_paperless(self.data_type, value)
 
 
 class PaperlessNamedElement(pydantic.BaseModel):
@@ -99,6 +111,10 @@ class PaperlessElementBase(PaperlessNamedElement):
     document_count: int
     owner: int
     user_can_change: bool
+
+
+class PaperlessAttribute(PaperlessNamedElement):
+    data_type: PaperlessDataType
 
 
 class PaperlessTag(PaperlessElementBase):
@@ -283,6 +299,12 @@ class PaperlessClient:
 
     async def get_element_list(self, slug: str) -> list[PaperlessNamedElement]:
         res: list[PaperlessNamedElement] = []
+
+        if slug == 'attributes':
+            return [
+                PaperlessAttribute(id=0, name='Title (Attribute)', data_type='string'),
+                PaperlessAttribute(id=1, name='Created (Attribute)', data_type='date')
+            ]
 
         async for e in self._iter_paginated_results(f'{self.base_url}/api/{slug}/', PaperlessNamedElement):
             res.append(e)
