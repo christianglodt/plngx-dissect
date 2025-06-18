@@ -113,6 +113,10 @@ async def process_all_documents():
         doc = await get_parsed_document(paperless_doc.id, client=client)
         log.debug(f'Loaded cached text runs for document {doc.id}')
 
+        if doc.parse_status.error != None:
+            log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
+            continue
+
         paperless_doc_has_changed = False
         for pattern in patterns:
             if await pattern.matches(doc, paperless_doc, client):
