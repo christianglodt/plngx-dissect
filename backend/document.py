@@ -203,6 +203,6 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
 @cache.file_cache('pdf_page_svg', '.svg') # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
     async with get_pdf_data(paperless_id) as pdf_bytes_io:
-        proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=pdf_bytes_io, stdout=subprocess.PIPE)
-        stdout, _ = await proc.communicate()
+        proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdout, _ = await proc.communicate(pdf_bytes_io.getvalue())
         return stdout
