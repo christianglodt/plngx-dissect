@@ -2,17 +2,16 @@ import datetime
 import pydantic
 from region import Pt, Region, RegionRegex, RegionResult
 import paperless
-import aiofiles
 import asyncio
 import subprocess
 from contextlib import asynccontextmanager
-import pathlib
 import pdfplumber
 import pdfminer.psparser
 import cache
 import re
 import logging
 import bisect
+import io
 from typing import AsyncIterator, Literal, cast
 
 
@@ -142,16 +141,16 @@ class Document(DocumentBase):
 
 
 @asynccontextmanager
-async def get_temporary_pdf_download(paperless_id: int) -> AsyncIterator[pathlib.Path]:
+async def get_pdf_data(paperless_id: int) -> AsyncIterator[io.BytesIO]:
     c = paperless.PaperlessClient()
     async with c.get_document_stream(paperless_id) as stream:
-        async with aiofiles.tempfile.NamedTemporaryFile('wb', prefix=f'paperless-{paperless_id}', suffix='.pdf') as f:
-            while True:
-                data, _ = await stream.readchunk()
-                if not data:
-                    break
-                await f.write(data)
-            yield pathlib.Path(str(f.name))
+        data_io = io.BytesIO()
+        while True:
+            data, _ = await stream.readchunk()
+            if not data:
+                break
+            data_io.write(data)
+        yield data_io
 
 
 X_TOLERANCE: Pt = Pt(6)
@@ -164,12 +163,12 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     document_types_by_id = await client.document_types_by_id
     paperless_doc = await client.get_document_by_id(paperless_id)
 
-    async with get_temporary_pdf_download(paperless_id) as pdf_path:
+    async with get_pdf_data(paperless_id) as pdf_bytes_io:
         pages: list[Page] = []
         error: str | None = None
 
         try:
-            with pdfplumber.open(pdf_path) as pdf:
+            with pdfplumber.open(pdf_bytes_io) as pdf:
                 for page in pdf.pages:
                     runs: list[TextRun] = []
                     pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
@@ -180,10 +179,10 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                     indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
                     indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
                     pages.append(Page(text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
-                log.info('Parsed "%s" from %s', paperless_doc.title , pdf_path)
+                log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
         except pdfminer.psparser.PSException as e:
             error = str(e)
-            log.error('Error parsing "%s" (%i) from %s: %s', paperless_doc.title, paperless_doc.id, pdf_path, error)
+            log.error('Error parsing "%s" (%i) from %s: %s', paperless_doc.title, paperless_doc.id, pdf_bytes_io, error)
         
         correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
         document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
@@ -203,7 +202,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
 
 @cache.file_cache('pdf_page_svg', '.svg') # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
-    async with get_temporary_pdf_download(paperless_id) as pdf_path:
+    async with get_pdf_data(paperless_id) as pdf_path:
         proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), str(pdf_path), '-', stdout=subprocess.PIPE)
         stdout, _ = await proc.communicate()
         return stdout
