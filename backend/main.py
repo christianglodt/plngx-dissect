@@ -112,7 +112,7 @@ async def get_history() -> list[ResponseHistoryItem]:
 
 
 @api_app.get('/paperless_element/{slug}')
-async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement]:
+async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
 
 
