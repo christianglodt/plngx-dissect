@@ -69,7 +69,7 @@ const DialogListItem = (props: DialogListItemPropsType) => {
                     </Box>
                 </MuiDialogContent>
                 <DialogActions>
-                    <ConfirmButton variant="text" color="warning" sx={{ marginRight: 'auto' }} dialogTitle="Delete Check?" dialogText="Are you sure to delete this check?" onConfirmed={onDeleteConfirmed}>Delete</ConfirmButton>
+                    <ConfirmButton variant="text" color="warning" sx={{ marginRight: 'auto' }} dialogTitle="Delete item?" dialogText="Are you sure to delete this item?" onConfirmed={onDeleteConfirmed}>Delete</ConfirmButton>
                     <Button variant="outlined" onClick={onDialogClose}>Cancel</Button>
                     <Button variant="contained" onClick={onDialogConfirmed}>Ok</Button>
                 </DialogActions>
