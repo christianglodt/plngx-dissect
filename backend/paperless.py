@@ -115,6 +115,7 @@ class PaperlessElementBase(PaperlessNamedElement):
 
 class PaperlessAttribute(PaperlessNamedElement):
     data_type: PaperlessDataType
+    label: str
 
 
 class PaperlessTag(PaperlessElementBase):
@@ -302,8 +303,8 @@ class PaperlessClient:
 
         if slug == 'attributes':
             return [
-                PaperlessAttribute(id=0, name='Title (Attribute)', data_type='string'),
-                PaperlessAttribute(id=1, name='Created (Attribute)', data_type='date')
+                PaperlessAttribute(id=0, name='title', label='Title (Attribute)', data_type='string'),
+                PaperlessAttribute(id=1, name='created', label='Created (Attribute)', data_type='date')
             ]
 
         async for e in self._iter_paginated_results(f'{self.base_url}/api/{slug}/', PaperlessNamedElement):

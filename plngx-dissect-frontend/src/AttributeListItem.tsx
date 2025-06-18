@@ -2,8 +2,9 @@ import { Autocomplete, Chip, ListItemText, Stack, TextField, Tooltip } from "@mu
 import { produce } from "immer";
 import React, { SyntheticEvent, useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
-import { Field, FieldResult } from "./types";
+import { Field, FieldResult, PaperlessAttribute } from "./types";
 import { ArrowRightAlt, CalendarMonth, Error, Notes, QuestionMark, ShortText } from "@mui/icons-material";
+import { usePaperlessElement } from "./hooks";
 
 type AttributeListItemPropsType = {
     field: Field;
@@ -22,6 +23,10 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
     const [attr, setAttr] = useState<string|null>(props.field.name);
     const [template, setTemplate] = useState(props.field.template);
 
+    const { data: attrOptions } = usePaperlessElement<PaperlessAttribute>('attributes');
+
+    const selectedAttr = attrOptions?.find(a => a.name === attr);
+
     const onChangeConfirmed = () => {
         if (attr) {
             props.onChange(produce(props.field, draft => {
@@ -31,18 +36,13 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
         }
     }
 
-    const onAttrChange = (_event: SyntheticEvent, value: string | { attr: string, label: string } | null) => {
+    const onAttrChange = (_event: SyntheticEvent, value: string | PaperlessAttribute | null) => {
         if (value === null) {
             setAttr(null);
         } else if (value instanceof Object) {
-            setAttr(value.attr);
+            setAttr(value.name);
         }
     };
-
-    const attrOptions = [
-        { attr: 'title', label: 'title' },
-        { attr: 'created', label: 'created' }
-    ];
 
     const chipIcon = props.result?.data_type ? ATTRIBUTE_TYPE_ICON[props.result?.data_type] : <QuestionMark/>;
 
@@ -71,10 +71,10 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <Autocomplete
-                        value={attr}
+                        value={selectedAttr}
                         freeSolo
                         onChange={onAttrChange}
-                        options={attrOptions}
+                        options={attrOptions || []}
                         sx={{ width: '100%'}}
                         renderInput={(params) => <TextField {...params} label="Document Attribute" />}
                     />
@@ -82,7 +82,7 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
-                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={props.field.name} secondary={secondaryText} secondaryTypographyProps={{ component: 'div' }}></ListItemText>
+                <ListItemText sx={{ whiteSpace: 'pre-wrap' }} primary={attrOptions?.find(a => a.name === props.field.name)?.label} secondary={secondaryText} secondaryTypographyProps={{ component: 'div' }}></ListItemText>
             </DialogListItem.ItemContent>
         </DialogListItem>
     );
