@@ -171,7 +171,7 @@ async def process_all_documents():
                                     value = paperless.value_to_paperless(attribute.data_type, field_result.value)
                                     if getattr(paperless_doc, attribute.name, None) != value:
                                         setattr(paperless_doc, attribute.name, value)
-                                        log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to {value}')
+                                        log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to "{value}"')
 
                             except paperless.PaperlessValueConversionException as e:
                                 log.error(f'Invalid value {field_result.value!r} for attribute "{attribute.name}" of data type "{attribute.data_type}"')
@@ -197,8 +197,8 @@ async def process_all_documents():
 if __name__ == '__main__':
     import asyncio
     import pathlib
-    log.setLevel(logging.INFO)
-    log.root.setLevel(logging.INFO)
+    log.setLevel(logging.DEBUG)
+    log.root.setLevel(logging.DEBUG)
     if pathlib.Path(os.getcwd()).resolve() != pathlib.Path(__file__).parent.resolve():
         raise Exception('Must be run from directory containing matching.py')
     asyncio.run(process_all_documents())
