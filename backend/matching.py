@@ -2,7 +2,7 @@
 
 import os
 import logging
-from typing import AsyncIterator, Annotated, Literal
+from typing import AsyncIterator, Annotated, Literal, cast
 from pydantic import BaseModel, Field, NaiveDatetime
 # import aiomultiprocess
 import asyncio
@@ -119,6 +119,10 @@ async def process_all_documents():
                 log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
                 result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
                 
+                if any(f and f.error for f in result.fields):
+                    log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
+                    continue
+
                 for t_id in remove_tag_ids:
                     if t_id in paperless_doc.tags:
                         paperless_doc_has_changed = True
@@ -133,29 +137,51 @@ async def process_all_documents():
 
                 custom_field_set_has_changed = False
                 for field, field_result in zip(pattern.fields, result.fields):
-                    field_id = custom_fields_by_name[field.name].id
-                    if field_result is not None:
+                    if field_result is None:
+                        continue # should not happen since pattern has matched
+
+                    if field.kind == 'custom':
+                        field_id = custom_fields_by_name[field.name].id
                         field_def = custom_fields_by_id[field_id]
-                        field_value = field_result.value
+                        new_value = field_result.value
                         try:
-                            if field_value is not None:
-                                field_value = field_def.convert_value_to_paperless(field_value)
-                        except paperless.CustomFieldValueConversionException as e:
-                            log.error(f'Invalid value {field_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
+                            if new_value is not None:
+                                new_value = field_def.convert_value_to_paperless(new_value)
+                        except paperless.PaperlessValueConversionException as e:
+                            log.error(f'Invalid value {new_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                             continue
 
                         existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
-                        existing_field_value = existing_field.value if existing_field else object()
-                        if existing_field_value != field_value:
+                        old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
+                        if old_value != new_value:
+                            old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
                             paperless_doc_has_changed = True
                             custom_field_set_has_changed = True
 
-                        new_value = paperless.PaperlessCustomFieldValue(field=field_id, value=field_value) # TODO check value against expected type (also in UI)
+                        new_value = paperless.value_to_paperless(field_def.data_type, new_value)
+                        new_custom_field_value = paperless.PaperlessCustomFieldValue(field=field_id, value=new_value)
                         try:
                             index = next(i for i, v in enumerate(paperless_doc.custom_fields) if v.field == field_id)
-                            paperless_doc.custom_fields[index] = new_value
+                            paperless_doc.custom_fields[index] = new_custom_field_value
                         except StopIteration:
-                            paperless_doc.custom_fields.append(new_value)
+                            paperless_doc.custom_fields.append(new_custom_field_value)
+
+                    if field.kind == 'attr':
+                        attributes = await client.get_element_list('attributes')
+                        attribute = next(iter(filter(lambda a: a.name == field.name, attributes)), None)
+                        if attribute:
+                            attribute = cast(paperless.PaperlessAttribute, attribute)
+                            try:
+                                if field_result.value is not None:
+                                    value = paperless.value_to_paperless(attribute.data_type, field_result.value)
+                                    if getattr(paperless_doc, attribute.name, None) != value:
+                                        setattr(paperless_doc, attribute.name, value)
+                                        log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to "{value}"')
+                                        paperless_doc_has_changed = True
+
+                            except paperless.PaperlessValueConversionException as e:
+                                log.error(f'Invalid value {field_result.value!r} for attribute "{attribute.name}" of data type "{attribute.data_type}"')
+                                continue
 
                 if custom_field_set_has_changed:
                     log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')

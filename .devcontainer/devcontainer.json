@@ -12,6 +12,10 @@
 
 	"runArgs": ["--add-host", "host.docker.internal:host-gateway"],
 
+	"containerEnv": {
+		"POST_PROCESS_DONT_SAVE": "True"
+	},
+
 	"initializeCommand": "mkdir -p config cache plngx-dissect-frontend/dist",
 
 	"postCreateCommand": ".devcontainer/post-create.sh",

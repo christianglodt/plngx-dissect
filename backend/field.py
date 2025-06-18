@@ -3,6 +3,7 @@ import datetime
 import pydantic
 import jinja2
 import jinja2.sandbox
+from typing import Literal
 
 import region
 
@@ -31,6 +32,7 @@ class FieldResult(pydantic.BaseModel):
 
 
 class Field(pydantic.BaseModel):
+    kind: Literal['attr', 'custom'] = 'custom'
     name: str
     template: str
 
