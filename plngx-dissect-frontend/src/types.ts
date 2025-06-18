@@ -150,7 +150,7 @@ export type PaperlessTag = PaperlessElementBase & {
     is_inbox_tag: boolean;
 }
 
-export enum PaperlessCustomFieldDataType {
+export enum PaperlessDataType {
     String = 'string',
     Url = 'url',
     Date = 'date',
@@ -162,7 +162,12 @@ export enum PaperlessCustomFieldDataType {
 }
 
 export type PaperlessCustomField = PaperlessNamedElement & {
-    data_type: PaperlessCustomFieldDataType;
+    data_type: PaperlessDataType;
+}
+
+export type PaperlessAttribute = PaperlessNamedElement & {
+    data_type: PaperlessDataType;
+    label: string;
 }
 
 export type CheckResult = {
