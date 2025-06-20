@@ -136,11 +136,11 @@ export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: stri
     });
 }
 
-export const usePatternMatches = (pattern: Pattern) => {
+export const usePatternMatches = (pattern: Pattern, all_documents: boolean = false) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
     return useQuery({
-        queryKey: ['patterns', 'matches', debouncedPattern],
-        queryFn: async () => postRequest<Pattern, Array<DocumentBase>>('/api/documents/matching_pattern', debouncedPattern),
+        queryKey: ['patterns', 'matches', debouncedPattern, all_documents],
+        queryFn: async () => postRequest<Pattern, Array<DocumentBase>>(`/api/documents/matching_pattern?all_documents=${all_documents}`, debouncedPattern),
         placeholderData: keepPreviousData
     });
 }

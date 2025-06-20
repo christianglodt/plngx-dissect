@@ -321,8 +321,10 @@ class PaperlessClient:
 
         url_params: dict[str, str] = {}
         url_params['page_size'] = '50'
-        url_params['tags__id__all'] = ",".join(required_tag_ids)
-        url_params['tags__id__none'] = ",".join(excluded_tag_ids)
+        if required_tag_ids:
+            url_params['tags__id__all'] = ",".join(required_tag_ids)
+        if excluded_tag_ids:
+            url_params['tags__id__none'] = ",".join(excluded_tag_ids)
 
         if correspondents:
             correspondents_by_name = await self.correspondents_by_name

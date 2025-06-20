@@ -71,14 +71,17 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
 #                 yield doc
 
 
-async def get_documents_matching_pattern(pattern: Pattern) -> AsyncIterator[Document]:
+async def get_documents_matching_pattern(pattern: Pattern, all_documents: bool = False) -> AsyncIterator[Document]:
     client = paperless.PaperlessClient()
 
     # Find topmost correspondent and document checks and use them in paperless query.
     # This reduces the number of results needing to be checked significantly in the most common case.
     correspondents, document_types = pattern.get_required_correspondents_and_document_types()
 
-    paperless_docs = client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS, correspondents=correspondents, document_types=document_types)
+    required_tags = [] if all_documents else PAPERLESS_REQUIRED_TAGS
+    excluded_tags = [] if all_documents else PAPERLESS_EXCLUDED_TAGS
+
+    paperless_docs = client.get_documents_with_tags(required_tags, excluded_tags, correspondents=correspondents, document_types=document_types)
 
     async for doc in filter_documents_matching_pattern(paperless_docs, pattern, client):
         yield doc

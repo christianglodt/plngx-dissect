@@ -1,10 +1,11 @@
-import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { Pattern } from "./types";
 import ListCard from "./utils/ListCard";
 import { usePatternMatches } from "./hooks";
-import { Error } from "@mui/icons-material";
+import { CheckCircle, Error, Pending } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
 import { Article } from "@mui/icons-material";
+import { useState } from "react";
 
 type MatchingDocsCardProps = {
     pattern: Pattern;
@@ -14,7 +15,9 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
 
     const { pattern } = props;
 
-    const { data: matches, isLoading, error } = usePatternMatches(pattern);
+    const [showAllDocuments, setShowAllDocuments] = useState(false);
+
+    const { data: matches, isLoading, error } = usePatternMatches(pattern, showAllDocuments);
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -24,8 +27,25 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
         setSearchParams(p);
     }
 
+    console.log(isLoading);
+
     return (
-        <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+        <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={
+            <>
+                { isLoading ?
+                    <CircularProgress/>
+                : 
+                    <ToggleButtonGroup value={showAllDocuments} exclusive size="small">
+                        <ToggleButton value={false} title="Show only unprocessed (pending) documents" onClick={() => setShowAllDocuments(false)}>
+                            <Pending/>
+                        </ToggleButton>
+                        <ToggleButton value={true} title="Show all documents" onClick={() => setShowAllDocuments(true)}>
+                            <CheckCircle/>
+                        </ToggleButton>
+                    </ToggleButtonGroup>
+                }
+            </>
+            }>
             { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
