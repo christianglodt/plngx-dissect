@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler # type: ignore
@@ -146,10 +147,14 @@ async def catch_all(request: Request, path_name: str):
         'js_file': js_file
     }, media_type='text/html')
 
-
 if PATH_PREFIX:
     app = FastAPI()
     app.mount(PATH_PREFIX, prefix_app)
+
+    @app.get('/')
+    async def redirect_to_prefix():
+        return RedirectResponse(url=PATH_PREFIX + '/')
+    
 else:
     app = prefix_app
 
