@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler # type: ignore
 from apscheduler.triggers.cron import CronTrigger # type: ignore
+from contextlib import asynccontextmanager
 import aiohttp
 import pydantic
 import json
@@ -14,6 +15,11 @@ import matching
 import history
 import pathlib
 import os
+import asyncio
+import logging
+
+logging.basicConfig()
+log = logging.getLogger('uvicorn')
 
 import dotenv
 
@@ -22,9 +28,16 @@ dotenv.load_dotenv('../.env')
 RAW_PATH_PREFIX = '/' + os.environ.get('PATH_PREFIX', '').strip('/')
 PATH_PREFIX = '' if RAW_PATH_PREFIX == '/' else RAW_PATH_PREFIX
 
-prefix_app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if matching.lockfile_path.exists():
+        matching.lockfile_path.unlink(missing_ok=True)
+        log.info(f'Deleted stale lock file "{matching.lockfile_path}"')
+    yield
 
+prefix_app = FastAPI(lifespan=lifespan)
 api_app = FastAPI()
+
 
 @api_app.get('/patterns')
 async def get_pattern_list() -> list[pattern.PatternListEntry]:
@@ -103,8 +116,15 @@ async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool
     return res
 
 
+@api_app.post('/documents/process_all')
+async def process_all_documents():
+    asyncio.create_task(matching.process_all_documents())
+    return None
+
+
 class ResponseHistoryItem(history.HistoryItem):
     paperless_url: str
+
 
 @api_app.get('/history')
 async def get_history() -> list[ResponseHistoryItem]:
@@ -148,7 +168,7 @@ async def catch_all(request: Request, path_name: str):
     }, media_type='text/html')
 
 if PATH_PREFIX:
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
     app.mount(PATH_PREFIX, prefix_app)
 
     @app.get('/')
