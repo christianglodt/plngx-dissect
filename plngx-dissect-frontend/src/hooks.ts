@@ -119,6 +119,14 @@ export const useRenamePatternMutation = () => {
     });
 }
 
+export const useProcessAllMutation = () => {
+    return useMutation({
+        mutationFn: () => {
+            return postRequest<null, null>('/api/documents/process_all', null);
+        }
+    });
+}
+
 const getDocumentById = async (id: number | null) => {
     if (!id) return null;
     return await fetchJson<Document>(`/api/document/${id}`);
