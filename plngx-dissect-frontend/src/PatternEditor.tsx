@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useDeletePatternMutation, usePattern, usePatternEvaluationResult, useSavePatternMutation } from "./hooks";
+import { useDeletePatternMutation, usePattern, usePatternEvaluationResult, useProcessDocumentWithPatternMutation, useSavePatternMutation } from "./hooks";
 import { Alert, Button, LinearProgress, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksCard";
@@ -24,6 +24,7 @@ const PatternEditor = () => {
 
     const savePatternMutation = useSavePatternMutation(patternId!);
     const deletePatternMutation = useDeletePatternMutation();
+    const processDocumentWithPatternMutation = useProcessDocumentWithPatternMutation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const documentId = searchParams.get('document') !== null ? Number(searchParams.get('document')) : null;
@@ -65,6 +66,10 @@ const PatternEditor = () => {
         });
     }
 
+    const onProcessDocumentConfirmed = () => {
+        processDocumentWithPatternMutation.mutate({ document_id: documentId!, pattern_name: pattern.name });
+    }
+
     return (
         <>
             <PortalBox>
@@ -72,6 +77,7 @@ const PatternEditor = () => {
                     { (savePatternMutation.isError || deletePatternMutation.isError) &&
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
+                    <ConfirmButton disabled={savePatternMutation.isPending || modifiedPattern !== null || documentId === null}  dialogTitle="Process Document?" dialogText="Process the current document with this pattern?" color="warning" onConfirmed={onProcessDocumentConfirmed}>Process</ConfirmButton>
                     <RenamePatternButton name={pattern.name}/>
                     <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
