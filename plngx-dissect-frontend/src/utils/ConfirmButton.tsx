@@ -23,7 +23,7 @@ const ConfirmButton = (props: ConfirmButtonProps) => {
 
     return (
         <>
-            <Button variant={props.variant} color={props.color} sx={props.sx} onClick={() => setOpen(true)}>
+            <Button variant={props.variant} disabled={props.disabled} color={props.color} sx={props.sx} onClick={() => setOpen(true)}>
                 {props.children}
             </Button>
             <Dialog open={open} onClose={() => setOpen(false)}>

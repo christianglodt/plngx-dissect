@@ -119,6 +119,22 @@ export const useRenamePatternMutation = () => {
     });
 }
 
+export const useProcessAllMutation = () => {
+    return useMutation({
+        mutationFn: () => {
+            return postRequest<null, null>('/api/documents/process_all', null);
+        }
+    });
+}
+
+export const useProcessDocumentWithPatternMutation = () => {
+    return useMutation({
+        mutationFn: ({ document_id, pattern_name } : { document_id: number, pattern_name: string }) => {
+            return postRequest(`/api/document/${document_id}/process_with_pattern/${pattern_name}`, undefined);
+        }
+    });
+}
+
 const getDocumentById = async (id: number | null) => {
     if (!id) return null;
     return await fetchJson<Document>(`/api/document/${id}`);

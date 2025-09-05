@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler # type: ignore
 from apscheduler.triggers.cron import CronTrigger # type: ignore
+from contextlib import asynccontextmanager
 import aiohttp
 import pydantic
 import json
@@ -14,6 +15,12 @@ import matching
 import history
 import pathlib
 import os
+import asyncio
+import logging
+import flufl.lock
+
+logging.basicConfig()
+log = logging.getLogger('uvicorn')
 
 import dotenv
 
@@ -22,9 +29,16 @@ dotenv.load_dotenv('../.env')
 RAW_PATH_PREFIX = '/' + os.environ.get('PATH_PREFIX', '').strip('/')
 PATH_PREFIX = '' if RAW_PATH_PREFIX == '/' else RAW_PATH_PREFIX
 
-prefix_app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if matching.lockfile_path.exists():
+        matching.lockfile_path.unlink(missing_ok=True)
+        log.info(f'Deleted stale lock file "{matching.lockfile_path}"')
+    yield
 
+prefix_app = FastAPI(lifespan=lifespan)
 api_app = FastAPI()
+
 
 @api_app.get('/patterns')
 async def get_pattern_list() -> list[pattern.PatternListEntry]:
@@ -88,6 +102,20 @@ async def get_document(document_id: int) -> document.Document:
         raise HTTPException(status_code=500, detail=str(e.strerror))
 
 
+@api_app.post('/document/{document_id}/process_with_pattern/{pattern_name}')
+async def process_document(document_id: int, pattern_name: str):
+    client = paperless.PaperlessClient()
+    doc = await client.get_document_by_id(document_id)
+    pat = await pattern.get_pattern(pattern_name)
+    async def lock_and_process():
+        try:
+            with matching.processing_lock:
+                await matching.process_document(doc, client, [pat])
+        except flufl.lock.AlreadyLockedError:
+            log.warning(f'Processing already in progress')
+    asyncio.create_task(lock_and_process())
+
+
 @api_app.post('/documents/matching_pattern')
 async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool = False) -> list[document.DocumentBase]:
     # FastAPI will use the serializer for the declared return type (DocumentBase), not the one
@@ -103,8 +131,15 @@ async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool
     return res
 
 
+@api_app.post('/documents/process_all')
+async def process_all_documents():
+    asyncio.create_task(matching.process_all_documents())
+    return None
+
+
 class ResponseHistoryItem(history.HistoryItem):
     paperless_url: str
+
 
 @api_app.get('/history')
 async def get_history() -> list[ResponseHistoryItem]:
@@ -148,7 +183,7 @@ async def catch_all(request: Request, path_name: str):
     }, media_type='text/html')
 
 if PATH_PREFIX:
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)
     app.mount(PATH_PREFIX, prefix_app)
 
     @app.get('/')

@@ -7,12 +7,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 
 import { Link, useNavigate } from 'react-router-dom';
-import { useCreatePatternMutation, usePatternList } from "./hooks";
+import { useCreatePatternMutation, usePatternList, useProcessAllMutation } from "./hooks";
 import { Pattern } from './types';
 import InputDialogButton from './utils/InputDialogButton';
 import PortalBox from './utils/PortalBox';
 import { Card, CardContent, CardHeader, Stack } from '@mui/material';
 import HistoryCard from './HistoryCard';
+import ConfirmButton from './utils/ConfirmButton';
 
 
 const PatternTable = () => {
@@ -20,6 +21,7 @@ const PatternTable = () => {
     const { data: patterns, isLoading } = usePatternList();
 
     const createPatternMutation = useCreatePatternMutation();
+    const processAllMutation = useProcessAllMutation();
     const navigate = useNavigate();
 
     const onCreatePatternConfirmed = (newPatternName: string) => {
@@ -30,10 +32,15 @@ const PatternTable = () => {
         })
     }
 
+    const onProcessAllConfirmed = () => {
+        processAllMutation.mutate();
+    }
+
     return (
         <>
             <PortalBox>
-                <InputDialogButton label="New" dialogTitle="Create new Pattern" dialogText="Enter new Pattern name" onConfirmed={onCreatePatternConfirmed}/>
+                <ConfirmButton dialogTitle="Process all Documents" dialogText="Process all pending documents in Background?" color="warning" onConfirmed={onProcessAllConfirmed}>Process All</ConfirmButton>
+                <InputDialogButton label="New" dialogTitle="Create new Pattern" dialogText="Enter new Pattern name" color="success" onConfirmed={onCreatePatternConfirmed}/>
             </PortalBox>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', height: '100%' }}>
                 <Card sx={{ width: '100%', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
