@@ -17,6 +17,7 @@ import pathlib
 import os
 import asyncio
 import logging
+import flufl.lock
 
 logging.basicConfig()
 log = logging.getLogger('uvicorn')
@@ -101,11 +102,18 @@ async def get_document(document_id: int) -> document.Document:
         raise HTTPException(status_code=500, detail=str(e.strerror))
 
 
-@api_app.post('/document/{document_id}/process')
-async def process_document(document_id: int):
+@api_app.post('/document/{document_id}/process_with_pattern/{pattern_name}')
+async def process_document(document_id: int, pattern_name: str):
     client = paperless.PaperlessClient()
     doc = await client.get_document_by_id(document_id)
-    asyncio.create_task(matching.process_document(doc, client))
+    pat = await pattern.get_pattern(pattern_name)
+    async def lock_and_process():
+        try:
+            with matching.processing_lock:
+                await matching.process_document(doc, client, [pat])
+        except flufl.lock.AlreadyLockedError:
+            log.warning(f'Processing already in progress')
+    asyncio.create_task(lock_and_process())
 
 
 @api_app.post('/documents/matching_pattern')
