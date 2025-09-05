@@ -101,6 +101,13 @@ async def get_document(document_id: int) -> document.Document:
         raise HTTPException(status_code=500, detail=str(e.strerror))
 
 
+@api_app.post('/document/{document_id}/process')
+async def process_document(document_id: int):
+    client = paperless.PaperlessClient()
+    doc = await client.get_document_by_id(document_id)
+    asyncio.create_task(matching.process_document(doc, client))
+
+
 @api_app.post('/documents/matching_pattern')
 async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool = False) -> list[document.DocumentBase]:
     # FastAPI will use the serializer for the declared return type (DocumentBase), not the one
