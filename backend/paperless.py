@@ -37,6 +37,10 @@ class PaperlessValueConversionException(Exception):
     pass
 
 
+class TagNotFoundException(Exception):
+    pass
+
+
 PaperlessCustomFieldValuePythonType = datetime.date | bool | int | float | decimal.Decimal | list[int] | str | None
 
 
@@ -267,15 +271,25 @@ class PaperlessClient:
     
     @asyncstdlib.cached_property
     async def tags_by_id(self) -> Mapping[int, PaperlessTag]:
-        return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/tags/?page_size=1000', PaperlessTag) }
+        res = { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/tags/?page_size=1000', PaperlessTag) }
+        log.debug(f'Retrieved tags from Paperless')
+        return res
 
     @asyncstdlib.cached_property
     async def tags_by_name(self) -> Mapping[str, PaperlessTag]:
         return { t.name: t for t in (await self.tags_by_id).values() }
 
+    async def get_tag_by_name(self, name: str) -> PaperlessTag:
+        try:
+            return (await self.tags_by_name)[name]
+        except KeyError:
+            raise TagNotFoundException(f'Tag "{name}" not found in Paperless', name)
+
     @asyncstdlib.cached_property
     async def custom_fields_by_id(self) -> Mapping[int, PaperlessCustomField]:
-        return { f.id: f async for f in self._iter_paginated_results(f'{self.base_url}/api/custom_fields/?page_size=1000', PaperlessCustomField) }
+        res = { f.id: f async for f in self._iter_paginated_results(f'{self.base_url}/api/custom_fields/?page_size=1000', PaperlessCustomField) }
+        log.debug(f'Retrieved custom fields from Paperless')
+        return res
 
     @asyncstdlib.cached_property
     async def custom_fields_by_name(self) -> Mapping[str, PaperlessCustomField]:
@@ -283,7 +297,9 @@ class PaperlessClient:
 
     @asyncstdlib.cached_property
     async def correspondents_by_id(self) -> Mapping[int, PaperlessCorrespondent]:
-        return { c.id: c async for c in self._iter_paginated_results(f'{self.base_url}/api/correspondents/?page_size=1000', PaperlessCorrespondent) }
+        res = { c.id: c async for c in self._iter_paginated_results(f'{self.base_url}/api/correspondents/?page_size=1000', PaperlessCorrespondent) }
+        log.debug(f'Retrieved correspondents from Paperless')
+        return res
     
     @asyncstdlib.cached_property
     async def correspondents_by_name(self) -> Mapping[str, PaperlessCorrespondent]:
@@ -291,7 +307,9 @@ class PaperlessClient:
 
     @asyncstdlib.cached_property
     async def document_types_by_id(self) -> Mapping[int, PaperlessDocumentType]:
-        return { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/document_types/?page_size=1000', PaperlessDocumentType) }
+        res = { t.id: t async for t in self._iter_paginated_results(f'{self.base_url}/api/document_types/?page_size=1000', PaperlessDocumentType) }
+        log.debug(f'Retrieved document types from Paperless')
+        return res
 
     @asyncstdlib.cached_property
     async def document_types_by_name(self) -> Mapping[str, PaperlessDocumentType]:
@@ -299,7 +317,9 @@ class PaperlessClient:
 
     @asyncstdlib.cached_property
     async def storage_paths_by_id(self) -> Mapping[int, PaperlessStoragePath]:
-        return { p.id: p async for p in self._iter_paginated_results(f'{self.base_url}/api/storage_paths/?page_size=1000', PaperlessStoragePath) }
+        res = { p.id: p async for p in self._iter_paginated_results(f'{self.base_url}/api/storage_paths/?page_size=1000', PaperlessStoragePath) }
+        log.debug(f'Retrieved storage paths from Paperless')
+        return res
 
     async def get_document_by_id(self, document_id: int) -> PaperlessDocument:
         url = f'{self.base_url}/api/documents/{document_id}/'

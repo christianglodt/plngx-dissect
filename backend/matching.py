@@ -5,6 +5,7 @@ import logging
 import flufl.lock
 import datetime
 import pathlib
+import itertools
 from typing import AsyncIterator, Annotated, Literal, cast
 from pydantic import BaseModel, Field, NaiveDatetime
 # import aiomultiprocess
@@ -100,123 +101,138 @@ async def process_all_documents():
         with processing_lock:
             log.info(f'Processing all documents with tags {PAPERLESS_REQUIRED_TAGS}')
 
-            patterns: list[Pattern] = []
-            for p in await list_patterns():
-                patterns.append(await get_pattern(p.name))
+            patterns = [await get_pattern(p.name) for p in await list_patterns()]
             log.debug(f'Loaded {len(patterns)} patterns')
 
             client = paperless.PaperlessClient()
-            tags_by_name = await client.tags_by_name
-            tags_by_id = await client.tags_by_id
-            log.debug(f'Retrieved tags from Paperless')
-            custom_fields_by_id = await client.custom_fields_by_id
-            custom_fields_by_name = await client.custom_fields_by_name
-            log.debug(f'Retrieved custom fields from Paperless')
 
             try:
-                remove_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_REMOVE_TAGS]
-                add_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_ADD_TAGS]
-                [tags_by_name[t].id for t in PAPERLESS_REQUIRED_TAGS]
-            except KeyError as e:
+                [await client.get_tag_by_name(t) for t in itertools.chain(POST_PROCESS_ADD_TAGS, POST_PROCESS_REMOVE_TAGS)]
+            except paperless.TagNotFoundException as e:
                 log.error(f'Tag with name "{e.args[0]}" used in PAPERLESS_REQUIRED_TAGS or POST_PROCESS_CHANGE_TAGS does not exist')
                 return
 
             async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
-                log.debug(f'Retrieved document {paperless_doc.id}')
-                doc = await get_parsed_document(paperless_doc.id, client=client)
-                log.debug(f'Loaded cached text runs for document {doc.id}')
-
-                if doc.parse_status.error != None:
-                    log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
-                    continue
-
-                paperless_doc_has_changed = False
-                for pattern in patterns:
-                    if await pattern.matches(doc, paperless_doc, client):
-                        log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
-                        result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
-                        
-                        if any(f and f.error for f in result.fields):
-                            log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
-                            continue
-
-                        for t_id in remove_tag_ids:
-                            if t_id in paperless_doc.tags:
-                                paperless_doc_has_changed = True
-                                paperless_doc.tags.remove(t_id)
-                                log.debug(f'Removed tag "{tags_by_id[t_id].name}" from document {doc.id}')
-                        
-                        for t_id in add_tag_ids:
-                            if t_id not in paperless_doc.tags:
-                                paperless_doc_has_changed = True
-                                paperless_doc.tags.append(t_id)
-                                log.debug(f'Added tag "{tags_by_id[t_id].name}" to document {doc.id}')
-
-                        custom_field_set_has_changed = False
-                        for field, field_result in zip(pattern.fields, result.fields):
-                            if field_result is None:
-                                continue # should not happen since pattern has matched
-
-                            if field.kind == 'custom':
-                                field_id = custom_fields_by_name[field.name].id
-                                field_def = custom_fields_by_id[field_id]
-                                new_value = field_result.value
-                                try:
-                                    if new_value is not None:
-                                        new_value = field_def.convert_value_to_paperless(new_value)
-                                except paperless.PaperlessValueConversionException as e:
-                                    log.error(f'Invalid value {new_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
-                                    continue
-
-                                existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
-                                old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
-                                if old_value != new_value:
-                                    old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
-                                    paperless_doc_has_changed = True
-                                    custom_field_set_has_changed = True
-
-                                new_value = paperless.value_to_paperless(field_def.data_type, new_value)
-                                new_custom_field_value = paperless.PaperlessCustomFieldValue(field=field_id, value=new_value)
-                                try:
-                                    index = next(i for i, v in enumerate(paperless_doc.custom_fields) if v.field == field_id)
-                                    paperless_doc.custom_fields[index] = new_custom_field_value
-                                except StopIteration:
-                                    paperless_doc.custom_fields.append(new_custom_field_value)
-
-                            if field.kind == 'attr':
-                                attributes = await client.get_element_list('attributes')
-                                attribute = next(iter(filter(lambda a: a.name == field.name, attributes)), None)
-                                if attribute:
-                                    attribute = cast(paperless.PaperlessAttribute, attribute)
-                                    try:
-                                        if field_result.value is not None:
-                                            value = paperless.value_to_paperless(attribute.data_type, field_result.value)
-                                            if getattr(paperless_doc, attribute.name, None) != value:
-                                                setattr(paperless_doc, attribute.name, value)
-                                                log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to "{value}"')
-                                                paperless_doc_has_changed = True
-
-                                    except paperless.PaperlessValueConversionException as e:
-                                        log.error(f'Invalid value {field_result.value!r} for attribute "{attribute.name}" of data type "{attribute.data_type}"')
-                                        continue
-
-                        if custom_field_set_has_changed:
-                            log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
-                
-                if paperless_doc_has_changed:
-                    pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
-
-                    history_field_desc = [f'{custom_fields_by_id[f.field].name}: {f.value}' for f in paperless_doc.custom_fields]
-                    history_details = f'Set fields to {", ".join(history_field_desc)}'
-                    if POST_PROCESS_DONT_SAVE:
-                        log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
-                        log.debug(f'History details: {history_details}')
-                    else:
-                        await client.put_document(paperless_doc)
-                        log.info(f'Saved document {paperless_doc.id} to Paperless')
-                        await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
+                await process_document(paperless_doc, client, patterns)
     except flufl.lock.AlreadyLockedError:
         log.warning('Not processing documents because process_all_documents() is already running')
+
+
+async def process_document(paperless_doc: paperless.PaperlessDocument, client: paperless.PaperlessClient | None = None, patterns: list[Pattern] | None = None) -> None:
+    if client is None:
+        client = paperless.PaperlessClient()
+
+    if patterns is None:
+        patterns = [await get_pattern(p.name) for p in await list_patterns()]
+        log.debug(f'Loaded {len(patterns)} patterns')
+
+    tags_by_name = await client.tags_by_name
+    tags_by_id = await client.tags_by_id
+    custom_fields_by_id = await client.custom_fields_by_id
+    custom_fields_by_name = await client.custom_fields_by_name
+
+    try:
+        remove_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_REMOVE_TAGS]
+        add_tag_ids = [tags_by_name[t].id for t in POST_PROCESS_ADD_TAGS]
+        [tags_by_name[t].id for t in PAPERLESS_REQUIRED_TAGS]
+    except KeyError as e:
+        log.error(f'Tag with name "{e.args[0]}" used in PAPERLESS_REQUIRED_TAGS or POST_PROCESS_CHANGE_TAGS does not exist')
+        return
+
+    log.debug(f'Retrieved document {paperless_doc.id}')
+    doc = await get_parsed_document(paperless_doc.id, client=client)
+    log.debug(f'Loaded cached text runs for document {doc.id}')
+
+    if doc.parse_status.error != None:
+        log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
+        return
+
+    paperless_doc_has_changed = False
+    for pattern in patterns:
+        if await pattern.matches(doc, paperless_doc, client):
+            log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
+            result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
+                        
+            if any(f and f.error for f in result.fields):
+                log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
+                continue
+
+            for t_id in remove_tag_ids:
+                if t_id in paperless_doc.tags:
+                    paperless_doc_has_changed = True
+                    paperless_doc.tags.remove(t_id)
+                    log.debug(f'Removed tag "{tags_by_id[t_id].name}" from document {doc.id}')
+                        
+            for t_id in add_tag_ids:
+                if t_id not in paperless_doc.tags:
+                    paperless_doc_has_changed = True
+                    paperless_doc.tags.append(t_id)
+                    log.debug(f'Added tag "{tags_by_id[t_id].name}" to document {doc.id}')
+
+            custom_field_set_has_changed = False
+            for field, field_result in zip(pattern.fields, result.fields):
+                if field_result is None:
+                    continue # should not happen since pattern has matched
+
+                if field.kind == 'custom':
+                    field_id = custom_fields_by_name[field.name].id
+                    field_def = custom_fields_by_id[field_id]
+                    new_value = field_result.value
+                    try:
+                        if new_value is not None:
+                            new_value = field_def.convert_value_to_paperless(new_value)
+                    except paperless.PaperlessValueConversionException as e:
+                        log.error(f'Invalid value {new_value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}"')
+                        continue
+
+                    existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
+                    old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
+                    if old_value != new_value:
+                        old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
+                        paperless_doc_has_changed = True
+                        custom_field_set_has_changed = True
+
+                    new_value = paperless.value_to_paperless(field_def.data_type, new_value)
+                    new_custom_field_value = paperless.PaperlessCustomFieldValue(field=field_id, value=new_value)
+                    try:
+                        index = next(i for i, v in enumerate(paperless_doc.custom_fields) if v.field == field_id)
+                        paperless_doc.custom_fields[index] = new_custom_field_value
+                    except StopIteration:
+                        paperless_doc.custom_fields.append(new_custom_field_value)
+
+                if field.kind == 'attr':
+                    attributes = await client.get_element_list('attributes')
+                    attribute = next(iter(filter(lambda a: a.name == field.name, attributes)), None)
+                    if attribute:
+                        attribute = cast(paperless.PaperlessAttribute, attribute)
+                        try:
+                            if field_result.value is not None:
+                                value = paperless.value_to_paperless(attribute.data_type, field_result.value)
+                                if getattr(paperless_doc, attribute.name, None) != value:
+                                    setattr(paperless_doc, attribute.name, value)
+                                    log.info(f'Updated attribute "{attribute.name}" of document {doc.id} to "{value}"')
+                                    paperless_doc_has_changed = True
+
+                        except paperless.PaperlessValueConversionException as e:
+                            log.error(f'Invalid value {field_result.value!r} for attribute "{attribute.name}" of data type "{attribute.data_type}"')
+                            continue
+
+            if custom_field_set_has_changed:
+                log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
+                
+    if paperless_doc_has_changed:
+        pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
+
+        history_field_desc = [f'{custom_fields_by_id[f.field].name}: {f.value}' for f in paperless_doc.custom_fields]
+        history_details = f'Set fields to {", ".join(history_field_desc)}'
+        if POST_PROCESS_DONT_SAVE:
+            log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
+            log.debug(f'History details: {history_details}')
+        else:
+            await client.put_document(paperless_doc)
+            log.info(f'Saved document {paperless_doc.id} to Paperless')
+            await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
+
 
 if __name__ == '__main__':
     import asyncio
