@@ -27,8 +27,6 @@ const MatchingDocsCard = (props: MatchingDocsCardProps) => {
         setSearchParams(p);
     }
 
-    console.log(isLoading);
-
     return (
         <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={
             <>
