@@ -6,6 +6,7 @@ import ConfirmButton from "./ConfirmButton";
 
 export type DialogListItemPropsType = {
     onChangeConfirmed: () => void;
+    onChangeCanceled: () => void;
     onDelete: () => void;
     dialogTitle: string | React.JSX.Element;
     dialogExtraTitle?: React.ReactNode | null;
@@ -32,22 +33,27 @@ const DialogContent = (props: PropsWithChildren) => {
 }
 
 const DialogListItem = (props: DialogListItemPropsType) => {
-    const { onChangeConfirmed, onDelete } = props;
+    const { onChangeConfirmed, onChangeCanceled, onDelete } = props;
 
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const onDialogClose = () => {
         setDialogOpen(false);
+        // Components that use DialogListItem must explicitly reset
+        // their state to their prop values, because they won't rerender
+        // after canceling/closing, and thus their states will not
+        // be reinstantiated (and thereby reinitialized to their prop values).
+        onChangeCanceled();
     }
 
     const onDialogConfirmed = () => {
         onChangeConfirmed();
-        onDialogClose();
+        setDialogOpen(false);
     }
 
     const onDeleteConfirmed = () => {
         onDelete();
-        onDialogClose();
+        setDialogOpen(false);
     };
 
 
@@ -74,7 +80,6 @@ const DialogListItem = (props: DialogListItemPropsType) => {
                     <Button variant="contained" onClick={onDialogConfirmed}>Ok</Button>
                 </DialogActions>
             </Dialog>
-            
             <ListItemButton onClick={() => setDialogOpen(true)} sx={{ cursor: 'pointer' }}>
                 {itemContent}
             </ListItemButton>

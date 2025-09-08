@@ -11,6 +11,7 @@ export const pythonRegexToJsRegex = (r: string): string => {
 type RegexPreviewPropsType = {
     text: string;
     regex: string;
+    ignoreCase: boolean;
 }
 
 type Highlight = {
@@ -43,7 +44,7 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
 
     const highlights: Array<Highlight> = [];
     try {
-        const regexp = new RegExp(jsRegex, 'dgsm');
+        const regexp = new RegExp(jsRegex, 'mdgsu' + (props.ignoreCase ? 'i' : '')); // TODO
         const regexpResult = props.text.matchAll(regexp);
         for (const r of regexpResult) {
             if (r.groups) {
@@ -57,6 +58,7 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
 
     } catch (e) {
         /* empty */
+        console.log(e);
     }
 
     const typographyProps = {

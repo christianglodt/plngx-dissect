@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import { CheckTypeId, Document, Pattern, RegionRegex, RegionRegexCheck } from "../types";
+import { CheckTypeId, Document, Pattern, Region, RegionCheck } from "../types";
 import TextRunBox from "./TextRunBox";
 import RegionBox from "./RegionBox";
 import { produce } from "immer";
@@ -20,15 +20,13 @@ const Page = (props: PagePropsType) => {
     const pageWidth = document.pages[pageNr].width;
     const pageHeight = document.pages[pageNr].height;
 
-    //const regionChecks = pattern.checks.filter(r => r.type === CheckTypeId.Region) as Array<RegionRegexCheck>;
-
-    const onRegionCheckChange = (newRegion: RegionRegexCheck, index: number) => {
+    const onRegionCheckChange = (newRegion: RegionCheck, index: number) => {
         props.onChange(produce(pattern, draft => {
             draft.checks[index] = newRegion;
         }));
     }
 
-    const onRegionChange = (newRegion: RegionRegex, index: number) => {
+    const onRegionChange = (newRegion: Region, index: number) => {
         props.onChange(produce(pattern, draft => {
             draft.regions[index] = newRegion;
         }));
@@ -64,10 +62,10 @@ const Page = (props: PagePropsType) => {
 
                 { pattern.checks.map((check, index) =>
                 check.type === CheckTypeId.Region &&
-                <RegionBox<RegionRegexCheck> key={index} region={check} text={check.regex} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionRegexCheck) => onRegionCheckChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                <RegionBox<RegionCheck> key={index} region={check} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionCheck) => onRegionCheckChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
                 { pattern.regions.map((region, index) =>
-                <RegionBox<RegionRegex> key={index} region={region} text={region.regex} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionRegex) => onRegionChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                <RegionBox<Region> key={index} region={region} pageClientRectDimensions={pageDimensions} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
             </div>
 

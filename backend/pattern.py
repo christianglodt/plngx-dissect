@@ -31,14 +31,13 @@ class NumPagesCheck(Check):
         return len(doc.pages) == self.num_pages
 
 
-class RegionRegexCheck(region.RegionRegex):
+class RegionCheck(region.Region, Check):
     type: Literal['region']
 
     async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         text = page.get_region_text(self)
-        if re.match(self.regex, text) is not None:
-            return True
-        return False
+        region_result = self.evaluate(text)
+        return region_result.group_values is not None
 
 
 class TitleRegexCheck(Check):
@@ -145,7 +144,7 @@ class NotCheck(Check):
         return not await self.check.matches(page, doc, paperless_doc, client)
 
 
-AnyCheck = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
+AnyCheck = NumPagesCheck | RegionCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
 
 
 class CheckResult(pydantic.BaseModel):
@@ -164,7 +163,7 @@ class Pattern(pydantic.BaseModel):
     page: int # 0 is first, -1 is last, other number is exact page number
     name: str
     checks: list[AnyCheck]
-    regions: list[region.RegionRegex]
+    regions: list[region.Region]
     fields: list[field.Field]
 
     async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:

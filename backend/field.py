@@ -36,13 +36,12 @@ class Field(pydantic.BaseModel):
     name: str
     template: str
 
-    def get_result(self, region_results: list[region.RegionResult|None]) -> FieldResult:
+    def get_result(self, region_results: list[region.RegionResult]) -> FieldResult:
 
         context: dict[str, str] = {}
         for r in region_results:
-            if r is None:
-                continue
-            context.update(r.group_values)
+            if r.group_values is not None:
+                context.update(r.group_values)
 
         try:
             env = jinja2.sandbox.SandboxedEnvironment()

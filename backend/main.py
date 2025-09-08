@@ -12,6 +12,7 @@ import paperless
 import pattern
 import document
 import matching
+import region
 import history
 import pathlib
 import os
@@ -150,6 +151,11 @@ async def get_history() -> list[ResponseHistoryItem]:
 @api_app.get('/paperless_element/{slug}')
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
+
+
+@api_app.post('/region/evaluate_expr/')
+async def evaluate_region_expr(reg: region.Region, text: str) -> region.RegionResult:
+    return reg.evaluate(text)
 
 
 prefix_app.mount('/api', api_app)

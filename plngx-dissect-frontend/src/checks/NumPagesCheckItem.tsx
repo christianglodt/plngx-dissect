@@ -11,21 +11,25 @@ const NumPagesCheckItem = (props: CheckItemPropsType<NumPagesCheck>) => {
 
     const [value, setValue] = useState(props.check.num_pages);
 
+    const onChangeCanceled = () => {
+        setValue(props.check.num_pages);
+    };
+
     const onNumberChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         const n = Number(event.target.value);
         setValue(n > 0 ? n : 1)
-    }
+    };
 
     const onChangeConfirmed = () => {
         props.onChange(produce(props.check, draft => {
             draft.num_pages = value;
         }));
-    }
+    };
 
     const pluralize = props.check.num_pages > 1 ? 's' : '';
 
     return (
-        <DialogListItem dialogTitle="Check Number of Pages" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Check Number of Pages" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <TextField label="Number of pages" type="number" value={value} onChange={onNumberChanged} sx={{ width: '100%' }}></TextField>
             </DialogListItem.DialogContent>
