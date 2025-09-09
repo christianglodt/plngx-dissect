@@ -112,7 +112,7 @@ async def process_document(document_id: int, pattern_name: str):
         try:
             with matching.processing_lock:
                 await matching.process_document(doc, client, [pat])
-        except flufl.lock.AlreadyLockedError:
+        except flufl.lock.AlreadyLockedError: # pyright: ignore[reportPrivateImportUsage]
             log.warning(f'Processing already in progress')
     asyncio.create_task(lock_and_process())
 
