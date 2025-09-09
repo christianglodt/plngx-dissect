@@ -196,7 +196,8 @@ export const useEvaluateExpression = (region: Region, text: string) => {
         queryKey: ['regionResult', debouncedRegion, text],
         queryFn: async () => {
             return postRequest<RegionEvaluatePayload, RegionResult>('/api/region/evaluate_expr/', { 'region': debouncedRegion, text });
-        }
+        },
+        placeholderData: keepPreviousData
     });
 
     return query.data;
