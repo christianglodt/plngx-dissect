@@ -1,19 +1,15 @@
 import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { Pattern } from "./types";
 import ListCard from "./utils/ListCard";
 import { usePatternMatches } from "./hooks";
 import { CheckCircle, Error, Pending } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
 import { Article } from "@mui/icons-material";
-import { useState } from "react";
+import { useContext, useState } from "react";
+import { PatternEditorContext } from "./PatternEditorContext";
 
-type MatchingDocsCardProps = {
-    pattern: Pattern;
-}
+const MatchingDocsCard = () => {
 
-const MatchingDocsCard = (props: MatchingDocsCardProps) => {
-
-    const { pattern } = props;
+    const { pattern } = useContext(PatternEditorContext);
 
     const [showAllDocuments, setShowAllDocuments] = useState(false);
 

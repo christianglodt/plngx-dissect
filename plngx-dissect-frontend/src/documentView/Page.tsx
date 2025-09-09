@@ -1,33 +1,27 @@
 import { Box } from "@mui/material";
-import { CheckTypeId, Document, Pattern, Region, RegionCheck } from "../types";
+import { CheckTypeId, Region, RegionCheck } from "../types";
 import TextRunBox from "./TextRunBox";
 import RegionBox from "./RegionBox";
 import { produce } from "immer";
-import { DragEvent } from "react";
+import { DragEvent, useContext } from "react";
 import useResizeObserver from "use-resize-observer";
 import { PATH_PREFIX } from "../hooks";
+import { PatternEditorContext } from "../PatternEditorContext";
 
-type PagePropsType = {
-    document: Document;
-    pageNr: number;
-    pattern: Pattern;
-    onChange: (newPattern: Pattern) => void;
-}
+const Page = () => {
 
-const Page = (props: PagePropsType) => {
-
-    const { pattern, document, pageNr } = props;
+    const { pattern, document, pageNr, onPatternChange } = useContext(PatternEditorContext);
     const pageWidth = document.pages[pageNr].width;
     const pageHeight = document.pages[pageNr].height;
 
     const onRegionCheckChange = (newRegion: RegionCheck, index: number) => {
-        props.onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.checks[index] = newRegion;
         }));
     }
 
     const onRegionChange = (newRegion: Region, index: number) => {
-        props.onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.regions[index] = newRegion;
         }));
     }

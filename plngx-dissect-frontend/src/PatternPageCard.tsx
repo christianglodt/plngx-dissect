@@ -1,23 +1,21 @@
 import { Card, CardContent, CardHeader, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Stack, TextField } from "@mui/material";
-import { Pattern } from "./types";
 import { produce } from "immer";
+import { useContext } from "react";
+import { PatternEditorContext } from "./PatternEditorContext";
 
-type PatternPageCardPropsType = {
-    pattern: Pattern;
-    onChange: (newPattern: Pattern) => void;
-}
 
-const PatternPageCard = (props: PatternPageCardPropsType) => {
+const PatternPageCard = () => {
 
-    const pageNr = props.pattern.page;
+    const { pattern, onPatternChange } = useContext(PatternEditorContext);
+    const pageNr = pattern.page;
 
     const selectValue = pageNr === 0 ? 'first' : (pageNr === -1 ? 'last' : 'exact');
 
     const onPageNrChange = (newPageNr: number) => {
-        const newPattern = produce(props.pattern, draft => {
+        const newPattern = produce(pattern, draft => {
             draft.page = newPageNr;
         });
-        props.onChange(newPattern);
+        onPatternChange(newPattern);
     }
 
     const onSelectChange = (event: SelectChangeEvent) => {
