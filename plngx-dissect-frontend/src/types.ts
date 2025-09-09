@@ -177,7 +177,8 @@ export type CheckResult = {
 export type RegionResult = {
     text: string;
     error: string | null;
-    group_values: Record<string, string>;
+    group_values: Record<string, string> | null;
+    group_positions: Array<Array<number>> | null;
 }
 
 export type FieldResult = {

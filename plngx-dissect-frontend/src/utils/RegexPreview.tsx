@@ -1,23 +1,10 @@
 import { Box, Typography } from "@mui/material";
 import React from "react";
-
-
-export const pythonRegexToJsRegex = (r: string): string => {
-    // Only for named group handling
-    return r.replace(/\(\?P</g, '(?<');
-}
+import { RegionResult } from "../types";
 
 
 type RegexPreviewPropsType = {
-    text: string;
-    regex: string;
-    ignoreCase: boolean;
-}
-
-type Highlight = {
-    startIndex: number;
-    endIndex: number;
-    group: string;
+    regionResult: RegionResult;
 }
 
 function* pairWiseIteration<T>(a: Array<T>) {
@@ -40,26 +27,7 @@ function* pairWiseIteration<T>(a: Array<T>) {
 
 const RegexPreview = (props: RegexPreviewPropsType) => {
 
-    const jsRegex = pythonRegexToJsRegex(props.regex);
-
-    const highlights: Array<Highlight> = [];
-    try {
-        const regexp = new RegExp(jsRegex, 'mdgsu' + (props.ignoreCase ? 'i' : '')); // TODO
-        const regexpResult = props.text.matchAll(regexp);
-        for (const r of regexpResult) {
-            if (r.groups) {
-                for (const groupName of Object.keys(r.groups)) {
-                    const [groupStart, groupEnd] = r.indices!.groups![groupName];
-
-                    highlights.push({ group: groupName, startIndex: groupStart, endIndex: groupEnd });
-                }
-            }
-        }
-
-    } catch (e) {
-        /* empty */
-        console.log(e);
-    }
+    const { regionResult } = props;
 
     const typographyProps = {
         component: 'span',
@@ -69,29 +37,39 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
     };
 
     const nodes: Array<React.ReactNode> = [];
-    if (highlights.length == 0) {
-        nodes.push(<Typography key="allText" {...typographyProps}>{props.text}</Typography>);
-    } else {
-        const firstStart = highlights[0].startIndex;
-        const lastEnd = highlights.slice(-1)[0].endIndex;
 
-        const head = props.text.slice(0, firstStart);
-        const tail = props.text.slice(lastEnd);
+    if (!regionResult?.group_positions || !regionResult?.group_values || regionResult.group_positions.length === 0 || Object.keys(regionResult.group_values).length === 0) {
+        nodes.push(<Typography key="allText" {...typographyProps}>{regionResult.text}</Typography>);
+    } else {
+        const positionsWithNames = [];
+        for (let i = 0; i < Object.keys(regionResult.group_values).length; i++) {
+            positionsWithNames.push({
+                name: Object.keys(regionResult.group_values)[i],
+                startIndex: regionResult.group_positions[i][0],
+                endIndex: regionResult.group_positions[i][1],
+            });
+        }
+
+        const firstStart = positionsWithNames[0].startIndex;
+        const lastEnd = positionsWithNames.slice(-1)[0].endIndex;
+
+        const head = regionResult.text.slice(0, firstStart);
+        const tail = regionResult.text.slice(lastEnd);
 
         if (head.length > 0) {
             nodes.push(<Typography key="head" {...typographyProps}>{head}</Typography>);
         }
 
-        for (const [h, nextH] of pairWiseIteration(highlights)) {
+        for (const [h, nextH] of pairWiseIteration(positionsWithNames)) {
             if (h) {
-                const text = props.text.slice(h.startIndex, h.endIndex);
+                const text = regionResult.text.slice(h.startIndex, h.endIndex);
                 if (text.length > 0) {
-                    nodes.push(<Typography key={`${h.startIndex}-${h.endIndex}`} title={h.group} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }} {...typographyProps}>{text}</Typography>);
+                    nodes.push(<Typography key={`${h.startIndex}-${h.endIndex}`} title={h.name} style={{ backgroundColor: 'rgba(255, 255, 255, 0.3)', borderBottom: '2px solid white' }} {...typographyProps}>{text}</Typography>);
                 }
 
                 if (nextH) {
                     // Add text between highlights
-                    const textBetween = props.text.slice(h.endIndex, nextH.startIndex);
+                    const textBetween = regionResult.text.slice(h.endIndex, nextH.startIndex);
                     if (textBetween.length > 0) {
                         nodes.push(<Typography key={`${h.endIndex}-${nextH.startIndex}`} {...typographyProps}>{textBetween}</Typography>);
                     }

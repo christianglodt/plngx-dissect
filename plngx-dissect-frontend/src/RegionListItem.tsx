@@ -4,8 +4,8 @@ import { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Region, RegionResult } from "./types";
 import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
-import RegexPreview, { pythonRegexToJsRegex } from "./utils/RegexPreview";
-import { simpleExprToRegex } from "./utils/simple_expr";
+import RegexPreview from "./utils/RegexPreview";
+import { useEvaluateExpression } from "./hooks";
 
 type RegionListItemPropsType = {
     nr: number;
@@ -24,6 +24,9 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const [kind, setKind] = useState(props.region.kind);
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
+
+    const previewRegion: Region = { x, y, x2, y2, kind, simple_expr, regex_expr };
+    const regionResult = useEvaluateExpression(previewRegion, props.result?.text || '');
 
     const onChangeCanceled = () => {
         setX(props.region.x);
@@ -65,10 +68,10 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
-            {props.result && Object.keys(props.result.group_values).map((key) =>
+            {props.result && Object.keys(props.result.group_values || {}).map((key) =>
                 <Stack direction="row" key={key}>
                     <ArrowRightAlt/>
-                    <Tooltip title={props.result?.group_values[key]}><Chip color="success" label={key + ': ' + props.result?.group_values[key]}/></Tooltip>
+                    <Tooltip title={(props.result?.group_values || {})[key]}><Chip color="success" label={key + ': ' + (props.result?.group_values || {})[key]}/></Tooltip>
                 </Stack>                
             )}
             {props.result?.error &&
@@ -77,27 +80,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </Stack>
     );
 
-    let exprError = null;
-
-    let exprRegex = '';
-    if (kind === 'regex') {
-        exprRegex = regex_expr || '';
-    }
-    if (kind === 'simple') {
-        try {
-            exprRegex = simpleExprToRegex(simple_expr || '');
-        } catch (error)  {
-            exprError = String(error);
-        }
-    }
-
-    if (exprError === null) {
-        try {
-            new RegExp(pythonRegexToJsRegex(exprRegex), 'dgs');
-        } catch (error) {
-            exprError = String(error);
-        }
-    }
+    const exprError = regionResult?.error;
 
     const kindSelector = (
         <FormControl size="small">
@@ -119,7 +102,9 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                         <TextField size="small" label="X2" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                         <TextField size="small" label="Y2" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     </Stack>
-                    <RegexPreview regex={exprRegex} text={props.result?.text || ''} ignoreCase={kind === 'simple'}/>
+                    { regionResult &&
+                    <RegexPreview regionResult={regionResult}/>
+                    }
                     { kind === 'simple' &&
                     <TextField label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
                     }

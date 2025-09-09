@@ -155,7 +155,7 @@ class CheckResult(pydantic.BaseModel):
 class PatternEvaluationResult(pydantic.BaseModel):
     # None values are present if pattern page match fails
     checks: list[CheckResult|None]
-    regions: list[region.RegionResult|None]
+    regions: list[region.RegionResult]
     fields: list[field.FieldResult|None]
 
 
@@ -214,10 +214,10 @@ class Pattern(pydantic.BaseModel):
 
         custom_fields_by_name = await client.custom_fields_by_name
 
-        region_results: list[region.RegionResult|None] = []
+        region_results: list[region.RegionResult] = []
         field_results: list[field.FieldResult|None] = []
         if any(r is None or r.passed == False for r in check_results):
-            region_results = [None] * len(self.regions)
+            region_results = [region.RegionResult.no_match('')] * len(self.regions)
             field_results = [None] * len(self.fields)
         else:
             page = doc.pages[page_nr]

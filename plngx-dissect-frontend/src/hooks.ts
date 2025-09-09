@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult, HistoryItem } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult, HistoryItem, Region, RegionResult } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -182,4 +182,22 @@ export const useHistory = () => {
         queryFn: async () => fetchJson<Array<HistoryItem>>('/api/history'),
         placeholderData: keepPreviousData
     });
+}
+
+type RegionEvaluatePayload = {
+    region: Region,
+    text: string
+};
+
+export const useEvaluateExpression = (region: Region, text: string) => {
+    const [debouncedRegion] = useDebounce(region, 1000);
+
+    const query = useQuery({
+        queryKey: ['regionResult', debouncedRegion, text],
+        queryFn: async () => {
+            return postRequest<RegionEvaluatePayload, RegionResult>('/api/region/evaluate_expr/', { 'region': debouncedRegion, text });
+        }
+    });
+
+    return query.data;
 }

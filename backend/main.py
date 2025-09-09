@@ -153,9 +153,14 @@ async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamed
     return await paperless.PaperlessClient().get_element_list(slug)
 
 
+class EvaluationRegionExprPayload(pydantic.BaseModel):
+    region: region.Region
+    text: str
+
+
 @api_app.post('/region/evaluate_expr/')
-async def evaluate_region_expr(reg: region.Region, text: str) -> region.RegionResult:
-    return reg.evaluate(text)
+async def evaluate_region_expr(payload: EvaluationRegionExprPayload) -> region.RegionResult:
+    return payload.region.evaluate(payload.text)
 
 
 prefix_app.mount('/api', api_app)
