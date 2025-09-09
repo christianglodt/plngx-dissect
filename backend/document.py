@@ -1,6 +1,6 @@
 import datetime
 import pydantic
-from region import Pt, Region, RegionRegex, RegionResult
+from region import Pt, Region, RegionBase, RegionResult, ExpressionError
 import paperless
 import asyncio
 import subprocess
@@ -19,7 +19,7 @@ logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging fro
 log = logging.getLogger(__name__)
 
 
-class TextRun(Region):
+class TextRun(RegionBase):
     text: str
 
     def __hash__(self):
@@ -106,18 +106,9 @@ class Page(pydantic.BaseModel):
         text = '\n'.join(lines)
         return text
 
-    def evaluate_region(self, region: RegionRegex) -> RegionResult:
+    def evaluate_region(self, region: Region) -> RegionResult:
         text = self.get_region_text(region)
-        group_values = {}
-
-        error = None
-        try:
-            if match := re.search(region.regex, text, re.DOTALL | re.MULTILINE):
-                group_values = match.groupdict()
-        except re.error as e:
-            error = e.msg
-
-        return RegionResult(text=text, group_values=group_values, error=error)
+        return region.evaluate(text)
 
 
 class DocumentParseStatus(pydantic.BaseModel):

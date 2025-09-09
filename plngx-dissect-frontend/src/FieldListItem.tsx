@@ -29,12 +29,17 @@ const FieldListItem = (props: FieldListItemPropsType) => {
     const [name, setName] = useState(props.field.name);
     const [template, setTemplate] = useState(props.field.template);
 
+    const onChangeCanceled = () => {
+        setName(props.field.name);
+        setTemplate(props.field.template);
+    };
+
     const onChangeConfirmed = () => {
         props.onChange(produce(props.field, draft => {
             draft.name = name;
             draft.template = template;
         }));
-    }
+    };
 
     const chipIcon = props.result?.data_type ? FIELD_TYPE_ICON[props.result?.data_type] : <QuestionMark/>;
 
@@ -59,7 +64,7 @@ const FieldListItem = (props: FieldListItemPropsType) => {
     );
 
     return (
-        <DialogListItem dialogTitle="Field" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Field" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <PaperlessElementSelector value={name} onChange={setName} label="Custom Field" slug="custom_fields"/>

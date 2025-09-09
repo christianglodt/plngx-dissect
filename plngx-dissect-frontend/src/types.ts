@@ -22,7 +22,7 @@ export type NumPagesCheck = {
     num_pages: number;
 }
 
-export type RegionRegexCheck = RegionRegex & {
+export type RegionCheck = Region & {
     type: CheckTypeId.Region;
 }
 
@@ -74,17 +74,16 @@ export type NotCheck = {
     check: Check | null;
 }
 
-export type Check = NumPagesCheck | RegionRegexCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
+export type Check = NumPagesCheck | RegionCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
 
 export type Region = {
+    kind: 'simple' | 'regex';
+    simple_expr?: string | null;
+    regex_expr?: string | null;
     x: number;
     y: number;
     x2: number;
     y2: number;
-}
-
-export type RegionRegex = Region & {
-    regex: string;
 }
 
 export type Field = {
@@ -97,7 +96,7 @@ export type Pattern = {
     name: string;
     page: number;
     checks: Check[];
-    regions: RegionRegex[];
+    regions: Region[];
     fields: Field[];
 }
 
@@ -178,7 +177,8 @@ export type CheckResult = {
 export type RegionResult = {
     text: string;
     error: string | null;
-    group_values: Record<string, string>;
+    group_values: Record<string, string> | null;
+    group_positions: Array<Array<number>> | null;
 }
 
 export type FieldResult = {

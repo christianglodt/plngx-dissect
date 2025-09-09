@@ -14,6 +14,11 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
     const [includes, setIncludes] = useState(props.check.includes);
     const [excludes, setExcludes] = useState(props.check.excludes);
 
+    const onChangeCanceled = () => {
+        setIncludes(props.check.includes);
+        setExcludes(props.check.excludes);
+    };
+
     const { data: tagList } = usePaperlessElement<PaperlessTag>('tags');
 
     const onChangeConfirmed = () => {
@@ -21,7 +26,7 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
             draft.includes = includes;
             draft.excludes = excludes;
         }));
-    }
+    };
 
     const included = props.check.includes.join(", ");
     const excluded = props.check.excludes.join(", ");
@@ -37,7 +42,7 @@ const TagCheckItem = (props: CheckItemPropsType<TagCheck>) => {
     const description = descriptionParts.join(' and ');
     const secondaryText = description ? `Must ${description}` : '(no condition set)';
     return (
-        <DialogListItem dialogTitle="Check Document Tags" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Check Document Tags" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <FormControl>

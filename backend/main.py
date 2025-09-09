@@ -12,6 +12,7 @@ import paperless
 import pattern
 import document
 import matching
+import region
 import history
 import pathlib
 import os
@@ -111,7 +112,7 @@ async def process_document(document_id: int, pattern_name: str):
         try:
             with matching.processing_lock:
                 await matching.process_document(doc, client, [pat])
-        except flufl.lock.AlreadyLockedError:
+        except flufl.lock.AlreadyLockedError: # pyright: ignore[reportPrivateImportUsage]
             log.warning(f'Processing already in progress')
     asyncio.create_task(lock_and_process())
 
@@ -150,6 +151,16 @@ async def get_history() -> list[ResponseHistoryItem]:
 @api_app.get('/paperless_element/{slug}')
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
+
+
+class EvaluationRegionExprPayload(pydantic.BaseModel):
+    region: region.Region
+    text: str
+
+
+@api_app.post('/region/evaluate_expr/')
+async def evaluate_region_expr(payload: EvaluationRegionExprPayload) -> region.RegionResult:
+    return payload.region.evaluate(payload.text)
 
 
 prefix_app.mount('/api', api_app)

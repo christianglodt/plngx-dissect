@@ -37,8 +37,8 @@ const ChecksCard = (props: ChecksCardProps) => {
     }
 
     // The CheckItemFactory key is set to the JSON representation of the check below to ensure
-    // the CheckItem is remounted when the check is changed. This is necessary because the RegionRegexCheck is
-    // changed via drag-and-drop, which does not synchronize the state in the RegionRegexCheckItem dialog.
+    // the CheckItem is remounted when the check is changed. This is necessary because the RegionCheck is
+    // changed via drag-and-drop, which does not synchronize the state in the RegionCheckItem dialog.
     return (
         <ListCard title="Checks" headerWidget={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>}>
             { pattern.checks.map((check, index) =>

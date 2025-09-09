@@ -22,13 +22,19 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
         field: { clearable: true, onClear: () => setBefore(null) }
     };
 
+    const onChangeCanceled = () => {
+        setBefore(props.check.before);
+        setAfter(props.check.after);
+        setYear(props.check.year);
+    };
+
     const onChangeConfirmed = () => {
         props.onChange(produce(props.check, draft => {
             draft.before = before;
             draft.after = after;
             draft.year = year;
             }));
-    }
+    };
 
     const descriptionParts = [];
     if (props.check.before !== null) {
@@ -44,7 +50,7 @@ const DateCreatedCheckItem = (props: CheckItemPropsType<DateCreatedCheck>) => {
     const description = descriptionParts.length > 0 ? 'Must be ' + descriptionParts.join(', ') : '(no condition set)';
 
     return (
-        <DialogListItem dialogTitle="Check Date Created" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Check Date Created" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <DatePicker<Dayjs> label="Date Is Before" value={dayjs(before)} onChange={(value) => setBefore(value ? value.format('YYYY-MM-DD') : null)} format="D.M.YYYY" slotProps={afterSlotProps}/>

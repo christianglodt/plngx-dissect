@@ -1,8 +1,8 @@
 import React from "react";
 
-import { Check, CheckTypeId, NumPagesCheck, RegionRegexCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck, AndCheck, OrCheck, NotCheck } from "../types";
+import { Check, CheckTypeId, NumPagesCheck, RegionCheck, TitleRegexCheck, CorrespondentCheck, StoragePathCheck, DocumentTypeCheck, TagCheck, DateCreatedCheck, AndCheck, OrCheck, NotCheck } from "../types";
 import NumPagesCheckItem from "./NumPagesCheckItem";
-import RegionRegexCheckItem from "./RegionRegexCheckItem";
+import RegionCheckItem from "./RegionCheckItem";
 import TitleRegexCheckItem from "./TitleRegexCheckItem";
 import CorrespondentCheckItem from "./CorrespondentCheckItem";
 import DocumentTypeCheckItem from "./DocumentTypeCheckItem";
@@ -19,7 +19,7 @@ const CheckItemFactory = (props: CheckItemPropsType<Check>): React.JSX.Element =
         case CheckTypeId.NumPages:
             return <NumPagesCheckItem      {...props as CheckItemPropsType<NumPagesCheck>}/>;
         case CheckTypeId.Region:
-            return <RegionRegexCheckItem   {...props as CheckItemPropsType<RegionRegexCheck>}/>;
+            return <RegionCheckItem   {...props as CheckItemPropsType<RegionCheck>}/>;
         case CheckTypeId.Title:
             return <TitleRegexCheckItem    {...props as CheckItemPropsType<TitleRegexCheck>}/>;
         case CheckTypeId.Correspondent:

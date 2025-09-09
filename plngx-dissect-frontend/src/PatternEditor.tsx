@@ -33,7 +33,7 @@ const PatternEditor = () => {
     const pattern = modifiedPattern || savedPattern || null;
 
     const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern, pageNr);
-    
+
     if (isError) {
         return (
             <Alert severity="error">Error: {error.message}</Alert>

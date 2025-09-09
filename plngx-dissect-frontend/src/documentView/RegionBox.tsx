@@ -6,7 +6,6 @@ import { useDrag } from '@use-gesture/react';
 
 type RegionBoxPropsType<RegionType> = {
     region: RegionType;
-    text: string;
     pageWidth: number;
     pageHeight: number;
     pageClientRectDimensions: Array<number>;
@@ -74,9 +73,11 @@ const RegionBox = <RegionType extends Region,>(props: RegionBoxPropsType<RegionT
         }
     }, { preventDefault: true });
 
+    const text = props.region.kind == 'simple' ? props.region.simple_expr : props.region.regex_expr;
+
     return (
         <div className="RegionBox" style={style} {...dragBind()}>
-            <div className="Label">{props.text}</div>
+            <div className="Label">{text}</div>
             <div className="ResizeHandle" {...resizeBind()} style={{ touchAction: 'none' }}/>
         </div>
     );

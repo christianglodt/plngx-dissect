@@ -11,15 +11,19 @@ const NotCheckItem = (props: RecursiveCheckItemPropsType<NotCheck>) => {
 
     const [check, setCheck] = useState(props.check.check);
 
+    const onChangeCanceled = () => {
+        setCheck(props.check.check);
+    };
+
     const onCheckCreated = (newCheck: Check) => {
         setCheck(newCheck);
-    }
+    };
 
     const onChangeConfirmed = () => {
         props.onChange(produce(props.check, draft => {
             draft.check = check;
         }));
-    }
+    };
 
     const subCheck = check && props.factory({
         check,
@@ -28,7 +32,7 @@ const NotCheckItem = (props: RecursiveCheckItemPropsType<NotCheck>) => {
     });
 
     return (
-        <DialogListItem dialogTitle="Not Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated} disabled={check !== null}/>} onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Not Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated} disabled={check !== null}/>} onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 { subCheck }
                 </DialogListItem.DialogContent>

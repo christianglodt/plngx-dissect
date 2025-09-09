@@ -27,6 +27,11 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
 
     const selectedAttr = attrOptions?.find(a => a.name === attr);
 
+    const onChangeCanceled = () => {
+        setAttr(props.field.name);
+        setTemplate(props.field.template);
+    };
+
     const onChangeConfirmed = () => {
         if (attr) {
             props.onChange(produce(props.field, draft => {
@@ -34,7 +39,7 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
                 draft.template = template;
             }));
         }
-    }
+    };
 
     const onAttrChange = (_event: SyntheticEvent, value: string | PaperlessAttribute | null) => {
         if (value === null) {
@@ -67,7 +72,7 @@ const AttributeListItem = (props: AttributeListItemPropsType) => {
     );
 
     return (
-        <DialogListItem dialogTitle="Attribute" onChangeConfirmed={onChangeConfirmed} onDelete={props.onDelete}>
+        <DialogListItem dialogTitle="Attribute" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <Autocomplete
