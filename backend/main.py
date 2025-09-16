@@ -87,10 +87,10 @@ async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     return Response(content=data, media_type='image/svg+xml')
 
 
-@api_app.post('/document/{document_id}/{page_nr}/evaluate_pattern')
-async def evaluate_pattern(document_id: int, page_nr: int, p: pattern.Pattern) -> pattern.PatternEvaluationResult:
+@api_app.post('/document/{document_id}/evaluate_pattern')
+async def evaluate_pattern(document_id: int, p: pattern.Pattern) -> pattern.PatternEvaluationResult:
     client = paperless.PaperlessClient()
-    return await p.evaluate(document_id, page_nr, client)
+    return await p.evaluate(document_id, client)
 
 
 @api_app.get('/document/{document_id}')
@@ -160,7 +160,7 @@ class EvaluationRegionExprPayload(pydantic.BaseModel):
 
 @api_app.post('/region/evaluate_expr/')
 async def evaluate_region_expr(payload: EvaluationRegionExprPayload) -> region.RegionResult:
-    return payload.region.evaluate(payload.text)
+    return payload.region.evaluate_on_text(0, payload.text)
 
 
 prefix_app.mount('/api', api_app)

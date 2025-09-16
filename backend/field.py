@@ -36,19 +36,14 @@ class Field(pydantic.BaseModel):
     name: str
     template: str
 
-    def get_result(self, region_results: list[region.RegionResult]) -> FieldResult:
-
-        context: dict[str, str] = {}
-        for r in region_results:
-            if r.group_values is not None:
-                context.update(r.group_values)
+    def get_result(self, region_values: dict[str, str]) -> FieldResult:
 
         try:
             env = jinja2.sandbox.SandboxedEnvironment()
             env.filters['parse_monetary'] = parse_monetary # type: ignore
             env.filters['parse_date'] = parse_date         # type: ignore
             template = env.from_string(self.template)
-            value = template.render(**context)
+            value = template.render(**region_values)
             error = None
         except jinja2.exceptions.TemplateError as e:
             value = None

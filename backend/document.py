@@ -64,6 +64,7 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
 
 
 class Page(pydantic.BaseModel):
+    page_nr: int
     width: float
     height: float
     text_runs: list[TextRun]
@@ -107,8 +108,7 @@ class Page(pydantic.BaseModel):
         return text
 
     def evaluate_region(self, region: Region) -> RegionResult:
-        text = self.get_region_text(region)
-        return region.evaluate(text)
+        return region.evaluate_on_page(self)
 
 
 class DocumentParseStatus(pydantic.BaseModel):
@@ -160,7 +160,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
 
         try:
             with pdfplumber.open(pdf_bytes_io) as pdf:
-                for page in pdf.pages:
+                for index, page in enumerate(pdf.pages):
                     runs: list[TextRun] = []
                     pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
                     for text_run in pdfplumber_text_runs:
@@ -169,7 +169,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                     indexes_by_y = sorted(list(range(len(runs))), key=lambda i: runs[i].y)
                     indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
                     indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
-                    pages.append(Page(text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
+                    pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
                 log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
         except pdfminer.psparser.PSException as e:
             error = str(e)

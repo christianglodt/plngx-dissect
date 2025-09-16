@@ -19,7 +19,7 @@ log = logging.getLogger('uvicorn')
 
 class Check(pydantic.BaseModel, abc.ABC):
     @abc.abstractmethod
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         raise NotImplementedError()
 
 
@@ -27,24 +27,26 @@ class NumPagesCheck(Check):
     type: Literal['num_pages']
     num_pages: int
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         return len(doc.pages) == self.num_pages
 
 
 class RegionCheck(region.Region, Check):
     type: Literal['region']
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        text = page.get_region_text(self)
-        region_result = self.evaluate(text)
-        return region_result.group_values is not None
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+        for page in doc.pages:
+            region_result = self.evaluate_on_page(page) # TODO correct to match on any page?
+            if region_result.group_values is not None:
+                return True
+        return False
 
 
 class TitleRegexCheck(Check):
     type: Literal['title']
     regex: str
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         return re.match(self.regex, doc.title) is not None
 
 
@@ -52,7 +54,7 @@ class CorrespondentCheck(Check):
     type: Literal['correspondent']
     name: str
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         correspondents = await client.correspondents_by_id
         c_name = correspondents[paperless_doc.correspondent].name if paperless_doc.correspondent != None else ''
         return c_name == self.name
@@ -62,7 +64,7 @@ class DocumentTypeCheck(Check):
     type: Literal['document_type']
     name: str
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         doc_types = await client.document_types_by_id
         d_name = doc_types[paperless_doc.document_type].name if paperless_doc.document_type != None else ''
         return d_name == self.name
@@ -72,7 +74,7 @@ class StoragePathCheck(Check):
     type: Literal['storage_path']
     name: str
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         storage_paths = await client.storage_paths_by_id
         s_name = storage_paths[paperless_doc.storage_path].name if paperless_doc.storage_path != None else ''
         return s_name == self.name
@@ -83,7 +85,7 @@ class TagCheck(Check):
     includes: list[str] = []
     excludes: list[str] = []
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         tags = await client.tags_by_id
         document_tags = set([tags[t_id].name for t_id in paperless_doc.tags])
         
@@ -104,7 +106,7 @@ class DateCreatedCheck(Check):
     after: datetime.date | None = None
     year: int | None = None
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         if self.before is not None and doc.date_created >= self.before:
             return False
         if self.after is not None and doc.date_created <= self.after:
@@ -118,9 +120,9 @@ class AndCheck(Check):
     type: Literal['and']
     checks: list['AnyCheck']
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         for check in self.checks:
-            if not await check.matches(page, doc, paperless_doc, client):
+            if not await check.matches(doc, paperless_doc, client):
                 return False
         return True
     
@@ -129,9 +131,9 @@ class OrCheck(Check):
     type: Literal['or']
     checks: list['AnyCheck']
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         for check in self.checks:
-            if await check.matches(page, doc, paperless_doc, client):
+            if await check.matches(doc, paperless_doc, client):
                 return True
         return False
 
@@ -140,8 +142,8 @@ class NotCheck(Check):
     type: Literal['not']
     check: 'AnyCheck'
 
-    async def matches(self, page: document.Page, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        return not await self.check.matches(page, doc, paperless_doc, client)
+    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+        return not await self.check.matches(doc, paperless_doc, client)
 
 
 AnyCheck = NumPagesCheck | RegionCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck
@@ -154,27 +156,21 @@ class CheckResult(pydantic.BaseModel):
 
 class PatternEvaluationResult(pydantic.BaseModel):
     # None values are present if pattern page match fails
-    checks: list[CheckResult|None]
-    regions: list[region.RegionResult]
-    fields: list[field.FieldResult|None]
+    checks: list[CheckResult]
+    regions: list[list[region.RegionResult]] # outer list in same order as regions in pattern, inner list in order of pages in document
+    fields: list[field.FieldResult|None] # same order as fields in pattern
 
 
 class Pattern(pydantic.BaseModel):
-    page: int # 0 is first, -1 is last, other number is exact page number
     name: str
     checks: list[AnyCheck]
     regions: list[region.Region]
     fields: list[field.Field]
 
     async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
-        try:
-            page = doc.pages[self.page]
-        except IndexError:
-            return False
-
         for check in self.checks:
             try:
-                if not await check.matches(page, doc, paperless_doc, client):
+                if not await check.matches(doc, paperless_doc, client):
                     return False
             except Exception:
                 log.exception(f'Exception while running check {check}')
@@ -182,21 +178,12 @@ class Pattern(pydantic.BaseModel):
 
         return True
 
-    async def get_match_result(self, doc: document.Document, page_nr: int, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult|None]:
-        if page_nr == -1:
-            page_nr = len(doc.pages) - 1
+    async def get_match_result(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult]:
 
-        if self.page == -1 and page_nr != len(doc.pages) - 1:
-            return [None] * len(self.checks)
-        if self.page != -1 and page_nr != self.page:
-            return [None] * len(self.checks)
-        
-        page = doc.pages[page_nr]
-
-        res: list[CheckResult|None] = []
+        res: list[CheckResult] = []
         for check in self.checks:
             try:
-                passed = await check.matches(page, doc, paperless_doc, client)
+                passed = await check.matches(doc, paperless_doc, client)
                 error = None
             except Exception as e:
                 passed = False
@@ -205,27 +192,30 @@ class Pattern(pydantic.BaseModel):
 
         return res
 
-    async def evaluate(self, document_id: int, page_nr: int, client: PaperlessClient) -> PatternEvaluationResult:
+    async def evaluate(self, document_id: int, client: PaperlessClient) -> PatternEvaluationResult:
 
         doc = await document.get_parsed_document(document_id, client=client)
         paperless_doc = await client.get_document_by_id(document_id)
 
-        check_results = await self.get_match_result(doc=doc, page_nr=page_nr, paperless_doc=paperless_doc, client=client)
+        check_results = await self.get_match_result(doc=doc, paperless_doc=paperless_doc, client=client)
 
         custom_fields_by_name = await client.custom_fields_by_name
 
-        region_results: list[region.RegionResult] = []
+        region_results: list[list[region.RegionResult]] = []
         field_results: list[field.FieldResult|None] = []
-        if any(r is None or r.passed == False for r in check_results):
-            region_results = [region.RegionResult.no_match('')] * len(self.regions)
+        if any(r.passed == False for r in check_results):
+            region_results = [[region.RegionResult.no_match('')] * len(doc.pages)] * len(self.regions)
             field_results = [None] * len(self.fields)
         else:
-            page = doc.pages[page_nr]
             for r in self.regions:
-                region_results.append(page.evaluate_region(r))
+                region_res: list[region.RegionResult] = []
+                for page in doc.pages:
+                    region_res.append(page.evaluate_region(r))
+                region_results.append(region_res)
 
+            region_values = self.region_results_to_dict(region_results)
             for f in self.fields:
-                field_result = f.get_result(region_results)
+                field_result = f.get_result(region_values)
                 if not field_result.error:
                     if f.kind == 'custom':
                         if not f.name in custom_fields_by_name:
@@ -259,6 +249,27 @@ class Pattern(pydantic.BaseModel):
                 field_results.append(field_result)
 
         return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
+
+
+    def region_results_to_dict(self, region_results: list[list[region.RegionResult]]) -> dict[str, str]:
+        res: dict[str, str] = {}
+
+        for region, results in zip(self.regions, region_results):
+            selected_page_result: 'region.RegionResult | None' = None
+            if region.page == 'first_match':
+                selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results)), None)
+            elif region.page == 'last_match':
+                selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results[::-1])), None)
+            else:
+                page_nr = region.page
+                selected_page_result = results[page_nr]
+
+            if selected_page_result:
+                for name, value in selected_page_result.group_values or {}:
+                    res[name] = value
+
+        return res
+
 
     def get_required_correspondents_and_document_types(self) -> tuple[list[str], list[str]]:
         # Most patterns have simple checks (eg. one document type and one correspondent).
@@ -320,7 +331,7 @@ async def list_patterns() -> list[PatternListEntry]:
 
 
 async def create_pattern(name: str) -> Pattern:
-    pattern = Pattern(name=name, page=0, checks=[], regions=[], fields=[])
+    pattern = Pattern(name=name, checks=[], regions=[], fields=[])
     async with aiofiles.open(name_to_path(name), 'x') as f:
         await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
     return pattern

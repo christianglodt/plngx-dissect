@@ -161,15 +161,14 @@ export const usePatternMatches = (pattern: Pattern, all_documents: boolean = fal
     });
 }
 
-export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null, pageNr: number) => {
+export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
-    const [debouncedPageNr] = useDebounce(pageNr, 1000);
 
     const qfn = async() => {
-        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${debouncedPageNr}/evaluate_pattern`, debouncedPattern!);
+        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/evaluate_pattern`, debouncedPattern!);
     }
     return useQuery({
-        queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr],
+        queryKey: ['patterns', 'evaluations', docId, debouncedPattern],
         enabled: !!docId && !!debouncedPattern,
         queryFn: qfn,
         placeholderData: keepPreviousData

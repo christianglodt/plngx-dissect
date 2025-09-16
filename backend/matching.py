@@ -93,7 +93,7 @@ async def get_documents_matching_pattern(pattern: Pattern, all_documents: bool =
 
 lockfile_path = pathlib.Path('../data/state/processing.lock').resolve()
 lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelta(hours=24))
+processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelta(hours=24))  # pyright: ignore[reportPrivateImportUsage]
 
 
 async def process_all_documents():
@@ -114,7 +114,7 @@ async def process_all_documents():
 
             async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
                 await process_document(paperless_doc, client, patterns)
-    except flufl.lock.AlreadyLockedError:
+    except flufl.lock.AlreadyLockedError:  # pyright: ignore[reportPrivateImportUsage]
         log.warning('Not processing documents because process_all_documents() is already running')
 
 
@@ -151,7 +151,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
     for pattern in patterns:
         if await pattern.matches(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
-            result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
+            result = await pattern.evaluate(paperless_doc.id, client)
                         
             if any(f and f.error for f in result.fields):
                 log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')

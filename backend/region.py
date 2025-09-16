@@ -2,6 +2,7 @@ import pydantic
 import typing
 import re
 from simple_expr import simple_expr_to_regex, ExpressionError
+from document import Page
 
 
 Pt = typing.NewType('Pt', float)
@@ -45,11 +46,17 @@ class RegionBase(pydantic.BaseModel):
 
 
 class Region(RegionBase):
+    page: int | typing.Literal['first_match', 'last_match'] = 'last_match'
     kind: typing.Literal['simple', 'regex']
     simple_expr: str | None = None
     regex_expr: str | None = None
 
-    def evaluate(self, text: str) -> 'RegionResult':
+    def evaluate_on_page(self, page: Page) -> 'RegionResult':
+        text = page.get_region_text(self)
+        return self.evaluate_on_text(page.page_nr, text)
+
+    def evaluate_on_text(self, page_nr: int, text: str) -> 'RegionResult':
+
         regex = None
         if self.kind == 'regex':
             if not self.regex_expr:
