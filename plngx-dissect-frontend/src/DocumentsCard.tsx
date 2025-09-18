@@ -1,4 +1,4 @@
-import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, Tab, Tabs } from "@mui/material";
+import { Box, Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, Tab, Tabs } from "@mui/material";
 import ListCard from "./utils/ListCard";
 import { usePatternMatches } from "./hooks";
 import { Error } from "@mui/icons-material";
@@ -29,17 +29,16 @@ const DocumentsCard = () => {
 
     return (
         <ListCard title="Documents" headerWidget={
-            <>
-                { isLoading ?
-                    <CircularProgress/>
-                :
-                    <Tabs value={showAllDocuments} onChange={onTabClicked}>
-                        <Tab label="All" value="all"/>
-                        <Tab label="Pending" value="pending"/>
-                    </Tabs>                
-                }
-            </>
+            <Tabs value={showAllDocuments} onChange={onTabClicked}>
+                <Tab label="All" value="all"/>
+                <Tab label="Pending" value="pending"/>
+            </Tabs>                
             }>
+            { isLoading &&
+            <Box sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CircularProgress/>
+            </Box>
+            }
             { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
