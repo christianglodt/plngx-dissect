@@ -186,9 +186,16 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
                         continue
 
                     existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
-                    old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
-                    if old_value != new_value:
+                    try:
                         old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
+                        if old_value != new_value:
+                            paperless_doc_has_changed = True
+                            custom_field_set_has_changed = True
+                    except paperless.PaperlessValueConversionException as e:
+                        if existing_field:
+                            log.info(f'Previous value {existing_field.value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}" is not a valid value')
+                        else:
+                            log.info(f'No previous value found for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                         paperless_doc_has_changed = True
                         custom_field_set_has_changed = True
 
