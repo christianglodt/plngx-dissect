@@ -8,6 +8,7 @@ import RegexPreview from "./utils/RegexPreview";
 import { useEvaluateExpression } from "./hooks";
 import { PatternEditorContext } from "./PatternEditorContext";
 import RegionPageSelector from "./utils/RegionPageSelector";
+import RegionListItemPageNavigator from "./RegionListItemPageNavigator";
 
 type RegionListItemPropsType = {
     nr: number;
@@ -34,7 +35,7 @@ const getRegionResultForDocument = (region: Region, pageResults: Array<RegionRes
 
 const RegionListItem = (props: RegionListItemPropsType) => {
 
-    const { patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
+    const { pageNr, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
 
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
@@ -49,7 +50,8 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const retainedPageResult = getRegionResultForDocument(props.region, props.pageResults || []);
 
     const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
-    const previewRegionResult = useEvaluateExpression(previewRegion, retainedPageResult?.text || ''); // For use in dialog.
+    const currentPageResult = props.pageResults && pageNr ? props.pageResults[pageNr] : null;
+    const previewRegionResult = useEvaluateExpression(previewRegion, currentPageResult?.text || ''); // For use in dialog.
 
     const onChangeCanceled = () => {
         setX(props.region.x);
@@ -156,6 +158,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </FormControl>
     );
 
+    // TODO add page navigator with thumbnails, allowing to switch the current page and highlighting any pages with results
     return (
         <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete} dialogExtraTitle={kindSelector}>
             <DialogListItem.DialogContent>
@@ -176,6 +179,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     { kind === 'regex' &&
                     <TextField label="Regular Expression" value={regex_expr || ''} multiline onChange={(event) => setRegexExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
                     }
+                    <RegionListItemPageNavigator pageResults={props.pageResults} region={previewRegion}/>
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>
