@@ -26,6 +26,7 @@ const RegionsCard = () => {
     const onAddRegionClick = () => {
         onPatternChange(produce(pattern, draft => {
             draft.regions.push({
+                page: 'last_match',
                 x: 50,
                 y: 50,
                 x2: 200,

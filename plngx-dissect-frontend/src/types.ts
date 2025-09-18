@@ -77,6 +77,7 @@ export type NotCheck = {
 export type Check = NumPagesCheck | RegionCheck | TitleRegexCheck | CorrespondentCheck | DocumentTypeCheck | StoragePathCheck | TagCheck | DateCreatedCheck | AndCheck | OrCheck | NotCheck;
 
 export type Region = {
+    page: number | 'first_match' | 'last_match';
     kind: 'simple' | 'regex';
     simple_expr?: string | null;
     regex_expr?: string | null;
@@ -94,7 +95,6 @@ export type Field = {
 
 export type Pattern = {
     name: string;
-    page: number;
     checks: Check[];
     regions: Region[];
     fields: Field[];
@@ -187,8 +187,8 @@ export type FieldResult = {
 }
 
 export type PatternEvaluationResult = {
-    checks: Array<CheckResult | null>;
-    regions: Array<RegionResult | null>;
+    checks: Array<CheckResult>;
+    regions: Array<Array<RegionResult>>;
     fields: Array<FieldResult | null>;
 }
 

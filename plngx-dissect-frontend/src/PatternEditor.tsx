@@ -9,7 +9,6 @@ import FieldsCard from "./FieldsCard";
 import DocumentView from "./documentView/DocumentView";
 import { useState } from "react";
 import { Pattern } from "./types";
-import PatternPageCard from "./PatternPageCard";
 import PortalBox from "./utils/PortalBox";
 import ConfirmButton from "./utils/ConfirmButton";
 import RenamePatternButton from "./RenamePatternButton";
@@ -34,7 +33,7 @@ const PatternEditor = () => {
 
     const pattern = modifiedPattern || savedPattern || null;
 
-    const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern, pageNr);
+    const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern);
 
     if (isError) {
         return (
@@ -107,7 +106,6 @@ const PatternEditor = () => {
             </PortalBox>
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
-                    <PatternPageCard/>
                     <ChecksCard/>
                     <MatchingDocsCard/>
                 </Stack>

@@ -1,38 +1,46 @@
 import { Chip, FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Tooltip } from "@mui/material";
 import { produce } from "immer";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Region, RegionResult } from "./types";
 import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
 import RegexPreview from "./utils/RegexPreview";
 import { useEvaluateExpression } from "./hooks";
+import { PatternEditorContext } from "./PatternEditorContext";
+import RegionPageSelector from "./utils/RegionPageSelector";
 
 type RegionListItemPropsType = {
     nr: number;
     region: Region;
-    result: RegionResult | null | undefined;
+    result: Array<RegionResult> | null; // 1 result per page
     onChange: (newRegion: Region) => void;
     onDelete: () => void;
 }
 
 const RegionListItem = (props: RegionListItemPropsType) => {
 
+    const { pageNr } = useContext(PatternEditorContext);
+
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
     const [x2, setX2] = useState(props.region.x2);
     const [y2, setY2] = useState(props.region.y2);
+    const [page, setPage] = useState(props.region.page);
     const [kind, setKind] = useState(props.region.kind);
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
 
-    const previewRegion: Region = { x, y, x2, y2, kind, simple_expr, regex_expr };
-    const regionResult = useEvaluateExpression(previewRegion, props.result?.text || '');
+    const selectedPageResult = (props.result || []).at(pageNr);
+
+    const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
+    const regionResult = useEvaluateExpression(previewRegion, selectedPageResult?.text || '');
 
     const onChangeCanceled = () => {
         setX(props.region.x);
         setY(props.region.y);
         setX2(props.region.x2);
         setY2(props.region.y2);
+        setPage(props.region.page);
         setKind(props.region.kind);
         setRegexExpr(props.region.regex_expr);
         setSimpleExpr(props.region.simple_expr);
@@ -44,6 +52,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
             draft.y = y;
             draft.x2 = x2;
             draft.y2 = y2;
+            draft.page = page;
             draft.regex_expr = regex_expr;
             draft.simple_expr = simple_expr;
             draft.kind = kind;
@@ -68,14 +77,14 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
-            {props.result && Object.keys(props.result.group_values || {}).map((key) =>
+            {props.result && Object.keys(selectedPageResult?.group_values || {}).map((key) =>
                 <Stack direction="row" key={key}>
                     <ArrowRightAlt/>
-                    <Tooltip title={(props.result?.group_values || {})[key]}><Chip color="success" label={key + ': ' + (props.result?.group_values || {})[key]}/></Tooltip>
+                    <Tooltip title={(selectedPageResult?.group_values || {})[key]}><Chip color="success" label={key + ': ' + (selectedPageResult?.group_values || {})[key]}/></Tooltip>
                 </Stack>                
             )}
-            {props.result?.error &&
-            <Chip label={props.result.error} icon={<Error/>} color="error"/>
+            {selectedPageResult?.error &&
+            <Chip label={selectedPageResult.error} icon={<Error/>} color="error"/>
             }
         </Stack>
     );
@@ -102,6 +111,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                         <TextField size="small" label="X2" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                         <TextField size="small" label="Y2" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     </Stack>
+                    <RegionPageSelector value={page} onChange={setPage}/>
                     { regionResult &&
                     <RegexPreview regionResult={regionResult}/>
                     }
