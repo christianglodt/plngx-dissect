@@ -2,7 +2,9 @@ import pydantic
 import typing
 import re
 from simple_expr import simple_expr_to_regex, ExpressionError
-from document import Page
+
+if typing.TYPE_CHECKING:
+    from document import Page
 
 
 Pt = typing.NewType('Pt', float)
@@ -51,7 +53,7 @@ class Region(RegionBase):
     simple_expr: str | None = None
     regex_expr: str | None = None
 
-    def evaluate_on_page(self, page: Page) -> 'RegionResult':
+    def evaluate_on_page(self, page: 'Page') -> 'RegionResult':
         text = page.get_region_text(self)
         return self.evaluate_on_text(page.page_nr, text)
 
