@@ -45,16 +45,14 @@ const FieldListItem = (props: FieldListItemPropsType) => {
 
     const secondaryText = (
         <Stack gap={1} alignItems="flex-start">
-            <Tooltip title={props.field.template}><Chip color="primary" icon={<Notes/>} label={props.field.template}/></Tooltip>
             {!props.result &&
                 <Stack direction="row">
-                    <ArrowRightAlt/>
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
             { props.result?.value &&
             <Stack direction="row">
-                <ArrowRightAlt/><Tooltip title={props.result.value}><Chip color="success" icon={chipIcon} label={props.result.value}/></Tooltip>
+                <Tooltip title={props.result.value}><Chip color="success" icon={chipIcon} label={props.result.value}/></Tooltip>
             </Stack>
             }
             { props.result?.error &&

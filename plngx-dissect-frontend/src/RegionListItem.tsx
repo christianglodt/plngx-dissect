@@ -108,22 +108,18 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </Stack>
     );
 
-    const propsExpr = props.region.kind === 'simple' ? props.region.simple_expr : props.region.regex_expr;
-
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
-            <Chip icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`} color="primary"/>
-            <Tooltip title={propsExpr}><Chip icon={<Search/>} label={propsExpr} color="primary"/></Tooltip>
             {!props.result &&
-                <Stack direction="row">
-                    <ArrowRightAlt/>
+                <Stack direction="column">
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
             {props.result && Object.keys(selectedPageResult?.group_values || {}).map((key) =>
-                <Stack direction="row" key={key}>
-                    <ArrowRightAlt/>
-                    <Tooltip title={(selectedPageResult?.group_values || {})[key]}><Chip color="success" label={key + ': ' + (selectedPageResult?.group_values || {})[key]}/></Tooltip>
+                <Stack direction="column" key={key}>
+                    <Tooltip title={(selectedPageResult?.group_values || {})[key]}>
+                        <Chip color="success" label={key + ': ' + (selectedPageResult?.group_values || {})[key]}/>
+                    </Tooltip>
                 </Stack>                
             )}
             {selectedPageResult?.error &&
