@@ -265,7 +265,7 @@ class Pattern(pydantic.BaseModel):
                 selected_page_result = results[page_nr]
 
             if selected_page_result:
-                for name, value in selected_page_result.group_values or {}:
+                for name, value in (selected_page_result.group_values or {}).items():
                     res[name] = value
 
         return res
