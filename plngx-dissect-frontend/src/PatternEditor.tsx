@@ -3,7 +3,7 @@ import { useDeletePatternMutation, useDocument, usePattern, usePatternEvaluation
 import { Alert, AlertTitle, Box, Button, LinearProgress, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksCard";
-import MatchingDocsCard from "./MatchingDocsCard";
+import DocumentsCard from "./DocumentsCard";
 import RegionsCard from "./RegionsCard";
 import FieldsCard from "./FieldsCard";
 import DocumentView from "./documentView/DocumentView";
@@ -107,7 +107,7 @@ const PatternEditor = () => {
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
                 <Stack direction="column" spacing={2} sx={{ height: '100%', width: '400px', minWidth: '400px' }}>
                     <ChecksCard/>
-                    <MatchingDocsCard/>
+                    <DocumentsCard/>
                 </Stack>
 
                 <DocumentView/>

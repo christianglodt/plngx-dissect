@@ -7,7 +7,7 @@ import { Article } from "@mui/icons-material";
 import { useContext, useState } from "react";
 import { PatternEditorContext } from "./PatternEditorContext";
 
-const MatchingDocsCard = () => {
+const DocumentsCard = () => {
 
     const { pattern } = useContext(PatternEditorContext);
 
@@ -53,4 +53,4 @@ const MatchingDocsCard = () => {
     );
 }
 
-export default MatchingDocsCard;
+export default DocumentsCard;
