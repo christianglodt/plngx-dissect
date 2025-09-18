@@ -12,14 +12,29 @@ import RegionPageSelector from "./utils/RegionPageSelector";
 type RegionListItemPropsType = {
     nr: number;
     region: Region;
-    result: Array<RegionResult> | null; // 1 result per page
+    pageResults: Array<RegionResult> | null; // 1 result per page
     onChange: (newRegion: Region) => void;
     onDelete: () => void;
 }
 
+const getRegionResultForDocument = (region: Region, pageResults: Array<RegionResult>): RegionResult | null => {
+    if (region.page == 0) {
+        return pageResults.at(0) || null;
+    } else if (region.page == -1) {
+        return pageResults.at(-1) || null;
+    } else if (typeof region.page === 'number') {
+        return pageResults.at(region.page) || null;
+    } else if (region.page === 'first_match') {
+        return pageResults.at(pageResults.findIndex(r => r.group_values !== null)) || null;
+    } else if (region.page === 'last_match') {
+        return pageResults.at(pageResults.findLastIndex(r => r.group_values !== null)) || null;
+    }
+    return null;
+}
+
 const RegionListItem = (props: RegionListItemPropsType) => {
 
-    const { pageNr, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
+    const { patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
 
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
@@ -30,10 +45,11 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
 
-    const selectedPageResult = pageNr !== null ? (props.result || []).at(pageNr) : null;
+    //const selectedPageResult = pageNr !== null ? (props.pageResults || []).at(pageNr) : null;
+    const retainedPageResult = getRegionResultForDocument(props.region, props.pageResults || []);
 
     const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
-    const regionResult = useEvaluateExpression(previewRegion, selectedPageResult?.text || '');
+    const previewRegionResult = useEvaluateExpression(previewRegion, retainedPageResult?.text || ''); // For use in dialog.
 
     const onChangeCanceled = () => {
         setX(props.region.x);
@@ -110,25 +126,25 @@ const RegionListItem = (props: RegionListItemPropsType) => {
 
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
-            {!props.result &&
+            {!props.pageResults &&
                 <Stack direction="column">
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
-            {props.result && Object.keys(selectedPageResult?.group_values || {}).map((key) =>
+            {props.pageResults && Object.keys(retainedPageResult?.group_values || {}).map((key) =>
                 <Stack direction="column" key={key}>
-                    <Tooltip title={(selectedPageResult?.group_values || {})[key]}>
-                        <Chip color="success" label={key + ': ' + (selectedPageResult?.group_values || {})[key]}/>
+                    <Tooltip title={(retainedPageResult?.group_values || {})[key]}>
+                        <Chip color="success" label={key + ': ' + (retainedPageResult?.group_values || {})[key]}/>
                     </Tooltip>
                 </Stack>                
             )}
-            {selectedPageResult?.error &&
-            <Chip label={selectedPageResult.error} icon={<Error/>} color="error"/>
+            {retainedPageResult?.error &&
+            <Chip label={retainedPageResult.error} icon={<Error/>} color="error"/>
             }
         </Stack>
     );
 
-    const exprError = regionResult?.error;
+    const exprError = previewRegionResult?.error;
 
     const kindSelector = (
         <FormControl size="small">
@@ -151,8 +167,8 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                         <TextField size="small" label="Y2" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     </Stack>
                     <RegionPageSelector value={page} onChange={setPage}/>
-                    { regionResult &&
-                    <RegexPreview regionResult={regionResult}/>
+                    { previewRegionResult &&
+                    <RegexPreview regionResult={previewRegionResult}/>
                     }
                     { kind === 'simple' &&
                     <TextField label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
