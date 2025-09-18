@@ -1,4 +1,4 @@
-import { Chip, FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Tooltip } from "@mui/material";
+import { Chip, FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { produce } from "immer";
 import { useContext, useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
@@ -19,7 +19,7 @@ type RegionListItemPropsType = {
 
 const RegionListItem = (props: RegionListItemPropsType) => {
 
-    const { pageNr } = useContext(PatternEditorContext);
+    const { pageNr, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
 
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
@@ -59,9 +59,52 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         }));
     };
 
+    const getPageResultClasses = (pageResult: RegionResult, pageNr: number) => {
+        const res = [];
+
+        if (pageResult.error) {
+            res.push('hasError');
+        }
+        if (pageResult.group_values !== null) {
+            res.push('hasValue');
+            if ((props.region.page === 0 && pageNr === 0) ||
+                (props.region.page === -1 && pageNr === document.pages.length - 1) ||
+                (typeof props.region.page === 'number' && props.region.page === pageNr)
+            ) {
+                res.push('isRetainedValue');
+            }
+
+            const thisRegionPageResults = patternEvaluationResult!.regions[props.nr - 1];
+            if (props.region.page === 'first_match') {
+                const firstMatchingIndex = thisRegionPageResults.findIndex(r => r.group_values !== null);
+                if (pageNr == firstMatchingIndex) {
+                    res.push('isRetainedValue');
+                }
+            }
+            if (props.region.page === 'last_match') {
+                const lastMatchingIndex = thisRegionPageResults.findLastIndex(r => r.group_values !== null);
+                if (pageNr == lastMatchingIndex) {
+                    res.push('isRetainedValue');
+                }
+            }
+        }
+
+        return res.join(' ');
+    };
+
+    const onPageResultBubbleClicked = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, pageNr: number) => {
+        event.stopPropagation();
+        setPageNr(pageNr);
+    };
+
     const primary = (
         <Stack direction="row" gap={1} alignItems="center" sx={{ marginBottom: '5px' }}>
-            <span>Region {props.nr}</span>
+            <Typography sx={{ width: '100%' }}>Region {props.nr}</Typography>
+            <Stack direction="row" gap={0.5}>
+                { patternEvaluationResult && patternEvaluationResult.regions[props.nr - 1].map((pageResult, pageNr) => 
+                    <div key={pageNr} className={`pageResultBubble ${getPageResultClasses(pageResult, pageNr)}`} onClick={(event) => onPageResultBubbleClicked(event, pageNr)}/>
+                ) }
+            </Stack>
         </Stack>
     );
 
