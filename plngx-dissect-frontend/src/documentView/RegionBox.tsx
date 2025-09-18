@@ -5,6 +5,7 @@ import { produce } from 'immer';
 import { useDrag } from '@use-gesture/react';
 
 type RegionBoxPropsType<RegionType> = {
+    label: string;
     region: RegionType;
     pageWidth: number;
     pageHeight: number;
@@ -73,11 +74,9 @@ const RegionBox = <RegionType extends Region,>(props: RegionBoxPropsType<RegionT
         }
     }, { preventDefault: true });
 
-    const text = props.region.kind == 'simple' ? props.region.simple_expr : props.region.regex_expr;
-
     return (
         <div className="RegionBox" style={style} {...dragBind()}>
-            <div className="Label">{text}</div>
+            <div className="Label">{props.label}</div>
             <div className="ResizeHandle" {...resizeBind()} style={{ touchAction: 'none' }}/>
         </div>
     );

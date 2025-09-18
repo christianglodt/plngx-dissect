@@ -56,10 +56,10 @@ const Page = () => {
 
                 { pattern.checks.map((check, index) =>
                 check.type === CheckTypeId.Region &&
-                <RegionBox<RegionCheck> key={index} region={check} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionCheck) => onRegionCheckChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                <RegionBox<RegionCheck> key={index} label={`Check ${index + 1}`} region={check} pageClientRectDimensions={pageDimensions} onChange={(newRegion: RegionCheck) => onRegionCheckChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
                 { pattern.regions.map((region, index) =>
-                <RegionBox<Region> key={index} region={region} pageClientRectDimensions={pageDimensions} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
+                <RegionBox<Region> key={index} label={`Region ${index + 1}`} region={region} pageClientRectDimensions={pageDimensions} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
             </div>
 
