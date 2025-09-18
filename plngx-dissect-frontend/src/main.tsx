@@ -36,6 +36,15 @@ const darkTheme = createTheme({
     palette: {
       mode: 'dark',
     },
+    components: {
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '4pt'
+                }
+            }
+        }
+    }
   });
   
 const queryClient = new QueryClient();
