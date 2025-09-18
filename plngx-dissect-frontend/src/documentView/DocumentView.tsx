@@ -8,7 +8,7 @@ const DocumentView = () => {
 
     const { document, pageNr, setPageNr } = useContext(PatternEditorContext);
 
-    if (!document) {
+    if (!document || pageNr === null) {
         return (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Alert severity="info">Select a matching document</Alert>

@@ -3,7 +3,7 @@ import { produce } from "immer";
 import { useContext, useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Region, RegionResult } from "./types";
-import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
+import { Error } from "@mui/icons-material";
 import RegexPreview from "./utils/RegexPreview";
 import { useEvaluateExpression } from "./hooks";
 import { PatternEditorContext } from "./PatternEditorContext";
@@ -30,7 +30,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
 
-    const selectedPageResult = (props.result || []).at(pageNr);
+    const selectedPageResult = pageNr !== null ? (props.result || []).at(pageNr) : null;
 
     const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
     const regionResult = useEvaluateExpression(previewRegion, selectedPageResult?.text || '');
@@ -68,7 +68,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         if (pageResult.group_values !== null) {
             res.push('hasValue');
             if ((props.region.page === 0 && pageNr === 0) ||
-                (props.region.page === -1 && pageNr === document.pages.length - 1) ||
+                (document !== null && props.region.page === -1 && pageNr === document.pages.length - 1) ||
                 (typeof props.region.page === 'number' && props.region.page === pageNr)
             ) {
                 res.push('isRetainedValue');

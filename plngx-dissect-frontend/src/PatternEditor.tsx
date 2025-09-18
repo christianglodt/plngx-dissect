@@ -41,7 +41,7 @@ const PatternEditor = () => {
         );
     }
 
-    if (!pattern || !document || isLoading) {
+    if (!pattern || isLoading) {
         return (
             <LinearProgress/>
         );
@@ -84,7 +84,7 @@ const PatternEditor = () => {
 
     const contextValue: PatternEditorContextType = {
         pattern,
-        document: document,
+        document: document || null,
         pageNr,
         setPageNr,
         onPatternChange: onChange,

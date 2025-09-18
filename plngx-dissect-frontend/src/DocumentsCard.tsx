@@ -1,7 +1,7 @@
-import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, Tab, Tabs } from "@mui/material";
 import ListCard from "./utils/ListCard";
 import { usePatternMatches } from "./hooks";
-import { CheckCircle, Error, Pending } from "@mui/icons-material";
+import { Error } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
 import { Article } from "@mui/icons-material";
 import { useContext, useState } from "react";
@@ -11,9 +11,9 @@ const DocumentsCard = () => {
 
     const { pattern } = useContext(PatternEditorContext);
 
-    const [showAllDocuments, setShowAllDocuments] = useState(false);
+    const [showAllDocuments, setShowAllDocuments] = useState<'all' | 'pending'>('all');
 
-    const { data: matches, isLoading, error } = usePatternMatches(pattern, showAllDocuments);
+    const { data: matches, isLoading, error } = usePatternMatches(pattern, showAllDocuments === 'all');
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -23,20 +23,20 @@ const DocumentsCard = () => {
         setSearchParams(p);
     }
 
+    const onTabClicked = (_event: React.SyntheticEvent, newValue: string) => {
+        setShowAllDocuments(newValue === 'all' ? 'all' : 'pending');
+    };
+
     return (
-        <ListCard title={<span>Matching&nbsp;Documents</span>} headerWidget={
+        <ListCard title="Documents" headerWidget={
             <>
                 { isLoading ?
                     <CircularProgress/>
-                : 
-                    <ToggleButtonGroup value={showAllDocuments} exclusive size="small">
-                        <ToggleButton value={false} title="Show only unprocessed (pending) documents" onClick={() => setShowAllDocuments(false)}>
-                            <Pending/>
-                        </ToggleButton>
-                        <ToggleButton value={true} title="Show all documents" onClick={() => setShowAllDocuments(true)}>
-                            <CheckCircle/>
-                        </ToggleButton>
-                    </ToggleButtonGroup>
+                :
+                    <Tabs value={showAllDocuments} onChange={onTabClicked}>
+                        <Tab label="All" value="all"/>
+                        <Tab label="Pending" value="pending"/>
+                    </Tabs>                
                 }
             </>
             }>

@@ -44,7 +44,7 @@ const RegionsCard = () => {
     return (
         <ListCard title="Regions" headerWidget={<IconButton onClick={onAddRegionClick}><Add/></IconButton>}>
             { pattern.regions.map((region, index) =>
-            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} result={patternEvaluationResult?.regions[index]} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
+            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} result={patternEvaluationResult?.regions[index] || null} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
             )}
         </ListCard>
     );

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Field, FieldResult } from "./types";
 import PaperlessElementSelector from "./utils/PaperlessElementSelector";
-import { ArrowRightAlt, CalendarMonth, CreditCard, Error, Flag, Link, Notes, Numbers, QuestionMark, ShortText } from "@mui/icons-material";
+import { CalendarMonth, CreditCard, Error, Flag, Link, Numbers, QuestionMark, ShortText } from "@mui/icons-material";
 
 type FieldListItemPropsType = {
     field: Field;

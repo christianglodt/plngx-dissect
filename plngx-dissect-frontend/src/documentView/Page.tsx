@@ -11,8 +11,8 @@ import { PatternEditorContext } from "../PatternEditorContext";
 const Page = () => {
 
     const { pattern, document, pageNr, onPatternChange } = useContext(PatternEditorContext);
-    const pageWidth = document.pages[pageNr].width;
-    const pageHeight = document.pages[pageNr].height;
+    const pageWidth = document!.pages[pageNr!].width; // Containing component ensures this one is only instantiated when document and pageNr are not null.
+    const pageHeight = document!.pages[pageNr!].height;
 
     const onRegionCheckChange = (newRegion: RegionCheck, index: number) => {
         onPatternChange(produce(pattern, draft => {
@@ -35,7 +35,7 @@ const Page = () => {
     // This uses three DOM nodes to ensure the page is centered with a proper bounding element.
     return (
         <Box sx={{ height: '100%', position: 'relative' }}>
-            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("${PATH_PREFIX}/api/document/${document.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
+            <Box sx={{ position: 'relative', zIndex: 1, height: '100%', textAlign: 'center', minHeight: 0, backgroundImage: `url("${PATH_PREFIX}/api/document/${document!.id}/svg?page_nr=${pageNr}")`, backgroundRepeat: 'no-repeat', backgroundSize: 'contain', backgroundPosition: 'center' }}>
             </Box>
             <div ref={boundingNode} onDragOver={onDragOver} onDrop={onDrop} style={{
                 position: 'absolute',
@@ -50,7 +50,7 @@ const Page = () => {
                 backgroundColor: 'white'
             }}>
  
-                { document.pages[pageNr].text_runs.map((tr, index) =>
+                { document!.pages[pageNr!].text_runs.map((tr, index) =>
                 <TextRunBox key={index} textRun={tr} pageWidth={pageWidth} pageHeight={pageHeight}/>
                 )}
 
