@@ -12,7 +12,7 @@ const RegionPageSelector = (props: RegionPageSelectorPropsType) => {
 
     const { value, onChange } = props;
 
-    let initialExactPageNr = 1;
+    let initialExactPageNr = 2;
     let selectorValue = 'last_match';
     if (typeof value == 'number') {
         if (value == 0) {
@@ -21,7 +21,7 @@ const RegionPageSelector = (props: RegionPageSelectorPropsType) => {
             selectorValue = 'last_page';
         } else {
             selectorValue = 'exact_page';
-            initialExactPageNr = value;
+            initialExactPageNr = Number(value) + 1;
         }
     } else if (value == 'last_match') {
         selectorValue = 'last_match';
@@ -47,7 +47,7 @@ const RegionPageSelector = (props: RegionPageSelectorPropsType) => {
         setExactPageNr(value);
         const n = Number(value);
         if (isNumber(value)) {
-            onChange(n);
+            onChange(n - 1);
         }
     };
 
