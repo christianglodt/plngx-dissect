@@ -1,14 +1,16 @@
 import { ChevronLeft, ChevronRight, OpenInNew } from "@mui/icons-material";
-import { Alert, Box, IconButton, Stack } from "@mui/material";
+import { Alert, Box, IconButton, Stack, Tooltip } from "@mui/material";
 import Page from "./Page";
 import { useContext } from "react";
 import { PatternEditorContext } from "../PatternEditorContext";
 
 const DocumentView = () => {
 
-    const { document, pageNr, setPageNr } = useContext(PatternEditorContext);
+    const { document, pageNr, setPageNr, patternEvaluationResult } = useContext(PatternEditorContext);
 
-    if (!document || pageNr === null) {
+    const anyCheckNotPassed = patternEvaluationResult?.checks.find(check_result => !check_result.passed) != undefined;    
+    
+    if (!document || pageNr === null || anyCheckNotPassed) {
         return (
             <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
                 <Alert severity="info">Select a matching document</Alert>
