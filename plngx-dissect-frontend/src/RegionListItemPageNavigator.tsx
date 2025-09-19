@@ -17,9 +17,9 @@ const RegionListItemPageNavigator = (props: RegionListItemPageNavigatorPropsType
     return (
         <Stack direction="row" spacing={1} justifyContent="center">
             { document?.pages.map((page, index) =>
-            <Stack direction="column" spacing={0.5} alignItems="center">
-                <Box key={index} sx={{ padding: '2pt', border: '2pt solid', borderRadius: '5pt', borderColor: 'rgba(255, 255, 255, 0.16);' }}>
-                    <img src={`${PATH_PREFIX}/api/document/${document.id}/svg?page_nr=${index}`} width="50px"/>
+            <Stack key={index} direction="column" spacing={0.5} alignItems="center">
+                <Box sx={{ padding: '2pt', border: '2pt solid', borderRadius: '5pt', borderColor: 'rgba(255, 255, 255, 0.16);', lineHeight: 0, cursor: 'pointer' }}>
+                    <img src={`${PATH_PREFIX}/api/document/${document.id}/svg?page_nr=${index}`} width="50px" style={{ backgroundColor: 'white'}}/>
                 </Box>
                 <Typography sx={{ fontSize: 'smaller' }}>{index + 1}</Typography>
             </Stack>
