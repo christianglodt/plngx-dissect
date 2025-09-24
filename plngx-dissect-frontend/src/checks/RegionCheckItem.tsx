@@ -46,6 +46,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
     const expr = props.check.kind === 'simple' ? props.check.simple_expr : props.check.regex_expr;
 
     // TODO Text match preview using RegexPreview component
+    // TODO Reuse components from RegionListItem
     return (
         <DialogListItem dialogTitle="Check Region Text" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
