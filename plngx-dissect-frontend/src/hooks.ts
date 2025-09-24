@@ -161,15 +161,14 @@ export const usePatternMatches = (pattern: Pattern, all_documents: boolean = fal
     });
 }
 
-export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null, pageNr: number) => {
+export const usePatternEvaluationResult = (docId: number|null, pattern: Pattern|null) => {
     const [debouncedPattern] = useDebounce(pattern, 1000);
-    const [debouncedPageNr] = useDebounce(pageNr, 1000);
 
     const qfn = async() => {
-        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/${pageNr-1}/evaluate_pattern`, debouncedPattern!);
+        return postRequest<Pattern, PatternEvaluationResult|null>(`/api/document/${docId}/evaluate_pattern`, debouncedPattern!);
     }
     return useQuery({
-        queryKey: ['patterns', 'evaluations', docId, debouncedPattern, debouncedPageNr],
+        queryKey: ['patterns', 'evaluations', docId, debouncedPattern],
         enabled: !!docId && !!debouncedPattern,
         queryFn: qfn,
         placeholderData: keepPreviousData
@@ -184,20 +183,16 @@ export const useHistory = () => {
     });
 }
 
-type RegionEvaluatePayload = {
-    region: Region,
-    text: string
-};
-
-export const useEvaluateExpression = (region: Region, text: string) => {
+export const useEvaluateRegion = (docId: number | undefined, region: Region) => {
     const [debouncedRegion] = useDebounce(region, 1000);
 
     const query = useQuery({
-        queryKey: ['regionResult', debouncedRegion, text],
+        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion],
         queryFn: async () => {
-            return postRequest<RegionEvaluatePayload, RegionResult>('/api/region/evaluate_expr/', { 'region': debouncedRegion, text });
+            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region`, debouncedRegion);
         },
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        enabled: docId !== undefined
     });
 
     return query.data;

@@ -36,6 +36,23 @@ const darkTheme = createTheme({
     palette: {
       mode: 'dark',
     },
+    components: {
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '4pt'
+                }
+            }
+        },
+        MuiFormHelperText: {
+            styleOverrides: {
+                root: {
+                    marginTop: 0,
+                    height: 0
+                }
+            }
+        }
+    }
   });
   
 const queryClient = new QueryClient();

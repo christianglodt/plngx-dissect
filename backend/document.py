@@ -1,6 +1,6 @@
 import datetime
 import pydantic
-from region import Pt, Region, RegionBase, RegionResult, ExpressionError
+from region import Pt, Region, RegionBase, RegionResult
 import paperless
 import asyncio
 import subprocess
@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 import pdfplumber
 import pdfminer.psparser
 import cache
-import re
 import logging
 import bisect
 import io
@@ -64,6 +63,7 @@ def split_runs_into_lines(runs: list[TextRun]) -> list[list[TextRun]]:
 
 
 class Page(pydantic.BaseModel):
+    page_nr: int
     width: float
     height: float
     text_runs: list[TextRun]
@@ -107,8 +107,7 @@ class Page(pydantic.BaseModel):
         return text
 
     def evaluate_region(self, region: Region) -> RegionResult:
-        text = self.get_region_text(region)
-        return region.evaluate(text)
+        return region.evaluate_on_page(self)
 
 
 class DocumentParseStatus(pydantic.BaseModel):
@@ -129,6 +128,22 @@ class DocumentBase(pydantic.BaseModel):
 
 class Document(DocumentBase):
     pages: list[Page]
+
+    def evaluate_regions(self, regions: list[Region]) -> list[list[RegionResult]]: # 1 result per page
+        region_page_res: list[list[RegionResult]] = []
+
+        for region in regions:
+            region_res: list[RegionResult] = []
+            for page in self.pages:
+                res = page.evaluate_region(region)
+                region_res.append(res)
+            region_page_res.append(region_res)
+            
+            selected_result = region.get_selected_result(region_res)
+            if selected_result:
+                selected_result.is_retained = True
+
+        return region_page_res
 
 
 @asynccontextmanager
@@ -160,7 +175,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
 
         try:
             with pdfplumber.open(pdf_bytes_io) as pdf:
-                for page in pdf.pages:
+                for index, page in enumerate(pdf.pages):
                     runs: list[TextRun] = []
                     pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
                     for text_run in pdfplumber_text_runs:
@@ -169,7 +184,7 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                     indexes_by_y = sorted(list(range(len(runs))), key=lambda i: runs[i].y)
                     indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
                     indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
-                    pages.append(Page(text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
+                    pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
                 log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
         except pdfminer.psparser.PSException as e:
             error = str(e)

@@ -93,7 +93,7 @@ async def get_documents_matching_pattern(pattern: Pattern, all_documents: bool =
 
 lockfile_path = pathlib.Path('../data/state/processing.lock').resolve()
 lockfile_path.parent.mkdir(parents=True, exist_ok=True)
-processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelta(hours=24))
+processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelta(hours=24))  # pyright: ignore[reportPrivateImportUsage]
 
 
 async def process_all_documents():
@@ -114,7 +114,7 @@ async def process_all_documents():
 
             async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
                 await process_document(paperless_doc, client, patterns)
-    except flufl.lock.AlreadyLockedError:
+    except flufl.lock.AlreadyLockedError:  # pyright: ignore[reportPrivateImportUsage]
         log.warning('Not processing documents because process_all_documents() is already running')
 
 
@@ -151,7 +151,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
     for pattern in patterns:
         if await pattern.matches(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
-            result = await pattern.evaluate(paperless_doc.id, pattern.page, client)
+            result = await pattern.evaluate(paperless_doc.id, client)
                         
             if any(f and f.error for f in result.fields):
                 log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
@@ -186,9 +186,16 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
                         continue
 
                     existing_field = next(iter(filter(lambda f: f.field == field_id, paperless_doc.custom_fields)), None)
-                    old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
-                    if old_value != new_value:
+                    try:
                         old_value = paperless.value_to_python(field_def.data_type, existing_field.value) if existing_field else object()
+                        if old_value != new_value:
+                            paperless_doc_has_changed = True
+                            custom_field_set_has_changed = True
+                    except paperless.PaperlessValueConversionException as e:
+                        if existing_field:
+                            log.info(f'Previous value {existing_field.value!r} for custom field "{field_def.name}" of data type "{field_def.data_type}" is not a valid value')
+                        else:
+                            log.info(f'No previous value found for custom field "{field_def.name}" of data type "{field_def.data_type}"')
                         paperless_doc_has_changed = True
                         custom_field_set_has_changed = True
 

@@ -18,6 +18,29 @@ a {
   color: inherit;
 }
 
+.pageResultBubble {
+  width: 10px;
+  height: 20px;
+  border: 2px solid;
+  border-radius: 5px;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.pageResultBubble:hover {
+  border-color: #aaa !important;
+}
+
+.pageResultBubble.hasValue {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: transparent;
+}
+
+.pageResultBubble.isRetainedValue {
+  background-color: #66bb6a;
+  border-color: #66bb6a;
+}
+
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -86,3 +109,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+

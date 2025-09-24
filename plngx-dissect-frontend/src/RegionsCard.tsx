@@ -1,35 +1,32 @@
 import { IconButton } from "@mui/material";
-import { Pattern, PatternEvaluationResult, Region } from "./types";
+import { Region } from "./types";
 import { Add } from "@mui/icons-material";
 import ListCard from "./utils/ListCard";
 import RegionListItem from "./RegionListItem";
 import { produce } from "immer";
+import { useContext } from "react";
+import { PatternEditorContext } from "./PatternEditorContext";
 
-type RegionsCardProps = {
-    pattern: Pattern;
-    evalResult: PatternEvaluationResult | null | undefined;
-    onChange: (newPattern: Pattern) => void;
-}
+const RegionsCard = () => {
 
-const RegionsCard = (props: RegionsCardProps) => {
-
-    const { pattern, onChange } = props;
+    const { pattern, onPatternChange, patternEvaluationResult } = useContext(PatternEditorContext);
 
     const onRegionChange = (newRegion: Region, index: number) => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.regions[index] = newRegion;
         }));
     }
 
     const onRegionDelete = (index: number) => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.regions.splice(index, 1);
         }));
     }
 
     const onAddRegionClick = () => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.regions.push({
+                page: 'last_match',
                 x: 50,
                 y: 50,
                 x2: 200,
@@ -47,7 +44,7 @@ const RegionsCard = (props: RegionsCardProps) => {
     return (
         <ListCard title="Regions" headerWidget={<IconButton onClick={onAddRegionClick}><Add/></IconButton>}>
             { pattern.regions.map((region, index) =>
-            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} result={props.evalResult?.regions[index]} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
+            <RegionListItem key={JSON.stringify(region) + index} nr={index + 1} region={region} pageResults={patternEvaluationResult?.regions[index] || null} onChange={(newRegion: Region) => onRegionChange(newRegion, index)} onDelete={() => onRegionDelete(index)}/>
             )}
         </ListCard>
     );

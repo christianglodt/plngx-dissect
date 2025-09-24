@@ -31,15 +31,17 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
 
     const typographyProps = {
         component: 'span',
-        sx: {
-            fontSize: 'x-small'
-        }
+        // sx: {
+        //     fontSize: 'x-small'
+        // }
     };
 
     const nodes: Array<React.ReactNode> = [];
 
     if (!regionResult?.group_positions || !regionResult?.group_values || regionResult.group_positions.length === 0 || Object.keys(regionResult.group_values).length === 0) {
-        nodes.push(<Typography key="allText" {...typographyProps}>{regionResult.text}</Typography>);
+        if (regionResult.text !== '') {
+            nodes.push(<Typography key="allText" {...typographyProps}>{regionResult.text}</Typography>);
+        }
     } else {
         const positionsWithNames = [];
         for (let i = 0; i < Object.keys(regionResult.group_values).length; i++) {
@@ -83,8 +85,11 @@ const RegexPreview = (props: RegexPreviewPropsType) => {
     }
 
     return (
-        <Box sx={{ whiteSpace: 'pre', overflow: 'auto', fontSize: 'x-small', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.23)', padding: '16.5px 14px', maxHeight: '30rem' }}>
+        <Box sx={{ whiteSpace: 'pre', overflow: 'auto', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.23)', padding: '8.5px 14px', maxHeight: '30rem', minHeight: '23px', position: 'relative' }}>
             {nodes}
+            { regionResult.text === '' &&
+            <div style={{ textAlign: 'center', color: 'rgba(255, 255, 255, 0.6)', fontStyle: 'italic' }}>No text found in this region on the selected page.</div>
+            }
         </Box>
     );
 };

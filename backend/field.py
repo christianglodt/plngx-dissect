@@ -3,9 +3,9 @@ import datetime
 import pydantic
 import jinja2
 import jinja2.sandbox
-from typing import Literal
+from typing import Literal, cast
 
-import region
+import paperless
 
 
 def parse_date(date_str: str, format: str ='%d/%m/%Y') -> datetime.date:
@@ -36,19 +36,13 @@ class Field(pydantic.BaseModel):
     name: str
     template: str
 
-    def get_result(self, region_results: list[region.RegionResult]) -> FieldResult:
-
-        context: dict[str, str] = {}
-        for r in region_results:
-            if r.group_values is not None:
-                context.update(r.group_values)
-
+    def render(self, region_values: dict[str, str]) -> FieldResult:
         try:
             env = jinja2.sandbox.SandboxedEnvironment()
             env.filters['parse_monetary'] = parse_monetary # type: ignore
             env.filters['parse_date'] = parse_date         # type: ignore
             template = env.from_string(self.template)
-            value = template.render(**context)
+            value = template.render(**region_values)
             error = None
         except jinja2.exceptions.TemplateError as e:
             value = None
@@ -57,3 +51,38 @@ class Field(pydantic.BaseModel):
             value = None
             error = str(e)
         return FieldResult(value=value, error=error)
+
+    async def get_result(self, client: paperless.PaperlessClient, region_values: dict[str, str]) -> FieldResult:
+        custom_fields_by_name = await client.custom_fields_by_name
+
+        field_result = self.render(region_values)
+        if not field_result.error:
+            if self.kind == 'custom':
+                if not self.name in custom_fields_by_name:
+                    field_result.error = f'Field {self.name} not found'
+                else:
+                    field_def = custom_fields_by_name[self.name]
+                    field_result.data_type = field_def.data_type
+                    try:
+                        if field_result.value is not None:
+                            converted_value = field_def.convert_value_to_paperless(field_result.value)
+                            field_result.value = str(converted_value)
+                    except paperless.PaperlessValueConversionException as e:
+                        field_result.value = None
+                        field_result.error = str(e)
+
+            if self.kind == 'attr':
+                attributes = await client.get_element_list('attributes')
+                attribute = next(iter(filter(lambda a: a.name == self.name, attributes)), None)
+                if attribute is None:
+                    field_result.error = f'Attribute {self.name} not found'
+                else:
+                    attribute = cast(paperless.PaperlessAttribute, attribute)
+                    try:
+                        if field_result.value is not None:
+                            converted_value = paperless.value_to_paperless(attribute.data_type, field_result.value)
+                            field_result.value = str(converted_value)
+                    except paperless.PaperlessValueConversionException as e:
+                        field_result.value = None
+                        field_result.error = str(e)
+        return field_result

@@ -1,11 +1,12 @@
 import { IconButton, Menu, MenuItem } from "@mui/material";
-import { Field, Pattern, PatternEvaluationResult } from "./types";
+import { Field } from "./types";
 import { Add } from "@mui/icons-material";
 import ListCard from "./utils/ListCard";
 import { produce } from "immer";
 import FieldListItem from "./FieldListItem";
-import { useState, MouseEvent, Fragment } from "react";
+import { useState, MouseEvent, Fragment, useContext } from "react";
 import AttributeListItem from "./AttributeListItem";
+import { PatternEditorContext } from "./PatternEditorContext";
 
 
 type CreateFieldItemButtonPropsType = {
@@ -52,30 +53,24 @@ const CreateFieldItemButton = (props: CreateFieldItemButtonPropsType) => {
 }
 
 
-type FieldsCardProps = {
-    pattern: Pattern;
-    evalResult: PatternEvaluationResult | null | undefined;
-    onChange: (newPattern: Pattern) => void;
-}
+const FieldsCard = () => {
 
-const FieldsCard = (props: FieldsCardProps) => {
-
-    const { pattern, onChange } = props;
+    const { pattern, onPatternChange, patternEvaluationResult } = useContext(PatternEditorContext);
 
     const onFieldChange = (newField: Field, index: number) => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.fields[index] = newField;
         }));
     }
 
     const onFieldDelete = (index: number) => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.fields.splice(index, 1);
         }));
     }
 
     const onAddFieldClick = (newField: Field) => {
-        onChange(produce(pattern, draft => {
+        onPatternChange(produce(pattern, draft => {
             draft.fields.push(newField);
         }));
     }
@@ -85,10 +80,10 @@ const FieldsCard = (props: FieldsCardProps) => {
             { pattern.fields.map((field, index) =>
             <Fragment key={index}>
                 { field.kind === 'custom' && 
-                <FieldListItem field={field} result={props.evalResult?.fields[index]} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
+                <FieldListItem field={field} result={patternEvaluationResult?.fields[index]} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
                 }
                 { field.kind === 'attr' && 
-                <AttributeListItem field={field} result={props.evalResult?.fields[index]} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
+                <AttributeListItem field={field} result={patternEvaluationResult?.fields[index]} onChange={(newField: Field) => onFieldChange(newField, index)} onDelete={() => onFieldDelete(index)}/>
                 }
             </Fragment>
             )}

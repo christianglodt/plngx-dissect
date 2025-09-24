@@ -1,38 +1,63 @@
-import { Chip, FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Tooltip } from "@mui/material";
+import { Chip, FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { produce } from "immer";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import DialogListItem from "./utils/DialogListItem";
 import { Region, RegionResult } from "./types";
-import { ArrowRightAlt, Error, MyLocation, Search } from "@mui/icons-material";
+import { Error } from "@mui/icons-material";
 import RegexPreview from "./utils/RegexPreview";
-import { useEvaluateExpression } from "./hooks";
+import { useEvaluateRegion } from "./hooks";
+import { PatternEditorContext } from "./PatternEditorContext";
+import RegionPageSelector from "./utils/RegionPageSelector";
+import RegionListItemPageNavigator from "./RegionListItemPageNavigator";
 
 type RegionListItemPropsType = {
     nr: number;
     region: Region;
-    result: RegionResult | null | undefined;
+    pageResults: Array<RegionResult> | null; // 1 result per page
     onChange: (newRegion: Region) => void;
     onDelete: () => void;
 }
 
+const getRegionResultForDocument = (region: Region, pageResults: Array<RegionResult>): RegionResult | null => {
+    if (region.page == 0) {
+        return pageResults.at(0) || null;
+    } else if (region.page == -1) {
+        return pageResults.at(-1) || null;
+    } else if (typeof region.page === 'number') {
+        return pageResults.at(region.page) || null;
+    } else if (region.page === 'first_match') {
+        return pageResults.at(pageResults.findIndex(r => r.group_values !== null)) || null;
+    } else if (region.page === 'last_match') {
+        return pageResults.at(pageResults.findLastIndex(r => r.group_values !== null)) || null;
+    }
+    return null;
+}
+
 const RegionListItem = (props: RegionListItemPropsType) => {
+
+    const { pageNr, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
 
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
     const [x2, setX2] = useState(props.region.x2);
     const [y2, setY2] = useState(props.region.y2);
+    const [page, setPage] = useState(props.region.page);
     const [kind, setKind] = useState(props.region.kind);
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
 
-    const previewRegion: Region = { x, y, x2, y2, kind, simple_expr, regex_expr };
-    const regionResult = useEvaluateExpression(previewRegion, props.result?.text || '');
+    const retainedPageResult = getRegionResultForDocument(props.region, props.pageResults || []);
+
+    const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
+    const previewRegionResult = useEvaluateRegion(document?.id, previewRegion); // For use in dialog.
+    const previewPageResult = (previewRegionResult && pageNr !== null) ? previewRegionResult[pageNr] : null;
 
     const onChangeCanceled = () => {
         setX(props.region.x);
         setY(props.region.y);
         setX2(props.region.x2);
         setY2(props.region.y2);
+        setPage(props.region.page);
         setKind(props.region.kind);
         setRegexExpr(props.region.regex_expr);
         setSimpleExpr(props.region.simple_expr);
@@ -44,43 +69,83 @@ const RegionListItem = (props: RegionListItemPropsType) => {
             draft.y = y;
             draft.x2 = x2;
             draft.y2 = y2;
+            draft.page = page;
             draft.regex_expr = regex_expr;
             draft.simple_expr = simple_expr;
             draft.kind = kind;
         }));
     };
 
+    const getPageResultClasses = (pageResult: RegionResult, pageNr: number) => {
+        const res = [];
+
+        if (pageResult.error) {
+            res.push('hasError');
+        }
+        if (pageResult.group_values !== null) {
+            res.push('hasValue');
+            if ((props.region.page === 0 && pageNr === 0) ||
+                (document !== null && props.region.page === -1 && pageNr === document.pages.length - 1) ||
+                (typeof props.region.page === 'number' && props.region.page === pageNr)
+            ) {
+                res.push('isRetainedValue');
+            }
+
+            const thisRegionPageResults = patternEvaluationResult!.regions[props.nr - 1];
+            if (props.region.page === 'first_match') {
+                const firstMatchingIndex = thisRegionPageResults.findIndex(r => r.group_values !== null);
+                if (pageNr == firstMatchingIndex) {
+                    res.push('isRetainedValue');
+                }
+            }
+            if (props.region.page === 'last_match') {
+                const lastMatchingIndex = thisRegionPageResults.findLastIndex(r => r.group_values !== null);
+                if (pageNr == lastMatchingIndex) {
+                    res.push('isRetainedValue');
+                }
+            }
+        }
+
+        return res.join(' ');
+    };
+
+    const onPageResultBubbleClicked = (event: React.MouseEvent<HTMLDivElement, MouseEvent>, pageNr: number) => {
+        event.stopPropagation();
+        setPageNr(pageNr);
+    };
+
     const primary = (
         <Stack direction="row" gap={1} alignItems="center" sx={{ marginBottom: '5px' }}>
-            <span>Region {props.nr}</span>
+            <Typography sx={{ width: '100%' }}>Region {props.nr}</Typography>
+            <Stack direction="row" gap={0.5}>
+                { patternEvaluationResult && patternEvaluationResult.regions[props.nr - 1].map((pageResult, pageNr) => 
+                    <div key={pageNr} className={`pageResultBubble ${getPageResultClasses(pageResult, pageNr)}`} onClick={(event) => onPageResultBubbleClicked(event, pageNr)}/>
+                ) }
+            </Stack>
         </Stack>
     );
-
-    const propsExpr = props.region.kind === 'simple' ? props.region.simple_expr : props.region.regex_expr;
 
     const secondary = (
         <Stack gap={1} alignItems="flex-start">
-            <Chip icon={<MyLocation/>} label={`${props.region.x}, ${props.region.y}, ${props.region.x2}, ${props.region.y2}`} color="primary"/>
-            <Tooltip title={propsExpr}><Chip icon={<Search/>} label={propsExpr} color="primary"/></Tooltip>
-            {!props.result &&
-                <Stack direction="row">
-                    <ArrowRightAlt/>
+            {!props.pageResults &&
+                <Stack direction="column">
                     <Chip color="info" label="No matching document selected"/>
                 </Stack>                
             }
-            {props.result && Object.keys(props.result.group_values || {}).map((key) =>
-                <Stack direction="row" key={key}>
-                    <ArrowRightAlt/>
-                    <Tooltip title={(props.result?.group_values || {})[key]}><Chip color="success" label={key + ': ' + (props.result?.group_values || {})[key]}/></Tooltip>
+            {props.pageResults && Object.keys(retainedPageResult?.group_values || {}).map((key) =>
+                <Stack direction="column" key={key}>
+                    <Tooltip title={(retainedPageResult?.group_values || {})[key]}>
+                        <Chip color="success" label={key + ': ' + (retainedPageResult?.group_values || {})[key]}/>
+                    </Tooltip>
                 </Stack>                
             )}
-            {props.result?.error &&
-            <Chip label={props.result.error} icon={<Error/>} color="error"/>
+            {retainedPageResult?.error &&
+            <Chip label={retainedPageResult.error} icon={<Error/>} color="error"/>
             }
         </Stack>
     );
 
-    const exprError = regionResult?.error;
+    const exprError = previewPageResult?.error;
 
     const kindSelector = (
         <FormControl size="small">
@@ -92,8 +157,9 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </FormControl>
     );
 
+    // TODO add page navigator with thumbnails, allowing to switch the current page and highlighting any pages with results
     return (
-        <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete} dialogExtraTitle={kindSelector}>
+        <DialogListItem dialogTitle={"Region " + props.nr} onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete} dialogExtraTitle={kindSelector}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <Stack direction="row" gap={2}>
@@ -102,14 +168,18 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                         <TextField size="small" label="X2" type="number" value={x2} onChange={(event) => setX2(Number(event.target.value))}></TextField>
                         <TextField size="small" label="Y2" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     </Stack>
-                    { regionResult &&
-                    <RegexPreview regionResult={regionResult}/>
+                    <RegionPageSelector value={page} onChange={setPage}/>
+                    { previewPageResult &&
+                    <RegexPreview regionResult={previewPageResult}/>
                     }
                     { kind === 'simple' &&
-                    <TextField label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
+                    <TextField size="small" label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError}></TextField>
                     }
                     { kind === 'regex' &&
-                    <TextField label="Regular Expression" value={regex_expr || ''} multiline onChange={(event) => setRegexExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
+                    <TextField size="small" label="Regular Expression" value={regex_expr || ''} multiline onChange={(event) => setRegexExpr(event.target.value)} error={exprError != null} helperText={exprError}></TextField>
+                    }
+                    { previewPageResult &&
+                    <RegionListItemPageNavigator pageResults={previewRegionResult || null} region={previewRegion}/>
                     }
                 </Stack>
             </DialogListItem.DialogContent>

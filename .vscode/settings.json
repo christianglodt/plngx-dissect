@@ -6,5 +6,8 @@
         "reportUnusedFunction": "warning",
         "reportUnusedClass": "warning",
         "reportUnusedCoroutine": "warning",
-    }
+    },
+    "eslint.workingDirectories": [
+        "plngx-dissect-frontend"
+    ]
 }

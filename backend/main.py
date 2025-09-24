@@ -61,6 +61,10 @@ async def get_pattern(name: str) -> pattern.Pattern:
         return await pattern.get_pattern(name)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail='Pattern not found')
+    except Exception as e:
+        raise Exception(f'Could not open pattern "{name}"') from e
+        # TODO show error detail in UI
+        # raise HTTPException(status_code=500, detail=f'Error loading pattern "{name}": {e}')
 
 
 @api_app.put('/pattern/{name:path}')
@@ -87,10 +91,17 @@ async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     return Response(content=data, media_type='image/svg+xml')
 
 
-@api_app.post('/document/{document_id}/{page_nr}/evaluate_pattern')
-async def evaluate_pattern(document_id: int, page_nr: int, p: pattern.Pattern) -> pattern.PatternEvaluationResult:
+@api_app.post('/document/{document_id}/evaluate_pattern')
+async def evaluate_pattern(document_id: int, p: pattern.Pattern) -> pattern.PatternEvaluationResult:
     client = paperless.PaperlessClient()
-    return await p.evaluate(document_id, page_nr, client)
+    return await p.evaluate(document_id, client)
+
+
+@api_app.post('/document/{document_id}/evaluate_region')
+async def evaluate_region(document_id: int, region: region.Region) -> list[region.RegionResult]: # 1 result per page
+    client = paperless.PaperlessClient()
+    doc = await document.get_parsed_document(document_id, client=client)
+    return doc.evaluate_regions([region])[0]
 
 
 @api_app.get('/document/{document_id}')
@@ -152,15 +163,6 @@ async def get_history() -> list[ResponseHistoryItem]:
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
 
-
-class EvaluationRegionExprPayload(pydantic.BaseModel):
-    region: region.Region
-    text: str
-
-
-@api_app.post('/region/evaluate_expr/')
-async def evaluate_region_expr(payload: EvaluationRegionExprPayload) -> region.RegionResult:
-    return payload.region.evaluate(payload.text)
 
 
 prefix_app.mount('/api', api_app)
