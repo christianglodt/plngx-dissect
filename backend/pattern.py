@@ -1,5 +1,5 @@
 import pydantic
-from typing import Literal, cast
+from typing import Literal
 import abc
 import datetime
 import aiofiles
@@ -13,7 +13,7 @@ import logging
 import region
 import document
 import field
-from paperless import PaperlessClient, PaperlessDocument, PaperlessValueConversionException, PaperlessAttribute, value_to_paperless
+from paperless import PaperlessClient, PaperlessDocument
 
 log = logging.getLogger('uvicorn')
 
@@ -179,7 +179,6 @@ class Pattern(pydantic.BaseModel):
         return True
 
     async def get_match_result(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult]:
-
         res: list[CheckResult] = []
         for check in self.checks:
             try:
@@ -193,83 +192,26 @@ class Pattern(pydantic.BaseModel):
         return res
 
     async def evaluate(self, document_id: int, client: PaperlessClient) -> PatternEvaluationResult:
-
         doc = await document.get_parsed_document(document_id, client=client)
         paperless_doc = await client.get_document_by_id(document_id)
 
         check_results = await self.get_match_result(doc=doc, paperless_doc=paperless_doc, client=client)
 
-        custom_fields_by_name = await client.custom_fields_by_name
-
-        region_results: list[list[region.RegionResult]] = []
-        field_results: list[field.FieldResult|None] = []
+        # If any check failed, return result without region or field data
         if any(r.passed == False for r in check_results):
             region_results = [[region.RegionResult.no_match('')] * len(doc.pages)] * len(self.regions)
             field_results = [None] * len(self.fields)
-        else:
-            for r in self.regions:
-                region_res: list[region.RegionResult] = []
-                for page in doc.pages:
-                    region_res.append(page.evaluate_region(r))
-                region_results.append(region_res)
+            return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
 
-            region_values = self.region_results_to_dict(region_results)
-            for f in self.fields:
-                field_result = f.get_result(region_values)
-                if not field_result.error:
-                    if f.kind == 'custom':
-                        if not f.name in custom_fields_by_name:
-                            field_result.error = f'Field {f.name} not found'
-                        else:
-                            field_def = custom_fields_by_name[f.name]
-                            field_result.data_type = field_def.data_type
-                            try:
-                                if field_result.value is not None:
-                                    converted_value = field_def.convert_value_to_paperless(field_result.value)
-                                    field_result.value = str(converted_value)
-                            except PaperlessValueConversionException as e:
-                                field_result.value = None
-                                field_result.error = str(e)
+        region_results = doc.evaluate_regions(self.regions)
+        region_values = region.RegionResult.results_to_values(region_results)
 
-                    if f.kind == 'attr':
-                        attributes = await client.get_element_list('attributes')
-                        attribute = next(iter(filter(lambda a: a.name == f.name, attributes)), None)
-                        if attribute is None:
-                            field_result.error = f'Attribute {f.name} not found'
-                        else:
-                            attribute = cast(PaperlessAttribute, attribute)
-                            try:
-                                if field_result.value is not None:
-                                    converted_value = value_to_paperless(attribute.data_type, field_result.value)
-                                    field_result.value = str(converted_value)
-                            except PaperlessValueConversionException as e:
-                                field_result.value = None
-                                field_result.error = str(e)
-
-                field_results.append(field_result)
+        field_results: list[field.FieldResult|None] = []
+        for f in self.fields:
+            field_result = await f.get_result(client, region_values)
+            field_results.append(field_result)
 
         return PatternEvaluationResult(checks=check_results, regions=region_results, fields=field_results)
-
-
-    def region_results_to_dict(self, region_results: list[list[region.RegionResult]]) -> dict[str, str]:
-        res: dict[str, str] = {}
-
-        for region, results in zip(self.regions, region_results):
-            selected_page_result: 'region.RegionResult | None' = None
-            if region.page == 'first_match':
-                selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results)), None)
-            elif region.page == 'last_match':
-                selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results[::-1])), None)
-            else:
-                page_nr = region.page
-                selected_page_result = results[page_nr]
-
-            if selected_page_result:
-                for name, value in (selected_page_result.group_values or {}).items():
-                    res[name] = value
-
-        return res
-
 
     def get_required_correspondents_and_document_types(self) -> tuple[list[str], list[str]]:
         # Most patterns have simple checks (eg. one document type and one correspondent).

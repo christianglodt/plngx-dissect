@@ -1,6 +1,6 @@
 import datetime
 import pydantic
-from region import Pt, Region, RegionBase, RegionResult, ExpressionError
+from region import Pt, Region, RegionBase, RegionResult
 import paperless
 import asyncio
 import subprocess
@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 import pdfplumber
 import pdfminer.psparser
 import cache
-import re
 import logging
 import bisect
 import io
@@ -129,6 +128,22 @@ class DocumentBase(pydantic.BaseModel):
 
 class Document(DocumentBase):
     pages: list[Page]
+
+    def evaluate_regions(self, regions: list[Region]) -> list[list[RegionResult]]: # 1 result per page
+        region_page_res: list[list[RegionResult]] = []
+
+        for region in regions:
+            region_res: list[RegionResult] = []
+            for page in self.pages:
+                res = page.evaluate_region(region)
+                region_res.append(res)
+            region_page_res.append(region_res)
+            
+            selected_result = region.get_selected_result(region_res)
+            if selected_result:
+                selected_result.is_retained = True
+
+        return region_page_res
 
 
 @asynccontextmanager

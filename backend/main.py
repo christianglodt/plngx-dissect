@@ -93,6 +93,13 @@ async def evaluate_pattern(document_id: int, p: pattern.Pattern) -> pattern.Patt
     return await p.evaluate(document_id, client)
 
 
+@api_app.post('/document/{document_id}/evaluate_region')
+async def evaluate_region(document_id: int, region: region.Region) -> list[region.RegionResult]: # 1 result per page
+    client = paperless.PaperlessClient()
+    doc = await document.get_parsed_document(document_id, client=client)
+    return doc.evaluate_regions([region])[0]
+
+
 @api_app.get('/document/{document_id}')
 async def get_document(document_id: int) -> document.Document:
     try:
@@ -152,15 +159,6 @@ async def get_history() -> list[ResponseHistoryItem]:
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
 
-
-class EvaluationRegionExprPayload(pydantic.BaseModel):
-    region: region.Region
-    text: str
-
-
-@api_app.post('/region/evaluate_expr/')
-async def evaluate_region_expr(payload: EvaluationRegionExprPayload) -> region.RegionResult:
-    return payload.region.evaluate_on_text(0, payload.text)
 
 
 prefix_app.mount('/api', api_app)

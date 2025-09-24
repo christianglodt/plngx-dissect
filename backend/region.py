@@ -71,7 +71,7 @@ class Region(RegionBase):
             try:
                 regex = simple_expr_to_regex(self.simple_expr)
             except ExpressionError as e:
-                return RegionResult(text=text, error=str(e), group_values=None, group_positions=None)
+                return RegionResult(text=text, error=str(e), group_values=None, group_positions=None, is_retained=False)
 
         if regex is None:
                 return RegionResult.no_match(text)
@@ -90,11 +90,23 @@ class Region(RegionBase):
                         group_values[name] = match.group(name)
                         group_positions.append((start, end))
 
-                return RegionResult(text=text, error=None, group_values=group_values, group_positions=group_positions)
+                return RegionResult(text=text, error=None, group_values=group_values, group_positions=group_positions, is_retained=False)
             else:
                 return RegionResult.no_match(text=text)
         except re.error as e:
-            return RegionResult(text=text, error=e.msg, group_values=None, group_positions=None)
+            return RegionResult(text=text, error=e.msg, group_values=None, group_positions=None, is_retained=False)
+
+    def get_selected_result(self, results: list['RegionResult']) -> 'RegionResult | None':
+        selected_page_result: RegionResult | None = None
+        if self.page == 'first_match':
+            selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results)), None)
+        elif self.page == 'last_match':
+            selected_page_result = next(iter(filter(lambda r: r.group_values is not None, results[::-1])), None)
+        else:
+            page_nr = self.page
+            selected_page_result = results[page_nr]
+
+        return selected_page_result
 
 
 class RegionResult(pydantic.BaseModel):
@@ -102,7 +114,20 @@ class RegionResult(pydantic.BaseModel):
     error: str | None
     group_values: typing.Mapping[str, str] | None # None indicates "no match", empty dict indicates match but no capturing groups
     group_positions: list[tuple[int, int]] | None
+    is_retained: bool | None = None # Updated after 
 
     @classmethod
     def no_match(cls, text: str):
-        return RegionResult(text=text, error=None, group_values=None, group_positions=None)
+        return RegionResult(text=text, error=None, group_values=None, group_positions=None, is_retained=False)
+
+    @classmethod
+    def results_to_values(cls, results: list[list['RegionResult']]) -> dict[str, str]:
+        res: dict[str, str] = {}
+
+        for region_res in results:
+            for page_res in region_res:
+                if page_res.is_retained:
+                    for name, value in (page_res.group_values or {}).items():
+                        res[name] = value
+
+        return res

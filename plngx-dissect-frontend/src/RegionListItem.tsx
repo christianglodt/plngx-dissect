@@ -5,7 +5,7 @@ import DialogListItem from "./utils/DialogListItem";
 import { Region, RegionResult } from "./types";
 import { Error } from "@mui/icons-material";
 import RegexPreview from "./utils/RegexPreview";
-import { useEvaluateExpression } from "./hooks";
+import { useEvaluateRegion } from "./hooks";
 import { PatternEditorContext } from "./PatternEditorContext";
 import RegionPageSelector from "./utils/RegionPageSelector";
 import RegionListItemPageNavigator from "./RegionListItemPageNavigator";
@@ -46,12 +46,11 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const [regex_expr, setRegexExpr] = useState(props.region.regex_expr);
     const [simple_expr, setSimpleExpr] = useState(props.region.simple_expr);
 
-    //const selectedPageResult = pageNr !== null ? (props.pageResults || []).at(pageNr) : null;
     const retainedPageResult = getRegionResultForDocument(props.region, props.pageResults || []);
 
     const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
-    const currentPageResult = props.pageResults && pageNr ? props.pageResults[pageNr] : null;
-    const previewRegionResult = useEvaluateExpression(previewRegion, currentPageResult?.text || ''); // For use in dialog.
+    const previewRegionResult = useEvaluateRegion(document?.id, previewRegion); // For use in dialog.
+    const previewPageResult = (previewRegionResult && pageNr !== null) ? previewRegionResult[pageNr] : null;
 
     const onChangeCanceled = () => {
         setX(props.region.x);
@@ -146,7 +145,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         </Stack>
     );
 
-    const exprError = previewRegionResult?.error;
+    const exprError = previewPageResult?.error;
 
     const kindSelector = (
         <FormControl size="small">
@@ -160,7 +159,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
 
     // TODO add page navigator with thumbnails, allowing to switch the current page and highlighting any pages with results
     return (
-        <DialogListItem dialogTitle="Region" onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete} dialogExtraTitle={kindSelector}>
+        <DialogListItem dialogTitle={"Region " + props.nr} onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete} dialogExtraTitle={kindSelector}>
             <DialogListItem.DialogContent>
                 <Stack gap={2}>
                     <Stack direction="row" gap={2}>
@@ -170,16 +169,18 @@ const RegionListItem = (props: RegionListItemPropsType) => {
                         <TextField size="small" label="Y2" type="number" value={y2} onChange={(event) => setY2(Number(event.target.value))}></TextField>
                     </Stack>
                     <RegionPageSelector value={page} onChange={setPage}/>
-                    { previewRegionResult &&
-                    <RegexPreview regionResult={previewRegionResult}/>
+                    { previewPageResult &&
+                    <RegexPreview regionResult={previewPageResult}/>
                     }
                     { kind === 'simple' &&
-                    <TextField label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
+                    <TextField size="small" label="Simple Expression" value={simple_expr || ''} multiline onChange={(event) => setSimpleExpr(event.target.value)} error={exprError != null} helperText={exprError}></TextField>
                     }
                     { kind === 'regex' &&
-                    <TextField label="Regular Expression" value={regex_expr || ''} multiline onChange={(event) => setRegexExpr(event.target.value)} error={exprError != null} helperText={exprError || <div style={{ height: '2lh' }}></div>}></TextField>
+                    <TextField size="small" label="Regular Expression" value={regex_expr || ''} multiline onChange={(event) => setRegexExpr(event.target.value)} error={exprError != null} helperText={exprError}></TextField>
                     }
-                    <RegionListItemPageNavigator pageResults={props.pageResults} region={previewRegion}/>
+                    { previewPageResult &&
+                    <RegionListItemPageNavigator pageResults={previewRegionResult || null} region={previewRegion}/>
+                    }
                 </Stack>
             </DialogListItem.DialogContent>
             <DialogListItem.ItemContent>

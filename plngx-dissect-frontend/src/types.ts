@@ -178,6 +178,7 @@ export type RegionResult = {
     error: string | null;
     group_values: Record<string, string> | null;
     group_positions: Array<Array<number>> | null;
+    is_retained: boolean;
 }
 
 export type FieldResult = {

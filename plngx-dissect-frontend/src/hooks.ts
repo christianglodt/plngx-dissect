@@ -183,20 +183,16 @@ export const useHistory = () => {
     });
 }
 
-type RegionEvaluatePayload = {
-    region: Region,
-    text: string
-};
-
-export const useEvaluateExpression = (region: Region, text: string) => {
+export const useEvaluateRegion = (docId: number | undefined, region: Region) => {
     const [debouncedRegion] = useDebounce(region, 1000);
 
     const query = useQuery({
-        queryKey: ['regionResult', debouncedRegion, text],
+        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion],
         queryFn: async () => {
-            return postRequest<RegionEvaluatePayload, RegionResult>('/api/region/evaluate_expr/', { 'region': debouncedRegion, text });
+            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region`, debouncedRegion);
         },
-        placeholderData: keepPreviousData
+        placeholderData: keepPreviousData,
+        enabled: docId !== undefined
     });
 
     return query.data;

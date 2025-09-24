@@ -43,6 +43,14 @@ const darkTheme = createTheme({
                     borderRadius: '4pt'
                 }
             }
+        },
+        MuiFormHelperText: {
+            styleOverrides: {
+                root: {
+                    marginTop: 0,
+                    height: 0
+                }
+            }
         }
     }
   });

@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight, OpenInNew } from "@mui/icons-material";
-import { Alert, Box, IconButton, Stack, Tooltip } from "@mui/material";
+import { Alert, Box, IconButton, Stack } from "@mui/material";
 import Page from "./Page";
 import { useContext } from "react";
 import { PatternEditorContext } from "../PatternEditorContext";
