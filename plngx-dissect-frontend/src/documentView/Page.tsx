@@ -11,8 +11,14 @@ import { PatternEditorContext } from "../PatternEditorContext";
 const Page = () => {
 
     const { pattern, document, pageNr, onPatternChange } = useContext(PatternEditorContext);
-    const pageWidth = document!.pages[pageNr!].width; // Containing component ensures this one is only instantiated when document and pageNr are not null.
-    const pageHeight = document!.pages[pageNr!].height;
+    const { ref: boundingNode, width = 1, height = 1 } = useResizeObserver<HTMLDivElement>();
+
+    if (document == null || pageNr == null) {
+        return <></>;
+    }
+
+    const pageWidth = document.pages[pageNr].width;
+    const pageHeight = document.pages[pageNr].height;
 
     const onRegionCheckChange = (newRegion: RegionCheck, index: number) => {
         onPatternChange(produce(pattern, draft => {
@@ -26,7 +32,6 @@ const Page = () => {
         }));
     }
 
-    const { ref: boundingNode, width = 1, height = 1 } = useResizeObserver<HTMLDivElement>();
     const pageDimensions = [width, height];
 
     const onDragOver = (event: DragEvent<HTMLDivElement>) => { event.preventDefault(); };
