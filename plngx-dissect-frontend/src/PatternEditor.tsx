@@ -37,7 +37,9 @@ const PatternEditor = () => {
 
     if (isError) {
         return (
-            <Alert severity="error">Error: {error.message}</Alert>
+            <Alert severity="error">
+                <AlertTitle>Error: {error.message}</AlertTitle>
+            </Alert>
         );
     }
 
