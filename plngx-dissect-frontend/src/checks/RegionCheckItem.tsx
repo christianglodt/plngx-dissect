@@ -5,6 +5,7 @@ import { RegionCheck } from "../types";
 import DialogListItem from "../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 import CheckResultIcon from "../utils/CheckResultIcon";
+import RegionPageSelector from "../utils/RegionPageSelector";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
 
@@ -12,6 +13,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
     const [y, setY] = useState(props.check.y);
     const [x2, setX2] = useState(props.check.x2);
     const [y2, setY2] = useState(props.check.y2);
+    const [page, setPage] = useState(props.check.page);
     const [kind, setKind] = useState(props.check.kind);
     const [regexExpr, setRegexExpr] = useState(props.check.regex_expr);
     const [simpleExpr, setSimpleExpr] = useState(props.check.simple_expr);
@@ -21,6 +23,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
         setY(props.check.y);
         setX2(props.check.x2);
         setY2(props.check.y2);
+        setPage(props.check.page);
         setKind(props.check.kind);
         setRegexExpr(props.check.regex_expr);
         setSimpleExpr(props.check.simple_expr);
@@ -32,6 +35,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
             draft.y = y;
             draft.x2 = x2;
             draft.y2 = y2;
+            draft.page = page;
             draft.kind = kind;
             draft.regex_expr = regexExpr;
             draft.simple_expr = simpleExpr;
@@ -59,6 +63,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
                             <MenuItem value="regex">RegEx</MenuItem>
                         </Select>
                     </FormControl>
+                    <RegionPageSelector value={page} onChange={setPage}/>
                     { kind === 'simple' &&
                     <TextField label="Simple Expression" value={simpleExpr} onChange={(event) => setSimpleExpr(event.target.value)} error={props.result?.error != null} helperText={props.result?.error}></TextField>
                     }
