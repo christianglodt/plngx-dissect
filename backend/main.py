@@ -61,6 +61,10 @@ async def get_pattern(name: str) -> pattern.Pattern:
         return await pattern.get_pattern(name)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail='Pattern not found')
+    except Exception as e:
+        raise Exception(f'Could not open pattern "{name}"') from e
+        # TODO show error detail in UI
+        # raise HTTPException(status_code=500, detail=f'Error loading pattern "{name}": {e}')
 
 
 @api_app.put('/pattern/{name:path}')
