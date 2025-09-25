@@ -9,8 +9,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 
 import App from './App.tsx'
 import ErrorPage from './ErrorPage.tsx'
-import PatternEditor from './PatternEditor.tsx'
-import PatternTable from './PatternTable'
+import PatternEditor from './PatternEditor/PatternEditor.tsx'
+import PatternTable from './PatternTable/PatternTable.tsx'
 
 
 import './index.css'
