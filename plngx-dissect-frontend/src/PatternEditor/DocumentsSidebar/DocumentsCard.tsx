@@ -13,7 +13,7 @@ const DocumentsCard = () => {
 
     const [showAllDocuments, setShowAllDocuments] = useState<'all' | 'pending'>('all');
 
-    const { data: matches, isLoading, error } = usePatternMatches(pattern, showAllDocuments === 'all');
+    const { data: matches, isLoading, isPlaceholderData, error } = usePatternMatches(pattern, showAllDocuments === 'all');
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -32,9 +32,9 @@ const DocumentsCard = () => {
             <Tabs value={showAllDocuments} onChange={onTabClicked}>
                 <Tab label="All" value="all"/>
                 <Tab label="Pending" value="pending"/>
-            </Tabs>                
+            </Tabs>
             }>
-            { isLoading &&
+            { (isLoading || isPlaceholderData) &&
             <Box sx={{ height: '100%', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CircularProgress/>
             </Box>
