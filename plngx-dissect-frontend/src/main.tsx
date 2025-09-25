@@ -51,6 +51,36 @@ const darkTheme = createTheme({
                     height: 0
                 }
             }
+        },
+        MuiCardHeader: {
+            styleOverrides: {
+                root: {
+                    paddingBottom: 0
+                }
+            }
+        },
+        MuiCardContent: {
+            styleOverrides: {
+                root: {
+                    padding: "0 !important"
+                }
+            }
+        },
+        MuiList: {
+            styleOverrides: {
+                root: {
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255, 255, 255, 0.23) transparent'
+                }
+            }
+        },
+        MuiDialogContent: {
+            styleOverrides: {
+                root: {
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: 'rgba(255, 255, 255, 0.23) transparent'
+                }
+            }
         }
     }
   });
