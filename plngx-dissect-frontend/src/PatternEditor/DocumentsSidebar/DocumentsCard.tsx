@@ -1,4 +1,4 @@
-import { Box, Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, Tab, Tabs } from "@mui/material";
+import { Box, Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText, Stack, Tab, Tabs, Typography } from "@mui/material";
 import ListCard from "../../utils/ListCard";
 import { usePatternMatches } from "../../hooks";
 import { Error } from "@mui/icons-material";
@@ -42,7 +42,17 @@ const DocumentsCard = () => {
             { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
                 <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={match.title} secondary={`${match.document_type}\n${match.correspondent}\n${new Date(match.date_created).toLocaleDateString()}`} sx={{ whiteSpace: 'pre' }}/>
+                <ListItemText
+                  primary={
+                    <Typography fontSize="small" sx={{ wordBreak: "break-all" }}>{match.title}</Typography>
+                  }
+                  secondary={
+                    <Stack direction="column">
+                        <Typography fontSize="x-small">{new Date(match.date_created).toLocaleDateString()}, {match.document_type}</Typography>
+                        <Typography fontSize="x-small">{match.correspondent}</Typography>
+                    </Stack>
+                  }
+                />
             </ListItemButton>
             )}
             { error &&
