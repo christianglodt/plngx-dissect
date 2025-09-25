@@ -16,7 +16,7 @@ const ListCard = (props: ListCardProps) => {
         <Card sx={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <CardHeader title={header}></CardHeader>
             <CardContent sx={{ overflow: 'hidden', height: '100%' }}>
-                <List sx={{ position: 'relative', overflow: 'auto', height: '100%' }}>
+                <List sx={{ position: 'relative', overflow: 'auto', height: '100%' }} component="div">
                     {props.children}
                 </List>
             </CardContent>

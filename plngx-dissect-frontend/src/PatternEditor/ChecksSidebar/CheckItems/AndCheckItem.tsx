@@ -53,7 +53,7 @@ const AndCheckItem = (props: RecursiveCheckItemPropsType<AndCheck>) => {
     return (
         <DialogListItem dialogTitle="And Check" dialogExtraTitle={<CreateCheckItemButton onCheckCreated={onCheckCreated}/>} onChangeConfirmed={onChangeConfirmed} onChangeCanceled={onChangeCanceled} onDelete={props.onDelete}>
             <DialogListItem.DialogContent>
-                <List>
+                <List component="div">
                     {subChecks}
                 </List>
             </DialogListItem.DialogContent>
