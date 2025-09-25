@@ -52,7 +52,7 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
     async for paperless_doc in paperless_docs:
         doc = await get_parsed_document(paperless_doc.id, client=client)
         
-        if await pattern.matches(doc, paperless_doc, client):
+        if await pattern.checks_match(doc, paperless_doc, client):
             yield doc
 
 
@@ -149,7 +149,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
 
     paperless_doc_has_changed = False
     for pattern in patterns:
-        if await pattern.matches(doc, paperless_doc, client):
+        if await pattern.checks_match(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
             result = await pattern.evaluate(paperless_doc.id, client)
                         

@@ -167,7 +167,7 @@ class Pattern(pydantic.BaseModel):
     regions: list[region.Region]
     fields: list[field.Field]
 
-    async def matches(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
+    async def checks_match(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> bool:
         for check in self.checks:
             try:
                 if not await check.matches(doc, paperless_doc, client):
@@ -178,7 +178,7 @@ class Pattern(pydantic.BaseModel):
 
         return True
 
-    async def get_match_result(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult]:
+    async def get_check_results(self, doc: document.Document, paperless_doc: PaperlessDocument, client: PaperlessClient) -> list[CheckResult]:
         res: list[CheckResult] = []
         for check in self.checks:
             try:
@@ -195,7 +195,7 @@ class Pattern(pydantic.BaseModel):
         doc = await document.get_parsed_document(document_id, client=client)
         paperless_doc = await client.get_document_by_id(document_id)
 
-        check_results = await self.get_match_result(doc=doc, paperless_doc=paperless_doc, client=client)
+        check_results = await self.get_check_results(doc=doc, paperless_doc=paperless_doc, client=client)
 
         # If any check failed, return result without region or field data
         if any(r.passed == False for r in check_results):
