@@ -3,9 +3,9 @@ import ListCard from "../../utils/ListCard";
 import { usePatternMatches } from "../../hooks";
 import { Error } from "@mui/icons-material";
 import { useSearchParams } from "react-router-dom";
-import { Article } from "@mui/icons-material";
 import { useContext, useState } from "react";
 import { PatternEditorContext } from "../PatternEditorContext";
+import DocumentThumbnail from "../../utils/DocumentThumbnail";
 
 const DocumentsCard = () => {
 
@@ -41,7 +41,7 @@ const DocumentsCard = () => {
             }
             { matches && !error && matches.map((match) =>
             <ListItemButton key={match.id} selected={searchParams.get('document') == match.id.toString()} onClick={() => onDocumentClicked(match.id)} alignItems="flex-start">
-                <ListItemIcon><Article/></ListItemIcon>
+                <ListItemIcon><DocumentThumbnail docId={match.id}/></ListItemIcon>
                 <ListItemText
                   primary={
                     <Typography fontSize="small" sx={{ wordBreak: "break-all" }}>{match.title}</Typography>

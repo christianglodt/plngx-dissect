@@ -3,6 +3,7 @@ import { useContext } from "react";
 import { PATH_PREFIX } from "../../hooks";
 import { PatternEditorContext } from "../PatternEditorContext";
 import { Region, RegionResult } from "../../types";
+import DocumentThumbnail from "../../utils/DocumentThumbnail";
 
 type RegionListItemPageNavigatorPropsType = {
     pageResults: Array<RegionResult> | null; // 1 result per page
@@ -55,7 +56,7 @@ const RegionListItemPageNavigator = (props: RegionListItemPageNavigatorPropsType
                     <Tab key={index} label={
                         <Stack key={index} direction="column" spacing={0.5} alignItems="center">
                             <Box sx={getBoxStyle(pageResult)}>
-                                <img src={`${PATH_PREFIX}/api/document/${document!.id}/svg?page_nr=${index}`} width="50px" style={{ backgroundColor: 'white', display: 'block' }}/>
+                                <DocumentThumbnail docId={document!.id}/>
                             </Box>
                             <Typography sx={{ fontSize: 'smaller' }}>{index + 1}</Typography>
                         </Stack>
