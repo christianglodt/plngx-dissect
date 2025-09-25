@@ -62,7 +62,7 @@ const darkTheme = createTheme({
         MuiCardContent: {
             styleOverrides: {
                 root: {
-                    padding: "0 !important"
+                    padding: "0 0 0 0.75rem !important"
                 }
             }
         },
