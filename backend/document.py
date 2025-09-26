@@ -3,8 +3,6 @@ import pydantic
 from region import Pt, Region, RegionBase, RegionResult
 import paperless
 import asyncio
-import subprocess
-from contextlib import asynccontextmanager
 import pdfplumber
 import pdfminer.psparser
 import cache
@@ -146,17 +144,21 @@ class Document(DocumentBase):
         return region_page_res
 
 
-@asynccontextmanager
-async def get_pdf_data(paperless_id: int) -> AsyncIterator[io.BytesIO]:
+async def get_pdf_data(paperless_id: int) -> AsyncIterator[bytes]:
     c = paperless.PaperlessClient()
     async with c.get_document_stream(paperless_id) as stream:
-        data_io = io.BytesIO()
         while True:
             data, _ = await stream.readchunk()
             if not data:
                 break
-            data_io.write(data)
-        yield data_io
+            yield data
+
+
+async def async_iter_to_bytes(i: AsyncIterator[bytes]) -> io.BytesIO:
+    res = io.BytesIO()
+    async for chunk in i:
+        res.write(chunk)
+    return res
 
 
 X_TOLERANCE: Pt = Pt(6)
@@ -169,46 +171,52 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     document_types_by_id = await client.document_types_by_id
     paperless_doc = await client.get_document_by_id(paperless_id)
 
-    async with get_pdf_data(paperless_id) as pdf_bytes_io:
-        pages: list[Page] = []
-        error: str | None = None
+    pages: list[Page] = []
+    error: str | None = None
 
-        try:
-            with pdfplumber.open(pdf_bytes_io) as pdf:
-                for index, page in enumerate(pdf.pages):
-                    runs: list[TextRun] = []
-                    pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
-                    for text_run in pdfplumber_text_runs:
-                        runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
-                    indexes_by_x = sorted(list(range(len(runs))), key=lambda i: runs[i].x)
-                    indexes_by_y = sorted(list(range(len(runs))), key=lambda i: runs[i].y)
-                    indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
-                    indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
-                    pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
-                log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
-        except pdfminer.psparser.PSException as e:
-            error = str(e)
-            log.error('Error parsing "%s" (%i) from %s: %s', paperless_doc.title, paperless_doc.id, pdf_bytes_io, error)
-        
-        correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
-        document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
-        document = Document(
-            id=paperless_id,
-            title=paperless_doc.title,
-            correspondent=correspondent,
-            document_type=document_type,
-            datetime_added=paperless_doc.added,
-            date_created=paperless_doc.created,
-            paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
-            pages=pages,
-            parse_status=DocumentParseStatus(datetime_parsed=datetime.datetime.now().astimezone(), error=error)
-        )
-        return document
+    try:
+        with pdfplumber.open(await async_iter_to_bytes(get_pdf_data(paperless_id))) as pdf:
+            for index, page in enumerate(pdf.pages):
+                runs: list[TextRun] = []
+                pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
+                for text_run in pdfplumber_text_runs:
+                    runs.append(TextRun(text=text_run['text'].strip(), x=text_run['x0'], y=text_run['top'], x2=text_run['x1'], y2=text_run['bottom']))
+                indexes_by_x = sorted(list(range(len(runs))), key=lambda i: runs[i].x)
+                indexes_by_y = sorted(list(range(len(runs))), key=lambda i: runs[i].y)
+                indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
+                indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
+                pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
+            log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
+    except pdfminer.psparser.PSException as e:
+        error = str(e)
+        log.error('Error parsing "%s" (%i): %s', paperless_doc.title, paperless_doc.id, error)
+    
+    correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
+    document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
+    document = Document(
+        id=paperless_id,
+        title=paperless_doc.title,
+        correspondent=correspondent,
+        document_type=document_type,
+        datetime_added=paperless_doc.added,
+        date_created=paperless_doc.created,
+        paperless_url=pydantic.TypeAdapter(pydantic.AnyHttpUrl).validate_strings(f'{paperless.PAPERLESS_URL}/documents/{paperless_id}/details'),
+        pages=pages,
+        parse_status=DocumentParseStatus(datetime_parsed=datetime.datetime.now().astimezone(), error=error)
+    )
+    return document
 
 
+# TODO turn this into an AsyncIterator[bytes], however the cache then
+# needs to return the same (iterating over cache file chunks).
 @cache.file_cache('pdf_page_svg', '.svg') # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
-    async with get_pdf_data(paperless_id) as pdf_bytes_io:
-        proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        stdout, _ = await proc.communicate(pdf_bytes_io.getvalue())
-        return stdout
+    proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    assert proc.stdin is not None
+
+    async for chunk in get_pdf_data(paperless_id):
+        proc.stdin.write(chunk) 
+        await proc.stdin.drain()
+
+    stdout, _ = await proc.communicate()
+    return stdout

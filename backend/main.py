@@ -87,6 +87,8 @@ async def rename_pattern(name: str, new_name: str):
 
 @api_app.get('/document/{document_id}/svg', response_class=Response)
 async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
+    # TODO return streaming response, however caching of get_pdf_page_svg
+    # must be adapted.
     data = await document.get_pdf_page_svg(document_id, page_nr)
     return Response(content=data, media_type='image/svg+xml')
 
