@@ -1,38 +1,42 @@
-FROM node:22-bookworm AS build_stage
+FROM node:22-bookworm AS npm_build_stage
 
 COPY plngx-dissect-frontend/package.json /app/plngx-dissect-frontend/
 
 WORKDIR /app/plngx-dissect-frontend
 
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
 
 COPY . /app
 
-RUN npm run build
+RUN --mount=type=cache,target=/root/.npm \
+    npm run build
 
 FROM python:3.12-bookworm
 
-LABEL org.opencontainers.image.source https://github.com/christianglodt/plngx-dissect
+LABEL org.opencontainers.image.source=https://github.com/christianglodt/plngx-dissect
 
 RUN apt update -y && apt install -y poppler-utils && rm -rf /var/apt/lists
 
-# Create virtual env
-ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.8.12 /uv /uvx /bin/
 
-COPY backend/requirements.txt /app/backend/requirements.txt
+COPY backend/pyproject.toml backend/uv.lock /app/backend/
 
-# Install Python packages
-RUN pip install --no-cache-dir wheel && pip install --no-cache-dir -r /app/backend/requirements.txt
+WORKDIR /app/backend
 
-COPY . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --no-install-project --no-dev --link-mode=copy
+
+ENV PATH="/app/backend/.venv/bin:$PATH"
 
 WORKDIR /app
 
-RUN rm -rf /app/plngx-dissect-frontend
+# TODO use --exclude here once it's released, instead of "rm" after
+COPY . /app
+RUN rm -rf ./plngx-dissect-frontend
 
-COPY --from=build_stage /app/plngx-dissect-frontend/dist /app/plngx-dissect-frontend/dist/
+COPY --from=npm_build_stage /app/plngx-dissect-frontend/dist /app/plngx-dissect-frontend/dist/
 
 WORKDIR /app/backend
-CMD ["/opt/venv/bin/uvicorn", "--host", "0.0.0.0", "main:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "main:app"]
