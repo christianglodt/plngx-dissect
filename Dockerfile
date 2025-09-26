@@ -12,7 +12,7 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.npm \
     npm run build
 
-FROM python:3.12-bookworm
+FROM python:3.13-bookworm
 
 LABEL org.opencontainers.image.source=https://github.com/christianglodt/plngx-dissect
 
@@ -26,7 +26,7 @@ COPY backend/pyproject.toml backend/uv.lock /app/backend/
 WORKDIR /app/backend
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --no-install-project --no-dev --link-mode=copy
+    uv sync --no-python-downloads --no-install-project --no-dev --link-mode=copy
 
 ENV PATH="/app/backend/.venv/bin:$PATH"
 

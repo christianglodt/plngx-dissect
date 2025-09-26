@@ -6,5 +6,5 @@ nvm install 22
 npm install --include dev plngx-dissect-frontend --prefix plngx-dissect-frontend
 
 pushd backend
-uv sync
+uv sync --no-python-downloads --no-install-project
 popd
