@@ -12,7 +12,8 @@
             "name": "backend (uvicorn)",
             "request": "launch",
             "type": "debugpy",
-            "program": "/home/vscode/.local/bin/uvicorn",
+            "python": "${workspaceFolder}/backend/.venv/bin/python",
+            "program": "${workspaceFolder}/backend/.venv/bin/uvicorn",
             "cwd": "${workspaceFolder}/backend",
             "args": [
                 "--host", "0.0.0.0", "main:app", "--reload"
