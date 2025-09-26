@@ -1,6 +1,5 @@
 import { Box, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useContext } from "react";
-import { PATH_PREFIX } from "../../hooks";
 import { PatternEditorContext } from "../PatternEditorContext";
 import { Region, RegionResult } from "../../types";
 import DocumentThumbnail from "../../utils/DocumentThumbnail";
