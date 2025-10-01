@@ -9,7 +9,7 @@ import cache
 import logging
 import bisect
 import io
-from typing import AsyncIterator, Literal, cast
+from typing import AsyncIterable, AsyncIterator, Literal, cast
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
@@ -207,16 +207,28 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     return document
 
 
-# TODO turn this into an AsyncIterator[bytes], however the cache then
-# needs to return the same (iterating over cache file chunks).
-@cache.file_cache('pdf_page_svg', '.svg') # type: ignore
-async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
+@cache.stream_cache('pdf_page_svg', '.svg') # type: ignore
+async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> AsyncIterable[bytes]:
     proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    assert proc.stdin is not None
+    assert proc.stdout is not None
 
-    async for chunk in get_pdf_data(paperless_id):
-        proc.stdin.write(chunk) 
-        await proc.stdin.drain()
+    async def feed_input():
+        assert proc.stdin is not None
+        async for chunk in get_pdf_data(paperless_id):
+            proc.stdin.write(chunk)
+            await proc.stdin.drain()
+        proc.stdin.close()
+        await proc.stdin.wait_closed()
 
-    stdout, _ = await proc.communicate()
-    return stdout
+    # Start feeding in the background
+    feeder = asyncio.create_task(feed_input())
+
+    try:
+        while True:
+            chunk = await proc.stdout.read(65536)
+            if not chunk:
+                break
+            yield chunk
+    finally:
+        await feeder
+        await proc.wait()
