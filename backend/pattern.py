@@ -4,6 +4,7 @@ import abc
 import datetime
 import aiofiles
 import aiofiles.os
+from aiofile import async_open
 import pathlib
 import urllib.parse
 import ryaml
@@ -274,13 +275,13 @@ async def list_patterns() -> list[PatternListEntry]:
 
 async def create_pattern(name: str) -> Pattern:
     pattern = Pattern(name=name, checks=[], regions=[], fields=[])
-    async with aiofiles.open(name_to_path(name), 'x') as f:
+    async with async_open(name_to_path(name), 'x') as f:
         await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
     return pattern
 
 
 async def get_pattern(name: str) -> Pattern:
-    async with aiofiles.open(name_to_path(name), 'r', encoding='utf-8') as f:
+    async with async_open(name_to_path(name), 'r', encoding='utf-8') as f:
         obj = ryaml.loads(await f.read())
         return Pattern.model_validate(obj)
 

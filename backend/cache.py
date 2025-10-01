@@ -5,6 +5,7 @@ import ryaml
 from functools import wraps, lru_cache
 import aiofiles
 import aiofiles.os
+from aiofile import async_open
 import abc
 import sys
 
@@ -60,10 +61,9 @@ class AsyncBaseCache[T](abc.ABC):
     def dump(self, value: T) -> bytes:
         raise NotImplementedError
 
-
     async def get_cache_value(self, key: str) -> T | NoValueType:
         try:
-            async with aiofiles.open((self.cache_dir / key).with_suffix(self.extension), mode='rb') as f:
+            async with async_open((self.cache_dir / key).with_suffix(self.extension), mode='rb') as f:
                 return self.load(await f.read())
         except FileNotFoundError:
             return NO_VALUE
