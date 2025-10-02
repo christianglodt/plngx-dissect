@@ -327,6 +327,8 @@ class PaperlessClient:
         log.debug(f'Retrieved storage paths from Paperless')
         return res
 
+    # Url to find last modified document: /api/documents/?ordering=-modified&fields=modified,id&page_size=1
+
     async def get_document_by_id(self, document_id: int) -> PaperlessDocument:
         url = f'{self.base_url}/api/documents/{document_id}/'
         async with self._get(url) as response:
