@@ -214,6 +214,11 @@ class PaperlessStoragePath(PaperlessElementBase):
     path: str
 
 
+class PaperlessDocumentModificationDatetime(pydantic.BaseModel):
+    id: int
+    modified: pydantic.AwareDatetime
+
+
 def ensure_https(url: str|pydantic.AnyHttpUrl) -> str:
     parts = list(urllib.parse.urlsplit(str(url)))
     parts[0] = 'https'
@@ -382,3 +387,7 @@ class PaperlessClient:
 
         return res
     
+    async def get_document_modified_date(self, document_id: int) -> pydantic.AwareDatetime:
+        async with self._get(f'{self.base_url}/api/documents/{document_id}/?fields=modified,id') as response:
+            validated_response = PaperlessDocumentModificationDatetime.model_validate(await response.json())
+            return validated_response.modified

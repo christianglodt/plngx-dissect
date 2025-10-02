@@ -9,7 +9,7 @@ import cache
 import logging
 import bisect
 import io
-from typing import AsyncIterable, AsyncIterator, Literal, cast
+from typing import AsyncIterable, AsyncIterator, Literal, cast, Hashable
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
@@ -164,7 +164,13 @@ async def async_iter_to_bytes(i: AsyncIterator[bytes]) -> io.BytesIO:
 X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client']) # TODO cache should consider last_modified time from paperless document # type: ignore
+
+async def get_parsed_document_extra_cache_key_func(paperless_id: int, client: paperless.PaperlessClient | None = None) -> tuple[Hashable, ...]:
+    client = client or paperless.PaperlessClient()
+    return (await client.get_document_modified_date(paperless_id),)
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client'], extra_cache_key_func=get_parsed_document_extra_cache_key_func) # TODO cache should consider last_modified time from paperless document # type: ignore
 async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
     client = client or paperless.PaperlessClient()
     correspondents_by_id = await client.correspondents_by_id
@@ -207,7 +213,12 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     return document
 
 
-@cache.stream_cache('pdf_page_svg', '.svg') # type: ignore
+async def get_page_svg_document_modified_date(paperless_id: int, page_nr: int) -> tuple[Hashable, ...]:
+    client = paperless.PaperlessClient()
+    return (await client.get_document_modified_date(paperless_id), )
+
+
+@cache.stream_cache('pdf_page_svg', '.svg', extra_cache_key_func=get_page_svg_document_modified_date) # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> AsyncIterable[bytes]:
     proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
     assert proc.stdout is not None
