@@ -170,18 +170,12 @@ async def get_parsed_document_extra_cache_key_func(paperless_id: int, client: pa
     return (await client.get_document_modified_date(paperless_id),)
 
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client'], extra_cache_key_func=get_parsed_document_extra_cache_key_func) # TODO cache should consider last_modified time from paperless document # type: ignore
-async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
-    client = client or paperless.PaperlessClient()
-    correspondents_by_id = await client.correspondents_by_id
-    document_types_by_id = await client.document_types_by_id
-    paperless_doc = await client.get_document_by_id(paperless_id)
-
+def get_pdf_pages(paperless_doc: paperless.PaperlessDocument, pdf_data: io.BytesIO) -> tuple[list[Page], str | None]:
     pages: list[Page] = []
     error: str | None = None
 
     try:
-        with pdfplumber.open(await async_iter_to_bytes(get_pdf_data(paperless_id))) as pdf:
+        with pdfplumber.open(pdf_data) as pdf:
             for index, page in enumerate(pdf.pages):
                 runs: list[TextRun] = []
                 pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
@@ -192,11 +186,25 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                 indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
                 indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
                 pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
-            log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
+            log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_doc.id)
     except pdfminer.psparser.PSException as e:
         error = str(e)
         log.error('Error parsing "%s" (%i): %s', paperless_doc.title, paperless_doc.id, error)
-    
+
+    return pages, error
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client'], extra_cache_key_func=get_parsed_document_extra_cache_key_func) # TODO cache should consider last_modified time from paperless document # type: ignore
+async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
+    client = client or paperless.PaperlessClient()
+    correspondents_by_id = await client.correspondents_by_id
+    document_types_by_id = await client.document_types_by_id
+    paperless_doc = await client.get_document_by_id(paperless_id)
+
+    # Get pdf page data in thread because it might block the event loop
+    pdf_data = await async_iter_to_bytes(get_pdf_data(paperless_id))
+    pages, error = await asyncio.get_running_loop().run_in_executor(None, get_pdf_pages, paperless_doc, pdf_data)
+
     correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
     document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
     document = Document(
