@@ -78,10 +78,7 @@ async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperl
 async def get_documents_matching_pattern(pattern: Pattern, all_documents: bool = False) -> AsyncIterator[Document]:
     client = paperless.PaperlessClient()
 
-    import time
-
-    start_time = time.time()
-    # Find topmost correspondent and document checks and use them in paperless query.
+    # Find topmost correspondent and document type checks and use them in paperless query.
     # This reduces the number of results needing to be checked significantly in the most common case.
     correspondents, document_types = pattern.get_required_correspondents_and_document_types()
 
@@ -92,9 +89,6 @@ async def get_documents_matching_pattern(pattern: Pattern, all_documents: bool =
 
     async for doc in filter_documents_matching_pattern(paperless_docs, pattern, client):
         yield doc
-    end_time = time.time()
-
-    log.critical(f'get_docs_matching_pattern took {(end_time - start_time) * 1000} ms')
 
 
 lockfile_path = pathlib.Path('../data/state/processing.lock').resolve()
