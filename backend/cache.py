@@ -6,7 +6,8 @@ from functools import wraps, lru_cache
 import abc
 import sys
 import io
-
+import asyncio
+import functools
 import diskcache
 
 
@@ -25,6 +26,20 @@ CACHES = {
 }
 
 
+async def cache_get_async(cache: diskcache.Cache, key: str, read: bool = False):
+    loop = asyncio.get_running_loop()
+    future = loop.run_in_executor(None, functools.partial(cache.get, key, read=read))
+    result = await future
+    return result
+
+
+async def cache_set_async(cache: diskcache.Cache, key: str, value: bytes):
+    loop = asyncio.get_running_loop()
+    future = loop.run_in_executor(None, cache.set, key, value)
+    result = await future
+    return result
+
+
 ExtraCacheKeyFunc = Callable[..., Awaitable[tuple[Hashable, ...]]]
 
 
@@ -39,10 +54,8 @@ async def cache_key[P](args: tuple[Any, ...], kwargs: dict[str, Any], ignore_kwa
     extra_hash_key_values = (await extra_cache_key_func(*args, **kwargs)) if extra_cache_key_func else ()
 
     hash_int = hash((args, tuple(sorted(kw.items()))) + extra_hash_key_values)
-    # Ensure hash is positive because file names starting with '-' are inconvenient in the shell.
-    hash_int = hash_int % 2**sys.hash_info.width
+    hash_int = hash_int % 2**sys.hash_info.width # Make sure hash is positive number (for legacy reasons)
     return str(hash_int)
-
 
 
 class AsyncBaseCache[T](abc.ABC):
@@ -55,13 +68,13 @@ class AsyncBaseCache[T](abc.ABC):
         @wraps(f)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             key = await cache_key(args, kwargs, self.ignore_kwargs, self.extra_cache_key_func)
-            data = self.cache.get(key)
+            data = await cache_get_async(self.cache, key)
             if data is not None:
                 return await self.load_from_cache(data)
             else:
                 value = await f(*args, **kwargs)
                 data = await self.dump_to_cache(value)
-                self.cache.set(key, data)
+                await cache_set_async(self.cache, key, data)
                 return value
 
         return wrapper
@@ -107,7 +120,7 @@ class AsyncIterableBytesCache:
         @wraps(f)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[bytes]:
             key = await cache_key(args, kwargs, self.ignore_kwargs, self.extra_cache_key_func)
-            reader = self.cache.get(key, read=True)
+            reader = await cache_get_async(self.cache, key, read=True)
             if reader is not None:
                 while True:
                     chunk = reader.read(64000)
@@ -121,8 +134,8 @@ class AsyncIterableBytesCache:
                     data_bytes.write(chunk)
                     # also yield to caller
                     yield chunk
-                
-                self.cache.set(key, data_bytes.getvalue())
+
+                await cache_set_async(self.cache, key, data_bytes.getvalue())                
         return wrapper
 
 
