@@ -1,24 +1,23 @@
 import pathlib
 import pydantic
-from typing import Type, Any, NewType, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable, Hashable
+from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable
 import ryaml
 from functools import wraps, lru_cache
 import abc
-import sys
 import io
 import asyncio
 import functools
 import diskcache
 
 
-NoValueType = NewType('NoValueType', object)
-NO_VALUE: NoValueType = NoValueType(object())
+
+CacheKeyFunc = Callable[..., Awaitable[str]]
 
 P = ParamSpec('P')
 T = TypeVar('T')
 
-CACHE_PATH = pathlib.Path('../data/cache').resolve()
 
+CACHE_PATH = pathlib.Path('../data/cache').resolve()
 
 CACHES = {
     'pdf_page_svg': diskcache.Cache(CACHE_PATH / 'pdf_page_svg', size_limit=500_000_000),
@@ -40,34 +39,20 @@ async def cache_set_async(cache: diskcache.Cache, key: str, value: bytes):
     return result
 
 
-ExtraCacheKeyFunc = Callable[..., Awaitable[tuple[Hashable, ...]]]
-
-
-async def cache_key[P](args: tuple[Any, ...], kwargs: dict[str, Any], ignore_kwargs: list[str] | None = None, extra_cache_key_func: ExtraCacheKeyFunc | None = None) -> str:
-    kw = dict(kwargs)
-    for ignore_kw in ignore_kwargs or []:
-        kw.pop(ignore_kw, None)
-
-    # TODO ensure all args and remaining kw args have stable hash codes...
-    # print((args, tuple(kw.items())))
-    
-    extra_hash_key_values = (await extra_cache_key_func(*args, **kwargs)) if extra_cache_key_func else ()
-
-    hash_int = hash((args, tuple(sorted(kw.items()))) + extra_hash_key_values)
-    hash_int = hash_int % 2**sys.hash_info.width # Make sure hash is positive number (for legacy reasons)
+async def base_cache_key_func(*args: Any, **kwargs: dict[str, Any]) -> str:
+    hash_int = hash((args, tuple(sorted(kwargs.items()))))
     return str(hash_int)
 
 
 class AsyncBaseCache[T](abc.ABC):
-    def __init__(self, cache_id: str, ignore_kwargs: list[str] | None = None, extra_cache_key_func: ExtraCacheKeyFunc | None = None):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None):
         self.cache = CACHES[cache_id]
-        self.ignore_kwargs = ignore_kwargs
-        self.extra_cache_key_func = extra_cache_key_func
+        self.cache_key_func = cache_key_func or base_cache_key_func
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            key = await cache_key(args, kwargs, self.ignore_kwargs, self.extra_cache_key_func)
+            key = await self.cache_key_func(*args, **kwargs)
             data = await cache_get_async(self.cache, key)
             if data is not None:
                 return await self.load_from_cache(data)
@@ -97,8 +82,8 @@ def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
 
 
 class pydantic_yaml_cache(AsyncBaseCache[PT]):
-    def __init__(self, Model: Type[PT], cache_name: str, ignore_kwargs: list[str] | None = None, extra_cache_key_func: ExtraCacheKeyFunc | None = None):
-        super().__init__(cache_name, ignore_kwargs=ignore_kwargs, extra_cache_key_func=extra_cache_key_func)
+    def __init__(self, Model: Type[PT], cache_name: str, cache_key_func: CacheKeyFunc | None = None):
+        super().__init__(cache_name, cache_key_func=cache_key_func)
         self.Model = Model
 
     async def load_from_cache(self, data: bytes) -> PT:
@@ -110,16 +95,14 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
 
 
 class AsyncIterableBytesCache:
-
-    def __init__(self, cache_id: str, ignore_kwargs: list[str] | None = None, extra_cache_key_func: ExtraCacheKeyFunc | None = None):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None):
         self.cache = CACHES[cache_id]
-        self.ignore_kwargs = ignore_kwargs
-        self.extra_cache_key_func = extra_cache_key_func
+        self.cache_key_func = cache_key_func or base_cache_key_func
 
     def __call__(self, f: Callable[P, AsyncIterable[bytes]]) -> Callable[P, AsyncIterable[bytes]]:
         @wraps(f)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[bytes]:
-            key = await cache_key(args, kwargs, self.ignore_kwargs, self.extra_cache_key_func)
+            key = await self.cache_key_func(*args, **kwargs)
             reader = await cache_get_async(self.cache, key, read=True)
             if reader is not None:
                 while True:

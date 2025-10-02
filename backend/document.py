@@ -165,11 +165,6 @@ X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
 
-async def get_parsed_document_extra_cache_key_func(paperless_id: int, client: paperless.PaperlessClient | None = None) -> tuple[Hashable, ...]:
-    client = client or paperless.PaperlessClient()
-    return (await client.get_document_modified_date(paperless_id),)
-
-
 def get_pdf_pages(paperless_doc: paperless.PaperlessDocument, pdf_data: io.BytesIO) -> tuple[list[Page], str | None]:
     pages: list[Page] = []
     error: str | None = None
@@ -194,7 +189,12 @@ def get_pdf_pages(paperless_doc: paperless.PaperlessDocument, pdf_data: io.Bytes
     return pages, error
 
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client'], extra_cache_key_func=get_parsed_document_extra_cache_key_func) # TODO cache should consider last_modified time from paperless document # type: ignore
+async def get_parsed_document_cache_key_func(paperless_id: int, client: paperless.PaperlessClient | None = None) -> str:
+    client = client or paperless.PaperlessClient()
+    return await cache.base_cache_key_func(paperless_id) + '-' + str(await client.get_document_modified_date(paperless_id))
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', cache_key_func=get_parsed_document_cache_key_func)
 async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
     client = client or paperless.PaperlessClient()
     correspondents_by_id = await client.correspondents_by_id
@@ -221,12 +221,21 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     return document
 
 
-async def get_page_svg_document_modified_date(paperless_id: int, page_nr: int) -> tuple[Hashable, ...]:
+async def get_parsed_document_for_paperless_document_cache_key_func(paperless_doc: paperless.PaperlessDocument, client: paperless.PaperlessClient | None = None) -> str:
+    return await cache.base_cache_key_func(paperless_doc.id) + '-' + str(paperless_doc.modified)
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', cache_key_func=get_parsed_document_for_paperless_document_cache_key_func)
+async def get_parsed_document_for_paperless_document(paperless_doc: paperless.PaperlessDocument, *, client: paperless.PaperlessClient | None = None) -> Document:
+    return await get_parsed_document(paperless_id=paperless_doc.id, client=client)
+
+
+async def get_page_svg_cache_key_func(paperless_id: int, page_nr: int) -> str:
     client = paperless.PaperlessClient()
-    return (await client.get_document_modified_date(paperless_id), )
+    return await cache.base_cache_key_func(paperless_id, page_nr) + '-' + str(await client.get_document_modified_date(paperless_id))
 
 
-@cache.stream_cache('pdf_page_svg', extra_cache_key_func=get_page_svg_document_modified_date) # type: ignore
+@cache.stream_cache('pdf_page_svg', cache_key_func=get_page_svg_cache_key_func) # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> AsyncIterable[bytes]:
     proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
     assert proc.stdout is not None
