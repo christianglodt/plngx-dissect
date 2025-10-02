@@ -218,7 +218,7 @@ async def get_page_svg_document_modified_date(paperless_id: int, page_nr: int) -
     return (await client.get_document_modified_date(paperless_id), )
 
 
-@cache.stream_cache('pdf_page_svg', '.svg', extra_cache_key_func=get_page_svg_document_modified_date) # type: ignore
+@cache.stream_cache('pdf_page_svg', extra_cache_key_func=get_page_svg_document_modified_date) # type: ignore
 async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> AsyncIterable[bytes]:
     proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
     assert proc.stdout is not None
