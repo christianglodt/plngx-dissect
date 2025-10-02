@@ -56,6 +56,7 @@ def value_to_paperless(data_type: PaperlessDataType, value: PaperlessCustomField
             return str(value)
         case 'url':
             try:
+                assert isinstance(value, str)
                 pydantic.AnyHttpUrl(value)
                 return str(value)
             except pydantic.ValidationError as e:
