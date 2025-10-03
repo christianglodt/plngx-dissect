@@ -103,7 +103,7 @@ def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
     return Model.model_validate(ryaml.loads(s.decode('utf-8')))
 
 
-class pydantic_yaml_cache(AsyncBaseCache[PT]):
+class pydantic_yaml_cache(AsyncBytesCache[PT]):
     def __init__(self, Model: Type[PT], cache_name: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
         super().__init__(cache_name, cache_key_func=cache_key_func)
         self.Model = Model
