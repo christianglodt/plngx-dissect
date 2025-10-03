@@ -32,9 +32,9 @@ async def cache_get_async(cache: diskcache.Cache, key: str, read: bool = False):
     return result
 
 
-async def cache_set_async(cache: diskcache.Cache, key: str, value: bytes):
+async def cache_set_async(cache: diskcache.Cache, key: str, value: bytes, expire: float | None):
     loop = asyncio.get_running_loop()
-    future = loop.run_in_executor(None, cache.set, key, value)
+    future = loop.run_in_executor(None, functools.partial(cache.set, key, value, expire=expire))
     result = await future
     return result
 
@@ -45,9 +45,10 @@ async def base_cache_key_func(*args: Any, **kwargs: dict[str, Any]) -> str:
 
 
 class AsyncBaseCache[T](abc.ABC):
-    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
         self.cache = CACHES[cache_id]
         self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
@@ -59,7 +60,7 @@ class AsyncBaseCache[T](abc.ABC):
             else:
                 value = await f(*args, **kwargs)
                 data = await self.dump_to_cache(value)
-                await cache_set_async(self.cache, key, data)
+                await cache_set_async(self.cache, key, data, self.expire)
                 return value
 
         return wrapper
@@ -82,7 +83,7 @@ def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
 
 
 class pydantic_yaml_cache(AsyncBaseCache[PT]):
-    def __init__(self, Model: Type[PT], cache_name: str, cache_key_func: CacheKeyFunc | None = None):
+    def __init__(self, Model: Type[PT], cache_name: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
         super().__init__(cache_name, cache_key_func=cache_key_func)
         self.Model = Model
 
@@ -95,9 +96,10 @@ class pydantic_yaml_cache(AsyncBaseCache[PT]):
 
 
 class AsyncIterableBytesCache:
-    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
         self.cache = CACHES[cache_id]
         self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
 
     def __call__(self, f: Callable[P, AsyncIterable[bytes]]) -> Callable[P, AsyncIterable[bytes]]:
         @wraps(f)
@@ -118,7 +120,7 @@ class AsyncIterableBytesCache:
                     # also yield to caller
                     yield chunk
 
-                await cache_set_async(self.cache, key, data_bytes.getvalue())                
+                await cache_set_async(self.cache, key, data_bytes.getvalue(), self.expire)
         return wrapper
 
 
