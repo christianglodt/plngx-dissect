@@ -12,6 +12,7 @@ import asyncio
 import logging
 import re
 from contextlib import asynccontextmanager
+import cache
 
 dotenv.load_dotenv('../.env')
 
@@ -327,8 +328,6 @@ class PaperlessClient:
         log.debug(f'Retrieved storage paths from Paperless')
         return res
 
-    # Url to find last modified document: /api/documents/?ordering=-modified&fields=modified,id&page_size=1
-
     async def get_document_by_id(self, document_id: int) -> PaperlessDocument:
         url = f'{self.base_url}/api/documents/{document_id}/'
         async with self._get(url) as response:
@@ -338,6 +337,19 @@ class PaperlessClient:
         async with self._put(f'{self.base_url}/api/documents/{document.id}/', document):
             return
 
+
+    async def get_paperless_last_modified(self) -> pydantic.AwareDatetime | None:
+        async for doc in self._iter_paginated_results(f'{self.base_url}/api/documents/?ordering=-modified&fields=modified,id&page_size=1', PaperlessDocumentModificationDatetime):
+            return doc.modified
+
+    
+    async def get_documents_with_tags_cache_key_func(self, required_tags: Collection[str], excluded_tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> str:
+        args_key = await cache.base_cache_key_func(tuple(required_tags), tuple(excluded_tags), correspondents=tuple(correspondents), document_types=tuple(document_types))
+        last_modified = await self.get_paperless_last_modified()
+        return f'get_documents_with_tags-{args_key}-{last_modified}'
+
+
+    @cache.AsyncIterableCache[PaperlessDocument]('paperless_data', cache_key_func=get_documents_with_tags_cache_key_func, expire=30 * 60)
     async def get_documents_with_tags(self, required_tags: Collection[str], excluded_tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> AsyncIterator[PaperlessDocument]:
         tags_by_name = await self.tags_by_name
         try:
