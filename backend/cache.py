@@ -21,7 +21,8 @@ CACHE_PATH = pathlib.Path('../data/cache').resolve()
 
 CACHES = {
     'pdf_page_svg': diskcache.Cache(CACHE_PATH / 'pdf_page_svg', size_limit=500_000_000),
-    'parsed_document': diskcache.Cache(CACHE_PATH / 'parsed_document', size_limit=500_000_000)
+    'parsed_document': diskcache.Cache(CACHE_PATH / 'parsed_document', size_limit=500_000_000),
+    'paperless_data': diskcache.Cache(CACHE_PATH / 'paperless_data', size_limit=50_000_000)
 }
 
 
