@@ -125,3 +125,30 @@ class AsyncIterableBytesCache:
 
 
 stream_cache = AsyncIterableBytesCache
+
+
+class AsyncIterableCache[T]:
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
+
+    def __call__(self, f: Callable[P, AsyncIterable[T]]) -> Callable[P, AsyncIterable[T]]:
+        @wraps(f)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[T]:
+            key = await self.cache_key_func(*args, **kwargs)
+            values: list[T] | None = await cache_get_async(self.cache, key)
+            if values is not None:
+                print(f'miss on {key}')
+                for value in values:
+                    yield value
+            else:
+                print(f'hit on {key}')
+                values = []
+                async for value in f(*args, **kwargs):
+                    values.append(value)
+                    # also yield to caller
+                    yield value
+
+                await cache_set_async(self.cache, key, values, self.expire)
+        return wrapper
