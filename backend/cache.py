@@ -44,7 +44,28 @@ async def base_cache_key_func(*args: Hashable, **kwargs: Hashable) -> str:
     return str(hash_int)
 
 
-class AsyncBaseCache[T](abc.ABC):
+class AsyncCache[T](abc.ABC):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
+
+    def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+        @wraps(f)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            key = await self.cache_key_func(*args, **kwargs)
+            data = await cache_get_async(self.cache, key)
+            if data is not None:
+                return data
+            else:
+                value = await f(*args, **kwargs)
+                await cache_set_async(self.cache, key, value, self.expire)
+                return value
+
+        return wrapper
+
+
+class AsyncBytesCache[T](abc.ABC):
     def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
         self.cache = CACHES[cache_id]
         self.cache_key_func = cache_key_func or base_cache_key_func
