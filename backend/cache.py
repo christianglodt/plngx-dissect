@@ -1,6 +1,6 @@
 import pathlib
 import pydantic
-from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable
+from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable, Hashable
 import ryaml
 from functools import wraps, lru_cache
 import abc
@@ -25,21 +25,21 @@ CACHES = {
 }
 
 
-async def cache_get_async(cache: diskcache.Cache, key: str, read: bool = False):
+async def cache_get_async(cache: diskcache.Cache, key: str, read: bool = False) -> Any:
     loop = asyncio.get_running_loop()
     future = loop.run_in_executor(None, functools.partial(cache.get, key, read=read))
     result = await future
     return result
 
 
-async def cache_set_async(cache: diskcache.Cache, key: str, value: bytes, expire: float | None):
+async def cache_set_async(cache: diskcache.Cache, key: str, value: Any, expire: float | None):
     loop = asyncio.get_running_loop()
     future = loop.run_in_executor(None, functools.partial(cache.set, key, value, expire=expire))
     result = await future
     return result
 
 
-async def base_cache_key_func(*args: Any, **kwargs: dict[str, Any]) -> str:
+async def base_cache_key_func(*args: Hashable, **kwargs: Hashable) -> str:
     hash_int = hash((args, tuple(sorted(kwargs.items()))))
     return str(hash_int)
 
