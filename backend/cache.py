@@ -115,7 +115,7 @@ class AsyncIterableBytesCache:
             else:
                 data_bytes = io.BytesIO()
                 async for chunk in f(*args, **kwargs):
-                    # write to cache file
+                    # write to cache file buffer
                     data_bytes.write(chunk)
                     # also yield to caller
                     yield chunk
