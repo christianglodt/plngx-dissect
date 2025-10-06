@@ -132,8 +132,6 @@ async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool
     # FastAPI will use the serializer for the declared return type (DocumentBase), not the one
     # for the actual type (Document). We rely on this to omit the bulky page data from this endpoint.
     MAX_RESULTS = 50
-    import time
-    s = time.time()
 
     res: list[document.DocumentBase] = []
     async for d in matching.get_documents_matching_pattern(p, all_documents=all_documents):
@@ -141,8 +139,6 @@ async def get_documents_matching_pattern(p: pattern.Pattern, all_documents: bool
 
         if len(res) == MAX_RESULTS:
             break
-    e = time.time()
-    log.critical(f'Got docs in {(e-s) * 1000} ms')
     return res
 
 
