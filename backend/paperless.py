@@ -338,15 +338,16 @@ class PaperlessClient:
             return
 
 
-    async def get_paperless_last_modified(self) -> pydantic.AwareDatetime | None:
+    async def get_paperless_last_modified(self) -> tuple[int, pydantic.AwareDatetime] | tuple[None, None]:
         async for doc in self._iter_paginated_results(f'{self.base_url}/api/documents/?ordering=-modified&fields=modified,id&page_size=1', PaperlessDocumentModificationDatetime):
-            return doc.modified
+            return (doc.id, doc.modified)
+        return (None, None)
 
     
     async def get_documents_with_tags_cache_key_func(self, required_tags: Collection[str], excluded_tags: Collection[str], correspondents: Collection[str] = [], document_types: Collection[str] = []) -> str:
         args_key = await cache.base_cache_key_func(tuple(required_tags), tuple(excluded_tags), correspondents=tuple(correspondents), document_types=tuple(document_types))
-        last_modified = await self.get_paperless_last_modified()
-        return f'get_documents_with_tags-{args_key}-{last_modified}'
+        last_modified_id, last_modified_dt = await self.get_paperless_last_modified()
+        return f'get_documents_with_tags-{args_key}-{last_modified_id}-{last_modified_dt}'
 
 
     @cache.AsyncIterableCache[PaperlessDocument]('paperless_data', cache_key_func=get_documents_with_tags_cache_key_func, expire=30 * 60)
