@@ -161,11 +161,9 @@ class AsyncIterableCache[T]:
             key = await self.cache_key_func(*args, **kwargs)
             values: list[T] | None = await cache_get_async(self.cache, key)
             if values is not None:
-                print(f'miss on {key}')
                 for value in values:
                     yield value
             else:
-                print(f'hit on {key}')
                 values = []
                 async for value in f(*args, **kwargs):
                     values.append(value)
