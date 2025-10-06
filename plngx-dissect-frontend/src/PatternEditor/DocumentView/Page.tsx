@@ -13,7 +13,7 @@ const Page = () => {
     const { pattern, document, pageNr, onPatternChange } = useContext(PatternEditorContext);
     const { ref: boundingNode, width = 1, height = 1 } = useResizeObserver<HTMLDivElement>();
 
-    if (document == null || pageNr == null) {
+    if (document == null || pageNr == null || document.pages[pageNr] == undefined) {
         return <></>;
     }
 

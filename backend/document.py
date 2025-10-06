@@ -9,7 +9,7 @@ import cache
 import logging
 import bisect
 import io
-from typing import AsyncIterator, Literal, cast
+from typing import AsyncIterable, AsyncIterator, Literal, cast, Hashable
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
@@ -164,18 +164,13 @@ async def async_iter_to_bytes(i: AsyncIterator[bytes]) -> io.BytesIO:
 X_TOLERANCE: Pt = Pt(6)
 Y_TOLERANCE: Pt = Pt(3)
 
-@cache.pydantic_yaml_cache(Document, 'parsed_document', ignore_kwargs=['client']) # TODO cache should consider last_modified time from paperless document # type: ignore
-async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
-    client = client or paperless.PaperlessClient()
-    correspondents_by_id = await client.correspondents_by_id
-    document_types_by_id = await client.document_types_by_id
-    paperless_doc = await client.get_document_by_id(paperless_id)
 
+def get_pdf_pages(paperless_doc: paperless.PaperlessDocument, pdf_data: io.BytesIO) -> tuple[list[Page], str | None]:
     pages: list[Page] = []
     error: str | None = None
 
     try:
-        with pdfplumber.open(await async_iter_to_bytes(get_pdf_data(paperless_id))) as pdf:
+        with pdfplumber.open(pdf_data) as pdf:
             for index, page in enumerate(pdf.pages):
                 runs: list[TextRun] = []
                 pdfplumber_text_runs = page.extract_words(keep_blank_chars=False, x_tolerance=int(X_TOLERANCE), y_tolerance=int(Y_TOLERANCE), use_text_flow=False)
@@ -186,11 +181,30 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
                 indexes_by_x2 = sorted(list(range(len(runs))), key=lambda i: runs[i].x2)
                 indexes_by_y2 = sorted(list(range(len(runs))), key=lambda i: runs[i].y2)
                 pages.append(Page(page_nr=index, text_runs=runs, width=page.width, height=page.height, text_run_indexes_ordered_by_x=indexes_by_x, text_run_indexes_ordered_by_y=indexes_by_y, text_run_indexes_ordered_by_x2=indexes_by_x2, text_run_indexes_ordered_by_y2=indexes_by_y2))
-            log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_id)
+            log.info('Parsed "%s" (%i)', paperless_doc.title, paperless_doc.id)
     except pdfminer.psparser.PSException as e:
         error = str(e)
         log.error('Error parsing "%s" (%i): %s', paperless_doc.title, paperless_doc.id, error)
-    
+
+    return pages, error
+
+
+async def get_parsed_document_cache_key_func(paperless_id: int, client: paperless.PaperlessClient | None = None) -> str:
+    client = client or paperless.PaperlessClient()
+    return await cache.base_cache_key_func(paperless_id) + '-' + str(await client.get_document_modified_date(paperless_id))
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', cache_key_func=get_parsed_document_cache_key_func)
+async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessClient | None = None) -> Document:
+    client = client or paperless.PaperlessClient()
+    correspondents_by_id = await client.correspondents_by_id
+    document_types_by_id = await client.document_types_by_id
+    paperless_doc = await client.get_document_by_id(paperless_id)
+
+    # Get pdf page data in thread because it might block the event loop
+    pdf_data = await async_iter_to_bytes(get_pdf_data(paperless_id))
+    pages, error = await asyncio.get_running_loop().run_in_executor(None, get_pdf_pages, paperless_doc, pdf_data)
+
     correspondent = correspondents_by_id[paperless_doc.correspondent].name if paperless_doc.correspondent else None
     document_type = document_types_by_id[paperless_doc.document_type].name if paperless_doc.document_type else None
     document = Document(
@@ -207,16 +221,42 @@ async def get_parsed_document(paperless_id: int, *, client: paperless.PaperlessC
     return document
 
 
-# TODO turn this into an AsyncIterator[bytes], however the cache then
-# needs to return the same (iterating over cache file chunks).
-@cache.file_cache('pdf_page_svg', '.svg') # type: ignore
-async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> bytes:
+async def get_parsed_document_for_paperless_document_cache_key_func(paperless_doc: paperless.PaperlessDocument, client: paperless.PaperlessClient | None = None) -> str:
+    return await cache.base_cache_key_func(paperless_doc.id) + '-' + str(paperless_doc.modified)
+
+
+@cache.pydantic_yaml_cache(Document, 'parsed_document', cache_key_func=get_parsed_document_for_paperless_document_cache_key_func)
+async def get_parsed_document_for_paperless_document(paperless_doc: paperless.PaperlessDocument, *, client: paperless.PaperlessClient | None = None) -> Document:
+    return await get_parsed_document(paperless_id=paperless_doc.id, client=client)
+
+
+async def get_page_svg_cache_key_func(paperless_id: int, page_nr: int) -> str:
+    client = paperless.PaperlessClient()
+    return await cache.base_cache_key_func(paperless_id, page_nr) + '-' + str(await client.get_document_modified_date(paperless_id))
+
+
+@cache.stream_cache('pdf_page_svg', cache_key_func=get_page_svg_cache_key_func) # type: ignore
+async def get_pdf_page_svg(paperless_id: int, page_nr: int) -> AsyncIterable[bytes]:
     proc = await asyncio.create_subprocess_exec('/usr/bin/pdftocairo', '-svg', '-f', str(page_nr + 1), '-l', str(page_nr + 1), '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
-    assert proc.stdin is not None
+    assert proc.stdout is not None
 
-    async for chunk in get_pdf_data(paperless_id):
-        proc.stdin.write(chunk) 
-        await proc.stdin.drain()
+    async def feed_input():
+        assert proc.stdin is not None
+        async for chunk in get_pdf_data(paperless_id):
+            proc.stdin.write(chunk)
+            await proc.stdin.drain()
+        proc.stdin.close()
+        await proc.stdin.wait_closed()
 
-    stdout, _ = await proc.communicate()
-    return stdout
+    # Start feeding in the background
+    feeder = asyncio.create_task(feed_input())
+
+    try:
+        while True:
+            chunk = await proc.stdout.read(65536)
+            if not chunk:
+                break
+            yield chunk
+    finally:
+        await feeder
+        await proc.wait()

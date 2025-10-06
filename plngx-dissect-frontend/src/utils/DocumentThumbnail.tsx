@@ -23,7 +23,7 @@ const DocumentThumbnail = (props: DocumentThumbnailProps) => {
                 <CircularProgress/>
             </Box>
             }
-            <img src={`${PATH_PREFIX}/api/document/${docId}/svg`} width="50px" style={{ backgroundColor: 'white', display: 'block', opacity: loaded ? 1 : 0 }} onLoad={onImageLoaded}/>
+            <img src={`${PATH_PREFIX}/api/document/${docId}/svg`} width="50px" style={{ backgroundColor: 'white', display: 'block', opacity: loaded ? 1 : 0 }} onLoad={onImageLoaded} loading="lazy"/>
         </div>
     );
 };

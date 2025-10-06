@@ -1,78 +1,99 @@
 import pathlib
 import pydantic
-from typing import Type, Any, NewType, Callable, ParamSpec, Awaitable, cast, TypeVar
+from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable, Hashable
 import ryaml
 from functools import wraps, lru_cache
-import aiofiles
-import aiofiles.os
-from aiofile import async_open
 import abc
-import sys
+import io
+import asyncio
+import functools
+import diskcache
 
 
-NoValueType = NewType('NoValueType', object)
-NO_VALUE: NoValueType = NoValueType(object())
+
+CacheKeyFunc = Callable[..., Awaitable[str]]
 
 P = ParamSpec('P')
 T = TypeVar('T')
 
+
 CACHE_PATH = pathlib.Path('../data/cache').resolve()
 
-class AsyncBaseCache[T](abc.ABC):
-    def __init__(self, cache_name: str, extension: str = '', ignore_kwargs: list[str] | None = None):
-        self.cache_name = cache_name
-        self.extension = extension
-        self.ignore_kwargs = ignore_kwargs
-        self.cache_dir = CACHE_PATH / cache_name
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+CACHES = {
+    'pdf_page_svg': diskcache.Cache(CACHE_PATH / 'pdf_page_svg', size_limit=500_000_000),
+    'parsed_document': diskcache.Cache(CACHE_PATH / 'parsed_document', size_limit=500_000_000),
+    'paperless_data': diskcache.Cache(CACHE_PATH / 'paperless_data', size_limit=50_000_000)
+}
+
+
+async def cache_get_async(cache: diskcache.Cache, key: str, read: bool = False) -> Any:
+    loop = asyncio.get_running_loop()
+    future = loop.run_in_executor(None, functools.partial(cache.get, key, read=read))
+    result = await future
+    return result
+
+
+async def cache_set_async(cache: diskcache.Cache, key: str, value: Any, expire: float | None):
+    loop = asyncio.get_running_loop()
+    future = loop.run_in_executor(None, functools.partial(cache.set, key, value, expire=expire))
+    result = await future
+    return result
+
+
+async def base_cache_key_func(*args: Hashable, **kwargs: Hashable) -> str:
+    hash_int = hash((args, tuple(sorted(kwargs.items()))))
+    return str(hash_int)
+
+
+class AsyncCache[T](abc.ABC):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            key = self.cache_key(args, kwargs)
-            cached_value = await self.get_cache_value(key)
-            if cached_value != NO_VALUE:
-                return cast(T, cached_value)
-            
-            value = await f(*args, **kwargs)
-            await self.set_cache_value(key, value)
+            key = await self.cache_key_func(*args, **kwargs)
+            data = await cache_get_async(self.cache, key)
+            if data is not None:
+                return data
+            else:
+                value = await f(*args, **kwargs)
+                await cache_set_async(self.cache, key, value, self.expire)
+                return value
 
-            return value
         return wrapper
 
-    def cache_key(self, args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
-        kw = dict(kwargs)
-        for ignore_kw in self.ignore_kwargs or []:
-            kw.pop(ignore_kw, None)
 
-        # TODO ensure all args and remaining kw args have stable hash codes...
-        # print((args, tuple(kw.items())))
-        
-        hash_int = hash((args, tuple(sorted(kw.items()))))
-        # Ensure hash is positive because file names starting with '-' are inconvenient in the shell.
-        hash_int = hash_int % 2**sys.hash_info.width
-        return str(hash_int)
+class AsyncBytesCache[T](abc.ABC):
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
+
+    def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+        @wraps(f)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            key = await self.cache_key_func(*args, **kwargs)
+            data = await cache_get_async(self.cache, key)
+            if data is not None:
+                return await self.load_from_cache(data)
+            else:
+                value = await f(*args, **kwargs)
+                data = await self.dump_to_cache(value)
+                await cache_set_async(self.cache, key, data, self.expire)
+                return value
+
+        return wrapper
 
     @abc.abstractmethod
-    def load(self, data: bytes) -> T:
+    async def load_from_cache(self, data: bytes) -> T:
         raise NotImplementedError
     
     @abc.abstractmethod
-    def dump(self, value: T) -> bytes:
+    async def dump_to_cache(self, value: T) -> bytes:
         raise NotImplementedError
-
-    async def get_cache_value(self, key: str) -> T | NoValueType:
-        try:
-            async with async_open((self.cache_dir / key).with_suffix(self.extension), mode='rb') as f:
-                return self.load(await f.read())
-        except FileNotFoundError:
-            return NO_VALUE
-
-    async def set_cache_value(self, key: str, obj: T):
-        async with aiofiles.tempfile.NamedTemporaryFile('wb', prefix=f'f{self.cache_name}-{key}', dir=self.cache_dir) as f:
-            await f.write(self.dump(obj))
-            # atomically rename-into-place
-            await aiofiles.os.rename(str(f.name), (self.cache_dir / key).with_suffix(self.extension))
 
 
 PT = TypeVar('PT', bound=pydantic.BaseModel)
@@ -83,21 +104,71 @@ def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
     return Model.model_validate(ryaml.loads(s.decode('utf-8')))
 
 
-class pydantic_yaml_cache(AsyncBaseCache[PT]):
-    def __init__(self, Model: Type[PT], cache_name: str, ignore_kwargs: list[str] | None = None):
-        super().__init__(cache_name, '.yml', ignore_kwargs=ignore_kwargs)
+class pydantic_yaml_cache(AsyncBytesCache[PT]):
+    def __init__(self, Model: Type[PT], cache_name: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        super().__init__(cache_name, cache_key_func=cache_key_func)
         self.Model = Model
 
-    def load(self, data: bytes) -> PT:
-        return parse_yaml_and_validate_model(self.Model, data) # type: ignore # ignore typing problem caused by lru_cache
+    async def load_from_cache(self, data: bytes) -> PT:
+        return parse_yaml_and_validate_model(self.Model, data)
 
-    def dump(self, value: PT) -> bytes:
+    async def dump_to_cache(self, value: PT) -> bytes:
         s = ryaml.dumps(value.model_dump(mode='json'))
         return s.encode('utf-8')
 
 
-class file_cache(AsyncBaseCache[bytes]):
-    def load(self, data: bytes) -> bytes:
-        return data
-    def dump(self, value: bytes) -> bytes:
-        return value
+class AsyncIterableBytesCache:
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
+
+    def __call__(self, f: Callable[P, AsyncIterable[bytes]]) -> Callable[P, AsyncIterable[bytes]]:
+        @wraps(f)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[bytes]:
+            key = await self.cache_key_func(*args, **kwargs)
+            reader = await cache_get_async(self.cache, key, read=True)
+            if reader is not None:
+                while True:
+                    chunk = reader.read(64000)
+                    if not chunk:
+                        break
+                    yield chunk
+            else:
+                data_bytes = io.BytesIO()
+                async for chunk in f(*args, **kwargs):
+                    # write to cache file buffer
+                    data_bytes.write(chunk)
+                    # also yield to caller
+                    yield chunk
+
+                await cache_set_async(self.cache, key, data_bytes.getvalue(), self.expire)
+        return wrapper
+
+
+stream_cache = AsyncIterableBytesCache
+
+
+class AsyncIterableCache[T]:
+    def __init__(self, cache_id: str, cache_key_func: CacheKeyFunc | None = None, expire: float | None = None):
+        self.cache = CACHES[cache_id]
+        self.cache_key_func = cache_key_func or base_cache_key_func
+        self.expire = expire
+
+    def __call__(self, f: Callable[P, AsyncIterable[T]]) -> Callable[P, AsyncIterable[T]]:
+        @wraps(f)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[T]:
+            key = await self.cache_key_func(*args, **kwargs)
+            values: list[T] | None = await cache_get_async(self.cache, key)
+            if values is not None:
+                for value in values:
+                    yield value
+            else:
+                values = []
+                async for value in f(*args, **kwargs):
+                    values.append(value)
+                    # also yield to caller
+                    yield value
+
+                await cache_set_async(self.cache, key, values, self.expire)
+        return wrapper

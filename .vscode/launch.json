@@ -12,6 +12,7 @@
             "name": "backend (uvicorn)",
             "request": "launch",
             "type": "debugpy",
+            "justMyCode": false,
             "python": "${workspaceFolder}/backend/.venv/bin/python",
             "program": "${workspaceFolder}/backend/.venv/bin/uvicorn",
             "cwd": "${workspaceFolder}/backend",
