@@ -10,4 +10,4 @@ Dockerfile
 .env
 .env.tmpl
 .dockerignore
-.venv
+backend/.venv
