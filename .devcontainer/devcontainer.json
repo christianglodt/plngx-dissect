@@ -17,7 +17,7 @@
 		"POST_PROCESS_DONT_SAVE": "True"
 	},
 
-	"initializeCommand": "mkdir -p config cache plngx-dissect-frontend/dist",
+	"initializeCommand": "mkdir -p plngx-dissect-frontend/dist",
 
 	"postCreateCommand": ".devcontainer/post-create.sh",
 
