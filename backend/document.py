@@ -9,6 +9,7 @@ import cache
 import logging
 import bisect
 import io
+import os
 from typing import AsyncIterable, AsyncIterator, Literal, cast, TYPE_CHECKING
 
 
@@ -160,7 +161,9 @@ async def get_pdf_data(paperless_id: int, preprocess: 'PreprocessType') -> Async
                 yield data
         elif preprocess == 'force-ocr':
             log.info(f'Preprocessing document {paperless_id} using ocrmypdf')
-            proc = await asyncio.subprocess.create_subprocess_exec('ocrmypdf', '-f', '--output-type', 'pdf', '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
+
+            ocrmypdf_langs = os.environ.get('OCR_LANGUAGES', 'eng')
+            proc = await asyncio.subprocess.create_subprocess_exec('ocrmypdf', '-l', ocrmypdf_langs, '-f', '--output-type', 'pdf', '-', '-', stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
             assert proc.stdout is not None
 
             async def feed_input():
