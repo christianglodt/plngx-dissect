@@ -164,6 +164,7 @@ class PatternEvaluationResult(pydantic.BaseModel):
 
 class Pattern(pydantic.BaseModel):
     name: str
+    preprocess: None | Literal['force-ocr'] = None
     checks: list[AnyCheck]
     regions: list[region.Region]
     fields: list[field.Field]

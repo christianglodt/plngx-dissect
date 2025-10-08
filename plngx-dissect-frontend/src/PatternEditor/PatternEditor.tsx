@@ -1,6 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDeletePatternMutation, useDocument, usePattern, usePatternEvaluationResult, useProcessDocumentWithPatternMutation, useSavePatternMutation } from "../hooks";
-import { Alert, AlertTitle, Box, Button, LinearProgress, Stack } from "@mui/material";
+import { Alert, AlertTitle, Box, Button, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksSidebar/ChecksCard";
 import DocumentsCard from "./DocumentsSidebar/DocumentsCard";
@@ -8,11 +8,12 @@ import RegionsCard from "./RegionsSidebar/RegionsCard";
 import FieldsCard from "./FieldsSidebar/FieldsCard";
 import DocumentView from "./DocumentView/DocumentView";
 import { useState } from "react";
-import { Pattern } from "../types";
+import { Pattern, PreprocessType } from "../types";
 import PortalBox from "../utils/PortalBox";
 import ConfirmButton from "../utils/ConfirmButton";
 import RenamePatternButton from "./RenamePatternButton";
 import { PatternEditorContext, PatternEditorContextType } from "./PatternEditorContext";
+import { produce } from "immer";
 
 
 const PatternEditor = () => {
@@ -64,6 +65,13 @@ const PatternEditor = () => {
         setModifiedPattern(newPattern);
     }
 
+    const onPreprocessChange = (newValue: PreprocessType) => {
+        const newPattern = produce(pattern, draft => {
+            draft.preprocess = newValue;
+        });
+        onChange(newPattern);
+    }
+
     const onSaveClicked = () => {
         savePatternMutation.mutate(pattern!, {
             onSuccess: () => {
@@ -97,6 +105,13 @@ const PatternEditor = () => {
         <PatternEditorContext.Provider value={contextValue}>
             <PortalBox>
                 <Stack direction="row" gap={2}>
+                    <FormControl size="small" sx={{ minWidth: '200px' }}>
+                        <InputLabel id="preprocess-select-label">Preprocess</InputLabel>
+                        <Select id="preprocess-select" labelId="preprocess-select-label" label="Preprocess" value={pattern.preprocess} onChange={event => onPreprocessChange(event.target.value)}>
+                            <MenuItem value="">No preprocessing</MenuItem>
+                            <MenuItem value="force-ocr">Force OCR</MenuItem>
+                        </Select>
+                    </FormControl>
                     { (savePatternMutation.isError || deletePatternMutation.isError) &&
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }

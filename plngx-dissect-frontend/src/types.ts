@@ -93,8 +93,11 @@ export type Field = {
     template: string;
 }
 
+export type PreprocessType = null | 'force-ocr';
+
 export type Pattern = {
     name: string;
+    preprocess: PreprocessType;
     checks: Check[];
     regions: Region[];
     fields: Field[];
