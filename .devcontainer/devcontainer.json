@@ -6,7 +6,7 @@
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/akhildevelops/devcontainer-features/apt:0": {
-			"packages": "poppler-utils"
+			"packages": "poppler-utils ocrmypdf"
 		},
 		"ghcr.io/devcontainers-extra/features/uv:1": {}
 	},
