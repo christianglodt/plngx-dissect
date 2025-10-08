@@ -35,7 +35,7 @@ const getRegionResultForDocument = (region: Region, pageResults: Array<RegionRes
 
 const RegionListItem = (props: RegionListItemPropsType) => {
 
-    const { pageNr, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
+    const { pageNr, pattern, patternEvaluationResult, document, setPageNr } = useContext(PatternEditorContext);
 
     const [x, setX] = useState(props.region.x);
     const [y, setY] = useState(props.region.y);
@@ -49,7 +49,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
     const retainedPageResult = getRegionResultForDocument(props.region, props.pageResults || []);
 
     const previewRegion: Region = { x, y, x2, y2, page, kind, simple_expr, regex_expr };
-    const previewRegionResult = useEvaluateRegion(document?.id, previewRegion); // For use in dialog.
+    const previewRegionResult = useEvaluateRegion(document?.id, previewRegion, pattern.preprocess); // For use in dialog.
     const previewPageResult = (previewRegionResult && pageNr !== null) ? previewRegionResult[pageNr] : null;
 
     const onChangeCanceled = () => {

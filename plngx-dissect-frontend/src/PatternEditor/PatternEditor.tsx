@@ -30,9 +30,9 @@ const PatternEditor = () => {
     const navigate = useNavigate();
     const documentId = searchParams.get('document') !== null ? Number(searchParams.get('document')) : null;
     const [pageNr, setPageNr] = useState<number>(0);
-    const { data: document, error: documentError } = useDocument(documentId);
 
     const pattern = modifiedPattern || savedPattern || null;
+    const { data: document, error: documentError } = useDocument(documentId, pattern?.preprocess || null);
 
     const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern);
 
@@ -65,9 +65,9 @@ const PatternEditor = () => {
         setModifiedPattern(newPattern);
     }
 
-    const onPreprocessChange = (newValue: PreprocessType) => {
+    const onPreprocessChange = (newValue: string | null) => {
         const newPattern = produce(pattern, draft => {
-            draft.preprocess = newValue;
+            draft.preprocess = newValue as PreprocessType;
         });
         onChange(newPattern);
     }

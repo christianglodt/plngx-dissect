@@ -6,7 +6,7 @@ import flufl.lock
 import datetime
 import pathlib
 import itertools
-from typing import AsyncIterator, Annotated, Literal, cast
+from typing import AsyncIterable, AsyncIterator, Annotated, Literal, cast
 from pydantic import BaseModel, Field, NaiveDatetime
 # import aiomultiprocess
 import asyncio
@@ -48,9 +48,9 @@ POST_PROCESS_REMOVE_TAGS = [t.strip().lstrip('-') for t in os.environ.get('POST_
 POST_PROCESS_DONT_SAVE = os.environ.get('POST_PROCESS_DONT_SAVE', 'False').lower() == 'true'
 
 
-async def filter_documents_matching_pattern(paperless_docs: AsyncIterator[paperless.PaperlessDocument], pattern: Pattern, client: paperless.PaperlessClient) -> AsyncIterator[Document]:
+async def filter_documents_matching_pattern(paperless_docs: AsyncIterable[paperless.PaperlessDocument], pattern: Pattern, client: paperless.PaperlessClient) -> AsyncIterator[Document]:
     async for paperless_doc in paperless_docs:
-        doc = await get_parsed_document_for_paperless_document(paperless_doc, client=client)
+        doc = await get_parsed_document_for_paperless_document(paperless_doc, pattern.preprocess, client=client)
         
         if await pattern.checks_match(doc, paperless_doc, client):
             yield doc
@@ -139,19 +139,20 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         log.error(f'Tag with name "{e.args[0]}" used in PAPERLESS_REQUIRED_TAGS or POST_PROCESS_CHANGE_TAGS does not exist')
         return
 
-    log.debug(f'Retrieved document {paperless_doc.id}')
-    doc = await get_parsed_document(paperless_doc.id, client=client)
-    log.debug(f'Loaded cached text runs for document {doc.id}')
-
-    if doc.parse_status.error != None:
-        log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
-        return
-
     paperless_doc_has_changed = False
     for pattern in patterns:
+        # Get document (preprocessed if so required by pattern). Returns cached result.
+        doc = await get_parsed_document(paperless_doc.id, pattern.preprocess, client=client)
+        log.debug(f'Loaded cached text runs for document {doc.id}')
+
+        if doc.parse_status.error != None:
+            log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
+            return
+        
         if await pattern.checks_match(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
-            result = await pattern.evaluate(paperless_doc.id, client)
+            # TODO use "doc" instead of "paperless_doc" here
+            result = await pattern.evaluate(paperless_doc.id, pattern.preprocess, client)
                         
             if any(f and f.error for f in result.fields):
                 log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
