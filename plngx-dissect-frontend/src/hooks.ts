@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult, HistoryItem, Region, RegionResult } from './types';
+import { Pattern, PatternListEntry, Document, PaperlessNamedElement, DocumentBase, PatternEvaluationResult, HistoryItem, Region, RegionResult, PreprocessType } from './types';
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
@@ -135,13 +135,15 @@ export const useProcessDocumentWithPatternMutation = () => {
     });
 }
 
-const getDocumentById = async (id: number | null) => {
+const getDocumentById = async (id: number | null, preprocess: PreprocessType) => {
     if (!id) return null;
-    return await fetchJson<Document>(`/api/document/${id}`);
+    const params = preprocess !== null ? `preprocess=${preprocess}` : '';
+
+    return await fetchJson<Document>(`/api/document/${id}?${params}`);
 }
 
-export const useDocument = (id: number | null) => {
-    return useQuery({queryKey: ['documents', id], queryFn: async () => getDocumentById(id)});
+export const useDocument = (id: number | null, preprocess: PreprocessType) => {
+    return useQuery({queryKey: ['documents', id, 'preprocess', preprocess], queryFn: async () => getDocumentById(id, preprocess)});
 }
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
@@ -183,13 +185,15 @@ export const useHistory = () => {
     });
 }
 
-export const useEvaluateRegion = (docId: number | undefined, region: Region) => {
+export const useEvaluateRegion = (docId: number | undefined, region: Region, preprocess: PreprocessType) => {
     const [debouncedRegion] = useDebounce(region, 1000);
 
+    const params = preprocess !== null ? `preprocess=${preprocess}` : '';
+
     const query = useQuery({
-        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion],
+        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion, 'preprocess', preprocess],
         queryFn: async () => {
-            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region`, debouncedRegion);
+            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region?${params}`, debouncedRegion);
         },
         placeholderData: keepPreviousData,
         enabled: docId !== undefined

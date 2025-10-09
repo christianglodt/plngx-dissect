@@ -162,8 +162,12 @@ class PatternEvaluationResult(pydantic.BaseModel):
     fields: list[field.FieldResult|None] # same order as fields in pattern
 
 
+PreprocessType = None | Literal['force-ocr'] 
+
+
 class Pattern(pydantic.BaseModel):
     name: str
+    preprocess: PreprocessType = None
     checks: list[AnyCheck]
     regions: list[region.Region]
     fields: list[field.Field]
@@ -192,8 +196,8 @@ class Pattern(pydantic.BaseModel):
 
         return res
 
-    async def evaluate(self, document_id: int, client: PaperlessClient) -> PatternEvaluationResult:
-        doc = await document.get_parsed_document(document_id, client=client)
+    async def evaluate(self, document_id: int, preprocess: PreprocessType, client: PaperlessClient) -> PatternEvaluationResult:
+        doc = await document.get_parsed_document(document_id, preprocess, client=client)
         paperless_doc = await client.get_document_by_id(document_id)
 
         check_results = await self.get_check_results(doc=doc, paperless_doc=paperless_doc, client=client)
