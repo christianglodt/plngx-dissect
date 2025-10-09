@@ -97,14 +97,14 @@ async def evaluate_pattern(document_id: int, p: pattern.Pattern) -> pattern.Patt
 
 
 @api_app.post('/document/{document_id}/evaluate_region')
-async def evaluate_region(document_id: int, region: region.Region, preprocess: pattern.PreprocessType) -> list[region.RegionResult]: # 1 result per page
+async def evaluate_region(document_id: int, region: region.Region, preprocess: pattern.PreprocessType = None) -> list[region.RegionResult]: # 1 result per page
     client = paperless.PaperlessClient()
     doc = await document.get_parsed_document(document_id, preprocess, client=client)
     return doc.evaluate_regions([region])[0]
 
 
 @api_app.get('/document/{document_id}')
-async def get_document(document_id: int, preprocess: pattern.PreprocessType) -> document.Document:
+async def get_document(document_id: int, preprocess: pattern.PreprocessType = None) -> document.Document:
     try:
         return await document.get_parsed_document(document_id, preprocess)
     except aiohttp.ClientResponseError as e:

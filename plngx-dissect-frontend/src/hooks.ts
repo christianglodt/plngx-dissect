@@ -137,7 +137,9 @@ export const useProcessDocumentWithPatternMutation = () => {
 
 const getDocumentById = async (id: number | null, preprocess: PreprocessType) => {
     if (!id) return null;
-    return await fetchJson<Document>(`/api/document/${id}?preprocess=${preprocess}`);
+    const params = preprocess !== null ? `preprocess=${preprocess}` : '';
+
+    return await fetchJson<Document>(`/api/document/${id}?${params}`);
 }
 
 export const useDocument = (id: number | null, preprocess: PreprocessType) => {
@@ -186,10 +188,12 @@ export const useHistory = () => {
 export const useEvaluateRegion = (docId: number | undefined, region: Region, preprocess: PreprocessType) => {
     const [debouncedRegion] = useDebounce(region, 1000);
 
+    const params = preprocess !== null ? `preprocess=${preprocess}` : '';
+
     const query = useQuery({
         queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion, preprocess],
         queryFn: async () => {
-            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region?preprocess=${preprocess}`, debouncedRegion);
+            return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region?${params}`, debouncedRegion);
         },
         placeholderData: keepPreviousData,
         enabled: docId !== undefined

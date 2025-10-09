@@ -67,7 +67,8 @@ const PatternEditor = () => {
 
     const onPreprocessChange = (newValue: string | null) => {
         const newPattern = produce(pattern, draft => {
-            draft.preprocess = newValue as PreprocessType;
+            const value = newValue === '' ? null : newValue;
+            draft.preprocess = value as PreprocessType;
         });
         onChange(newPattern);
     }
@@ -107,7 +108,7 @@ const PatternEditor = () => {
                 <Stack direction="row" gap={2}>
                     <FormControl size="small" sx={{ minWidth: '200px' }}>
                         <InputLabel id="preprocess-select-label">Preprocess</InputLabel>
-                        <Select id="preprocess-select" labelId="preprocess-select-label" label="Preprocess" value={pattern.preprocess} onChange={event => onPreprocessChange(event.target.value)}>
+                        <Select id="preprocess-select" labelId="preprocess-select-label" label="Preprocess" value={pattern.preprocess || ''} onChange={event => onPreprocessChange(event.target.value)}>
                             <MenuItem value="">No preprocessing</MenuItem>
                             <MenuItem value="force-ocr">Force OCR</MenuItem>
                         </Select>
