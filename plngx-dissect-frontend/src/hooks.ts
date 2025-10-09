@@ -143,7 +143,7 @@ const getDocumentById = async (id: number | null, preprocess: PreprocessType) =>
 }
 
 export const useDocument = (id: number | null, preprocess: PreprocessType) => {
-    return useQuery({queryKey: ['documents', id], queryFn: async () => getDocumentById(id, preprocess)});
+    return useQuery({queryKey: ['documents', id, 'preprocess', preprocess], queryFn: async () => getDocumentById(id, preprocess)});
 }
 
 export const usePaperlessElement = <T extends PaperlessNamedElement,>(slug: string) => {
