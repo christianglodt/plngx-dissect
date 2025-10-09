@@ -191,7 +191,7 @@ export const useEvaluateRegion = (docId: number | undefined, region: Region, pre
     const params = preprocess !== null ? `preprocess=${preprocess}` : '';
 
     const query = useQuery({
-        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion, preprocess],
+        queryKey: ['documents', docId, 'evaluateRegion', debouncedRegion, 'preprocess', preprocess],
         queryFn: async () => {
             return postRequest<Region, Array<RegionResult>>(`/api/document/${docId}/evaluate_region?${params}`, debouncedRegion);
         },
