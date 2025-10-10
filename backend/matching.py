@@ -99,6 +99,8 @@ processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelt
 async def process_all_documents():
     try:
         with processing_lock:
+            start_time = datetime.datetime.now()
+            num_docs = 0
             log.info(f'Processing all documents with tags {PAPERLESS_REQUIRED_TAGS}')
 
             patterns = [await get_pattern(p.name) for p in await list_patterns()]
@@ -114,6 +116,9 @@ async def process_all_documents():
 
             async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
                 await process_document(paperless_doc, client, patterns)
+                num_docs += 1
+            end_time = datetime.datetime.now()
+            log.info(f'Processed {num_docs} documents in {end_time - start_time}')
     except flufl.lock.AlreadyLockedError:  # pyright: ignore[reportPrivateImportUsage]
         log.warning('Not processing documents because process_all_documents() is already running')
 
