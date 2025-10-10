@@ -52,7 +52,7 @@ class AsyncCache[T](abc.ABC):
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        async def async_cache_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             key = await self.cache_key_func(*args, **kwargs)
             data = await cache_get_async(self.cache, key)
             if data is not None:
@@ -62,7 +62,7 @@ class AsyncCache[T](abc.ABC):
                 await cache_set_async(self.cache, key, value, self.expire)
                 return value
 
-        return wrapper
+        return async_cache_wrapper
 
 
 class AsyncBytesCache[T](abc.ABC):
@@ -73,7 +73,7 @@ class AsyncBytesCache[T](abc.ABC):
 
     def __call__(self, f: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(f)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        async def async_bytes_cache_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             key = await self.cache_key_func(*args, **kwargs)
             data = await cache_get_async(self.cache, key)
             if data is not None:
@@ -84,7 +84,7 @@ class AsyncBytesCache[T](abc.ABC):
                 await cache_set_async(self.cache, key, data, self.expire)
                 return value
 
-        return wrapper
+        return async_bytes_cache_wrapper
 
     @abc.abstractmethod
     async def load_from_cache(self, data: bytes) -> T:
@@ -124,7 +124,7 @@ class AsyncIterableBytesCache:
 
     def __call__(self, f: Callable[P, AsyncIterable[bytes]]) -> Callable[P, AsyncIterable[bytes]]:
         @wraps(f)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[bytes]:
+        async def async_iterable_bytes_cache_wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[bytes]:
             key = await self.cache_key_func(*args, **kwargs)
             reader = await cache_get_async(self.cache, key, read=True)
             if reader is not None:
@@ -142,7 +142,7 @@ class AsyncIterableBytesCache:
                     yield chunk
 
                 await cache_set_async(self.cache, key, data_bytes.getvalue(), self.expire)
-        return wrapper
+        return async_iterable_bytes_cache_wrapper
 
 
 stream_cache = AsyncIterableBytesCache
@@ -156,7 +156,7 @@ class AsyncIterableCache[T]:
 
     def __call__(self, f: Callable[P, AsyncIterable[T]]) -> Callable[P, AsyncIterable[T]]:
         @wraps(f)
-        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[T]:
+        async def async_iterable_cache_wrapper(*args: P.args, **kwargs: P.kwargs) -> AsyncIterable[T]:
             key = await self.cache_key_func(*args, **kwargs)
             values: list[T] | None = await cache_get_async(self.cache, key)
             if values is not None:
@@ -170,4 +170,4 @@ class AsyncIterableCache[T]:
                     yield value
 
                 await cache_set_async(self.cache, key, values, self.expire)
-        return wrapper
+        return async_iterable_cache_wrapper
