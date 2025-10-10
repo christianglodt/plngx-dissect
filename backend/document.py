@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 logging.getLogger('pdfminer').setLevel(logging.WARN) # silence debug logging from pdfplumber/pdfminer
-log = logging.getLogger(__name__)
+log = logging.getLogger('uvicorn')
 
 
 class TextRun(RegionBase):
