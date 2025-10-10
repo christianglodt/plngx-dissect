@@ -1,6 +1,6 @@
 import pathlib
 import pydantic
-from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable, Hashable
+from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable
 import ryaml
 from functools import wraps, lru_cache
 import abc
@@ -40,9 +40,8 @@ async def cache_set_async(cache: diskcache.Cache, key: str, value: Any, expire: 
     return result
 
 
-async def base_cache_key_func(*args: Hashable, **kwargs: Hashable) -> str:
-    hash_int = hash((args, tuple(sorted(kwargs.items()))))
-    return str(hash_int)
+async def base_cache_key_func(*args: Any, **kwargs: Any) -> str:
+    return str((args, tuple(sorted(kwargs.items()))))
 
 
 class AsyncCache[T](abc.ABC):
