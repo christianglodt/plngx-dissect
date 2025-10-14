@@ -127,6 +127,21 @@ export const useRenamePatternMutation = () => {
     });
 }
 
+export const useSaveAsPatternMutation = () => {
+    const queryClient = useQueryClient();
+    const [newName, setNewName] = useState<string|null>(null);
+    return useMutation({
+        mutationFn: ({ oldName, newName }: { oldName: string, newName: string }) => {
+            setNewName(newName);
+            return postRequest(`/api/pattern/${encodeURIComponent(oldName)}/save_as?new_name=${encodeURIComponent(newName)}`, undefined);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['patterns', newName] });
+            queryClient.invalidateQueries({ queryKey: ['patterns'] });
+        }
+    });
+}
+
 export const useProcessAllMutation = () => {
     return useMutation({
         mutationFn: () => {

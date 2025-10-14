@@ -121,6 +121,7 @@ const PatternEditor = () => {
                     <RenameButton name={pattern.name}/>
                     <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
+                    <SaveAsButton name={pattern.name}/>
                 </Stack>
             </PortalBox>
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
