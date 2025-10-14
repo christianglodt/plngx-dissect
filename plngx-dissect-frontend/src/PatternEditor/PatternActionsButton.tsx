@@ -37,8 +37,8 @@ const PatternActionsButton = () => {
     return (
         <>
             <ButtonGroup variant="contained" ref={anchorRef}>
-                <Button disabled={!isModified || isSaving} variant="outlined" color="success" onClick={onSaveClicked} startIcon={<Save/>} style={{ borderColor: '#121212' }}>Save</Button>
-                <Button size="small" color="success" variant="outlined" onClick={() => setOpen(!open)} style={{ borderColor: '#121212' }}><ArrowDropDownIcon/></Button>
+                <Button disabled={!isModified || isSaving} variant="outlined" color="inherit" onClick={onSaveClicked} startIcon={<Save/>} style={{ borderColor: '#121212' }}>Save</Button>
+                <Button size="small" color="inherit" variant="outlined" onClick={() => setOpen(!open)} style={{ borderColor: '#121212' }}><ArrowDropDownIcon/></Button>
             </ButtonGroup>
 
             <Popper sx={{ zIndex: 1 }} open={open} anchorEl={anchorRef.current} role={undefined} disablePortal>
