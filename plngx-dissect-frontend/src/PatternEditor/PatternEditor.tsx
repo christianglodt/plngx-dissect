@@ -11,9 +11,10 @@ import { useState } from "react";
 import { Pattern, PreprocessType } from "../types";
 import PortalBox from "../utils/PortalBox";
 import ConfirmButton from "../utils/ConfirmButton";
-import RenamePatternButton from "./RenamePatternButton";
+import RenameButton from "./RenameButton";
 import { PatternEditorContext, PatternEditorContextType } from "./PatternEditorContext";
 import { produce } from "immer";
+import SaveAsButton from "./SaveAsButton";
 
 
 const PatternEditor = () => {
@@ -117,7 +118,7 @@ const PatternEditor = () => {
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
                     <ConfirmButton disabled={savePatternMutation.isPending || modifiedPattern !== null || documentId === null}  dialogTitle="Process Document?" dialogText="Process the current document with this pattern?" color="warning" onConfirmed={onProcessDocumentConfirmed}>Process</ConfirmButton>
-                    <RenamePatternButton name={pattern.name}/>
+                    <RenameButton name={pattern.name}/>
                     <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
                     <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
                 </Stack>
