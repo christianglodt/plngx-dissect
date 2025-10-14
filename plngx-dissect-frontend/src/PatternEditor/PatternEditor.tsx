@@ -1,6 +1,6 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDeletePatternMutation, useDocument, usePattern, usePatternEvaluationResult, useProcessDocumentWithPatternMutation, useSavePatternMutation } from "../hooks";
-import { Alert, AlertTitle, Box, Button, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack } from "@mui/material";
+import { Alert, AlertTitle, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack } from "@mui/material";
 
 import ChecksCard from "./ChecksSidebar/ChecksCard";
 import DocumentsCard from "./DocumentsSidebar/DocumentsCard";
@@ -10,11 +10,9 @@ import DocumentView from "./DocumentView/DocumentView";
 import { useState } from "react";
 import { Pattern, PreprocessType } from "../types";
 import PortalBox from "../utils/PortalBox";
-import ConfirmButton from "../utils/ConfirmButton";
-import RenameButton from "./RenameButton";
 import { PatternEditorContext, PatternEditorContextType } from "./PatternEditorContext";
 import { produce } from "immer";
-import SaveAsButton from "./SaveAsButton";
+import PatternActionsButton from "./PatternActionsButton";
 
 
 const PatternEditor = () => {
@@ -74,28 +72,22 @@ const PatternEditor = () => {
         onChange(newPattern);
     }
 
-    const onSaveClicked = () => {
-        savePatternMutation.mutate(pattern!, {
+    const contextValue: PatternEditorContextType = {
+        pattern,
+        isModified: modifiedPattern !== null,
+        isSaving: savePatternMutation.isPending,
+        savePattern: () => savePatternMutation.mutate(pattern!, {
             onSuccess: () => {
                 setModifiedPattern(null);
             }
-        });
-    }
-
-    const onDeleteClicked = () => {
-        deletePatternMutation.mutate(pattern, {
+        }),
+        deletePattern: () => deletePatternMutation.mutate(pattern, {
             onSuccess: () => {
                 navigate('/');
             }
-        });
-    }
+        }),
+        processDocument: () => processDocumentWithPatternMutation.mutate({ document_id: documentId!, pattern_name: pattern.name }),
 
-    const onProcessDocumentConfirmed = () => {
-        processDocumentWithPatternMutation.mutate({ document_id: documentId!, pattern_name: pattern.name });
-    }
-
-    const contextValue: PatternEditorContextType = {
-        pattern,
         document: document || null,
         pageNr,
         setPageNr,
@@ -117,11 +109,9 @@ const PatternEditor = () => {
                     { (savePatternMutation.isError || deletePatternMutation.isError) &&
                     <Alert severity="error">Error: {(savePatternMutation.error! || deletePatternMutation.error!).message }</Alert>
                     }
-                    <ConfirmButton disabled={savePatternMutation.isPending || modifiedPattern !== null || documentId === null}  dialogTitle="Process Document?" dialogText="Process the current document with this pattern?" color="warning" onConfirmed={onProcessDocumentConfirmed}>Process</ConfirmButton>
-                    <RenameButton name={pattern.name}/>
-                    <ConfirmButton disabled={savePatternMutation.isPending} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
-                    <Button disabled={modifiedPattern === null || savePatternMutation.isPending} color="success" onClick={onSaveClicked}>Save</Button>
-                    <SaveAsButton name={pattern.name}/>
+
+                    <PatternActionsButton/>
+
                 </Stack>
             </PortalBox>
             <Stack direction="row" sx={{ width: '100%', height: '100%' }} spacing={2}>
