@@ -1,7 +1,10 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePatternExistsValidation, useSaveAsPatternMutation } from "../hooks";
 import InputDialogButton from "../utils/InputDialogButton";
 import { SaveAs } from '@mui/icons-material';
+import { useContext } from 'react';
+import { PatternEditorContext } from './PatternEditorContext';
+import { produce } from 'immer';
 
 type SaveAsButtonPropsType = {
     name: string;
@@ -11,18 +14,22 @@ const SaveAsButton = (props: SaveAsButtonPropsType) => {
 
     const saveAsMutation = useSaveAsPatternMutation();
     const navigate = useNavigate();
-    const { patternId } = useParams();
+    const {pattern} = useContext(PatternEditorContext);
     const [searchParams] = useSearchParams();
     const [existsError, validatePatternExists] = usePatternExistsValidation(props.name)
 
-    if (!patternId) {
+    if (!pattern) {
         return <></>;
     }
 
     const onSaveAsConfirmed = (newName: string) => {
-        if (patternId === newName) return;
+        if (pattern.name === newName) return;
 
-        saveAsMutation.mutate({ oldName: patternId, newName }, {
+        const renamedPattern = produce(pattern, draft => {
+            draft.name = newName;
+        });
+
+        saveAsMutation.mutate({ pattern: renamedPattern, newName }, {
             onSuccess: () => {
                 navigate(`/pattern/${encodeURIComponent(newName)}?${searchParams.toString()}`);
             }

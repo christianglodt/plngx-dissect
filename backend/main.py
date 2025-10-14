@@ -85,11 +85,6 @@ async def rename_pattern(name: str, new_name: str):
     await pattern.rename_pattern(name, new_name)
 
 
-@api_app.post('/pattern/{name:path}/save_as')
-async def save_as_pattern(name: str, new_name: str):
-    await pattern.save_as_pattern(name, new_name)
-
-
 @api_app.get('/document/{document_id}/svg', response_class=Response)
 async def get_document_svg(document_id: int, page_nr: int = 0) -> Response:
     return StreamingResponse(content=document.get_pdf_page_svg(document_id, page_nr), media_type='image/svg+xml')

@@ -94,6 +94,14 @@ export const useSavePatternMutation = (patternId: string) => {
     });
 }
 
+export const useSaveAsPatternMutation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ pattern, newName } : { pattern: Pattern, newName: string }) => putJson<Pattern>(`/api/pattern/${newName}`, pattern),
+        onSuccess: (data) => { queryClient.setQueryData(['patterns', data.name], data) }
+    });
+}
+
 export const useDeletePatternMutation = () => {
     const queryClient = useQueryClient();
     const [patternName, setPatternName] = useState<string|null>(null);
@@ -122,21 +130,6 @@ export const useRenamePatternMutation = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['patterns', newName] });
             queryClient.invalidateQueries({ queryKey: ['patterns', oldName] });
-            queryClient.invalidateQueries({ queryKey: ['patterns'] });
-        }
-    });
-}
-
-export const useSaveAsPatternMutation = () => {
-    const queryClient = useQueryClient();
-    const [newName, setNewName] = useState<string|null>(null);
-    return useMutation({
-        mutationFn: ({ oldName, newName }: { oldName: string, newName: string }) => {
-            setNewName(newName);
-            return postRequest(`/api/pattern/${encodeURIComponent(oldName)}/save_as?new_name=${encodeURIComponent(newName)}`, undefined);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['patterns', newName] });
             queryClient.invalidateQueries({ queryKey: ['patterns'] });
         }
     });
