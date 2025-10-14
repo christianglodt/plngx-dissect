@@ -1,10 +1,10 @@
 import { ButtonProps } from '@mui/material/Button';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from '@mui/material';
 import React, { useState, KeyboardEvent } from 'react';
 
 type InputDialogPropsType = ButtonProps & {
     dialogTitle: string;
-    dialogText: string;
+    dialogText?: string;
     label: string;
     icon?: React.ReactElement;
     value?: string;
@@ -13,19 +13,19 @@ type InputDialogPropsType = ButtonProps & {
     onTextChanged?: (value: string) => void;
 }
 
-const InputDialogButton = (props: InputDialogPropsType) => {
+const InputDialogButton = ({dialogTitle, dialogText, label, icon, value, onConfirmed, error, onTextChanged, ...buttonProps}: InputDialogPropsType) => {
 
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [value, setValue] = useState(props.value);
+    const [currentValue, setCurrentValue] = useState(value);
 
     const onDialogClosed = () => {
         setDialogOpen(false);
-        setValue(props.value);
+        setCurrentValue(value);
     }
 
-    const onConfirmed = () => {
-        if (value) {
-            props.onConfirmed(value);
+    const onDialogConfirmed = () => {
+        if (currentValue) {
+            onConfirmed(currentValue);
             onDialogClosed();    
         }
     }
@@ -33,22 +33,22 @@ const InputDialogButton = (props: InputDialogPropsType) => {
     const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         const value = (event.target as HTMLInputElement).value;
         if (event.key === 'Enter') {
-            onConfirmed();
-            setValue(value);
+            setCurrentValue(value);
+            onConfirmed(value);
             event.preventDefault();
         }
     }
 
     const onKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
         const value = (event.target as HTMLInputElement).value;
-        if (props.onTextChanged) {
-            props.onTextChanged(value);
+        if (onTextChanged) {
+            onTextChanged(value);
         }
     }    
 
     let errorMessage;
-    if (props.error) {
-        errorMessage = props.error;
+    if (error) {
+        errorMessage = error;
     } else {
         errorMessage = (value || '').trim() === '' ? 'Can not be empty' : null;
     }
@@ -56,16 +56,19 @@ const InputDialogButton = (props: InputDialogPropsType) => {
     return (
         <>
             <Dialog open={dialogOpen} onClose={onDialogClosed}>
-                <DialogTitle>{props.dialogTitle}</DialogTitle>
+                <DialogTitle>{dialogTitle}</DialogTitle>
                 <DialogContent>
-                    <TextField sx={{ marginTop: '0.5rem', marginBottom: '0.5rem' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setValue(event.target.value)} onKeyDown={onKeyDown} onKeyUp={onKeyUp} error={errorMessage !== null} helperText={errorMessage}/>
+                    { dialogText &&
+                    <DialogContentText>{dialogText}</DialogContentText>
+                    }
+                    <TextField sx={{ marginTop: '0.5rem', marginBottom: '0.5rem' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setCurrentValue(event.target.value)} onKeyDown={onKeyDown} onKeyUp={onKeyUp} error={errorMessage !== null} helperText={errorMessage}/>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onDialogClosed}>Cancel</Button>
-                    <Button onClick={onConfirmed}>{props.label}</Button>
+                    <Button onClick={onDialogConfirmed}>{label}</Button>
                 </DialogActions>
             </Dialog>
-            <Button onClick={() => setDialogOpen(true)} color={props.color} sx={props.sx} startIcon={props.icon}>{props.label}</Button>
+            <Button onClick={() => setDialogOpen(true)} startIcon={icon} {...buttonProps}>{label}</Button>
         </>
     );
 };

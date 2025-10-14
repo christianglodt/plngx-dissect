@@ -14,27 +14,25 @@ type ConfirmButtonProps = ButtonProps & {
     onConfirmed: () => void;
 }
 
-const ConfirmButton = (props: ConfirmButtonProps) => {
+const ConfirmButton = ({icon, dialogTitle, dialogText, onConfirmed, ...buttonProps}: ConfirmButtonProps) => {
     const [open, setOpen] = useState(false);
 
-    const onConfirmed = () => {
+    const onDialogConfirmed = () => {
         setOpen(false);
-        props.onConfirmed();
+        onConfirmed();
     }
 
     return (
         <>
-            <Button variant={props.variant} disabled={props.disabled} color={props.color} sx={props.sx} onClick={() => setOpen(true)} startIcon={props.icon}>
-                {props.children}
-            </Button>
+            <Button onClick={() => setOpen(true)} startIcon={icon} {...buttonProps}></Button>
             <Dialog open={open} onClose={() => setOpen(false)}>
-                <DialogTitle>{props.dialogTitle}</DialogTitle>
+                <DialogTitle>{dialogTitle}</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>{props.dialogText}</DialogContentText>
+                    <DialogContentText>{dialogText}</DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpen(false)}>Cancel</Button>
-                    <Button onClick={onConfirmed}>Ok</Button>
+                    <Button onClick={onDialogConfirmed}>Ok</Button>
                 </DialogActions>
             </Dialog>
         </>

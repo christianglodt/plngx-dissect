@@ -41,7 +41,7 @@ const SaveAsButton = (props: SaveAsButtonPropsType) => {
     }
 
     return (
-        <InputDialogButton label="Save As" icon={<SaveAs/>} dialogTitle="Save Pattern As" dialogText="New name" value={props.name} onConfirmed={onSaveAsConfirmed} onTextChanged={onDialogTextChanged} error={existsError}/>
+        <InputDialogButton style={{ borderColor: '#666' }} color="inherit" variant="outlined" label="Save As" icon={<SaveAs/>} dialogTitle="Save Pattern As" value={props.name} onConfirmed={onSaveAsConfirmed} onTextChanged={onDialogTextChanged} error={existsError}/>
     );
 };
 

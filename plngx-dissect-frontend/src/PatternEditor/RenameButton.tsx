@@ -34,7 +34,7 @@ const RenameButton = (props: RenameButtonPropsType) => {
     }
 
     return (
-        <InputDialogButton label="Rename" dialogTitle="Rename Pattern" dialogText="New name" icon={<Edit/>} value={props.name} onConfirmed={onRenameConfirmed} error={existsError} onTextChanged={onDialogTextChanged}/>
+        <InputDialogButton style={{ borderColor: '#666' }} variant="outlined" color="inherit" label="Rename" dialogTitle="Rename Pattern" icon={<Edit/>} value={props.name} onConfirmed={onRenameConfirmed} error={existsError} onTextChanged={onDialogTextChanged}/>
     );
 };
 
