@@ -1,15 +1,19 @@
-import { Button } from "@mui/material";
+import { Button, ButtonGroup, ClickAwayListener, Paper, Popper } from "@mui/material";
 
-import { useContext } from "react";
+import { useContext, useRef, useState } from "react";
 import ConfirmButton from "../utils/ConfirmButton";
 import { PatternEditorContext } from "./PatternEditorContext";
 import RenameButton from "./RenameButton";
 import SaveAsButton from "./SaveAsButton";
+import { ArrowDropDownIcon } from "@mui/x-date-pickers";
+import { DeleteForever, Save, Sync } from "@mui/icons-material";
 
 
 const PatternActionsButton = () => {
 
     const { pattern, document, isModified, isSaving, savePattern, deletePattern, processDocument } = useContext(PatternEditorContext);
+    const anchorRef = useRef<HTMLDivElement>(null);
+    const [open, setOpen] = useState(false);
 
     const onSaveClicked = () => {
         savePattern();
@@ -23,13 +27,32 @@ const PatternActionsButton = () => {
         processDocument();
     }
 
+    const onPopupClose = (event: Event) => {
+        if (anchorRef.current && anchorRef.current.contains(event.target as HTMLElement)) {
+            return;
+        }
+        setOpen(false);
+    };
+
     return (
         <>
-            <ConfirmButton disabled={isSaving || isModified || pattern === null || document === null}  dialogTitle="Process Document?" dialogText="Process the current document with this pattern?" color="warning" onConfirmed={onProcessDocumentConfirmed}>Process</ConfirmButton>
-            <RenameButton name={pattern.name}/>
-            <ConfirmButton disabled={isSaving} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="warning" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>
-            <Button disabled={!isModified || isSaving} color="success" onClick={onSaveClicked}>Save</Button>
-            <SaveAsButton name={pattern.name}/>
+            <ButtonGroup variant="contained" ref={anchorRef}>
+                <Button disabled={!isModified || isSaving} variant="outlined" color="success" onClick={onSaveClicked} startIcon={<Save/>} style={{ borderColor: '#121212' }}>Save</Button>
+                <Button size="small" color="success" variant="outlined" onClick={() => setOpen(!open)} style={{ borderColor: '#121212' }}><ArrowDropDownIcon/></Button>
+            </ButtonGroup>
+
+            <Popper sx={{ zIndex: 1 }} open={open} anchorEl={anchorRef.current} role={undefined} disablePortal>
+                <Paper>
+                    <ClickAwayListener onClickAway={onPopupClose}>
+                        <ButtonGroup orientation="vertical" variant="contained">
+                            <SaveAsButton name={pattern.name}/>
+                            <RenameButton name={pattern.name}/>
+                            <ConfirmButton icon={<Sync/>} disabled={isSaving || isModified || pattern === null || document === null}  dialogTitle="Process Document?" dialogText="Process the current document with this pattern?" color="warning" onConfirmed={onProcessDocumentConfirmed}>Process</ConfirmButton>
+                            <ConfirmButton icon={<DeleteForever/>} disabled={isSaving} dialogTitle="Delete Pattern?" dialogText="Are you sure to delete this pattern?" color="error" onConfirmed={onDeleteClicked}>Delete</ConfirmButton>                        
+                        </ButtonGroup>
+                    </ClickAwayListener>
+                </Paper>
+            </Popper>
         </>
     );
 }
