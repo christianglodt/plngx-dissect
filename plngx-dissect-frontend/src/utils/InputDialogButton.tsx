@@ -1,11 +1,12 @@
 import { ButtonProps } from '@mui/material/Button';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
-import { useState, KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
 
 type InputDialogPropsType = ButtonProps & {
     dialogTitle: string;
     dialogText: string;
     label: string;
+    icon?: React.ReactElement;
     value?: string;
     onConfirmed: (value: string) => void;
     error?: string;
@@ -64,7 +65,7 @@ const InputDialogButton = (props: InputDialogPropsType) => {
                     <Button onClick={onConfirmed}>{props.label}</Button>
                 </DialogActions>
             </Dialog>
-            <Button onClick={() => setDialogOpen(true)} color={props.color} sx={props.sx}>{props.label}</Button>
+            <Button onClick={() => setDialogOpen(true)} color={props.color} sx={props.sx} startIcon={props.icon}>{props.label}</Button>
         </>
     );
 };

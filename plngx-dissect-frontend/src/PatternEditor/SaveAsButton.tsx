@@ -1,6 +1,7 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { usePatternExistsValidation, useSaveAsPatternMutation } from "../hooks";
 import InputDialogButton from "../utils/InputDialogButton";
+import { SaveAs } from '@mui/icons-material';
 
 type SaveAsButtonPropsType = {
     name: string;
@@ -33,7 +34,7 @@ const SaveAsButton = (props: SaveAsButtonPropsType) => {
     }
 
     return (
-        <InputDialogButton label="Save As" dialogTitle="Save Pattern As" dialogText="New name" value={props.name} onConfirmed={onSaveAsConfirmed} onTextChanged={onDialogTextChanged} error={existsError}/>
+        <InputDialogButton label="Save As" icon={<SaveAs/>} dialogTitle="Save Pattern As" dialogText="New name" value={props.name} onConfirmed={onSaveAsConfirmed} onTextChanged={onDialogTextChanged} error={existsError}/>
     );
 };
 

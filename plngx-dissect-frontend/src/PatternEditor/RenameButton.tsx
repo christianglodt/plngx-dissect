@@ -1,6 +1,7 @@
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { usePatternExistsValidation, useRenamePatternMutation } from "../hooks";
 import InputDialogButton from "../utils/InputDialogButton";
+import { Edit } from '@mui/icons-material';
 
 type RenameButtonPropsType = {
     name: string;
@@ -33,7 +34,7 @@ const RenameButton = (props: RenameButtonPropsType) => {
     }
 
     return (
-        <InputDialogButton label="Rename" dialogTitle="Rename Pattern" dialogText="New name" value={props.name} onConfirmed={onRenameConfirmed} error={existsError} onTextChanged={onDialogTextChanged}/>
+        <InputDialogButton label="Rename" dialogTitle="Rename Pattern" dialogText="New name" icon={<Edit/>} value={props.name} onConfirmed={onRenameConfirmed} error={existsError} onTextChanged={onDialogTextChanged}/>
     );
 };
 
