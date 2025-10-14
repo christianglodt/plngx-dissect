@@ -2,14 +2,14 @@ import { ButtonProps } from '@mui/material/Button';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material';
 import { useState, KeyboardEvent } from 'react';
 
-
 type InputDialogPropsType = ButtonProps & {
     dialogTitle: string;
     dialogText: string;
     label: string;
     value?: string;
     onConfirmed: (value: string) => void;
-    // TODO optional validation function
+    error?: string;
+    onTextChanged?: (value: string) => void;
 }
 
 const InputDialogButton = (props: InputDialogPropsType) => {
@@ -30,21 +30,34 @@ const InputDialogButton = (props: InputDialogPropsType) => {
     }
 
     const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        const value = (event.target as HTMLInputElement).value;
         if (event.key === 'Enter') {
             onConfirmed();
-            setValue((event.target as HTMLInputElement).value);
+            setValue(value);
             event.preventDefault();
         }
     }
 
-    const errorMessage = (value || '').trim() === '' ? 'Can not be empty' : null;
+    const onKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+        const value = (event.target as HTMLInputElement).value;
+        if (props.onTextChanged) {
+            props.onTextChanged(value);
+        }
+    }    
+
+    let errorMessage;
+    if (props.error) {
+        errorMessage = props.error;
+    } else {
+        errorMessage = (value || '').trim() === '' ? 'Can not be empty' : null;
+    }
 
     return (
         <>
             <Dialog open={dialogOpen} onClose={onDialogClosed}>
                 <DialogTitle>{props.dialogTitle}</DialogTitle>
                 <DialogContent>
-                    <TextField sx={{ marginTop: '0.5rem' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setValue(event.target.value)} onKeyDown={onKeyDown} error={errorMessage !== null} helperText={errorMessage}/>
+                    <TextField sx={{ marginTop: '0.5rem', marginBottom: '0.5rem' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setValue(event.target.value)} onKeyDown={onKeyDown} onKeyUp={onKeyUp} error={errorMessage !== null} helperText={errorMessage}/>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onDialogClosed}>Cancel</Button>
