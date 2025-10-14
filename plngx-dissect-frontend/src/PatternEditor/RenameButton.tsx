@@ -1,0 +1,41 @@
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { usePatternExistsValidation, useRenamePatternMutation } from "../hooks";
+import InputDialogButton from "../utils/InputDialogButton";
+import { Edit } from '@mui/icons-material';
+
+type RenameButtonPropsType = {
+    name: string;
+};
+
+const RenameButton = (props: RenameButtonPropsType) => {
+
+    const renamePatternMutation = useRenamePatternMutation();
+    const navigate = useNavigate();
+    const { patternId } = useParams();
+    const [searchParams] = useSearchParams();
+    const [existsError, validatePatternExists] = usePatternExistsValidation(props.name)
+
+    if (!patternId) {
+        return <></>;
+    }
+
+    const onRenameConfirmed = (newName: string) => {
+        if (patternId === newName) return;
+
+        renamePatternMutation.mutate({ oldName: patternId, newName }, {
+            onSuccess: () => {
+                navigate(`/pattern/${encodeURIComponent(newName)}?${searchParams.toString()}`);
+            }
+        })
+    }
+
+    const onDialogTextChanged = (value: string) => {
+        validatePatternExists(value);
+    }
+
+    return (
+        <InputDialogButton style={{ borderColor: '#666' }} variant="outlined" color="inherit" label="Rename" dialogTitle="Rename Pattern" icon={<Edit/>} value={props.name} onConfirmed={onRenameConfirmed} error={existsError} onTextChanged={onDialogTextChanged}/>
+    );
+};
+
+export default RenameButton;
