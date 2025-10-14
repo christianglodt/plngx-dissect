@@ -19,7 +19,7 @@ const InputDialogButton = (props: InputDialogPropsType) => {
 
     const onDialogClosed = () => {
         setDialogOpen(false);
-        setValue('');
+        setValue(props.value);
     }
 
     const onConfirmed = () => {
