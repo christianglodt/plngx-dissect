@@ -61,6 +61,14 @@ export const usePattern = (name: string) => {
     return useQuery({queryKey: ['patterns', name], queryFn: async () => getPatternByName(name)});
 }
 
+export const usePatternExistsValidation = (initialTextForValidation: string) => {
+    const [textForValidation, setTextForValidation] = useState(initialTextForValidation);
+    const [debouncedDialogTextForValidation] = useDebounce(textForValidation, 1000);
+    const { data: validationPattern } = usePattern(debouncedDialogTextForValidation);
+    const error = validationPattern ? `Pattern ${debouncedDialogTextForValidation} exists already.` : undefined;
+    return [error, setTextForValidation] as const;
+}
+
 type CreatePatternRequestBody = { name: string }
 
 export const useCreatePatternMutation = () => {
