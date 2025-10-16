@@ -118,7 +118,7 @@ const RegionListItem = (props: RegionListItemPropsType) => {
         <Stack direction="row" gap={1} alignItems="center" sx={{ marginBottom: '5px' }}>
             <Typography sx={{ width: '100%' }}>Region {props.nr}</Typography>
             <Stack direction="row" gap={0.5}>
-                { patternEvaluationResult && patternEvaluationResult.regions[props.nr - 1].map((pageResult, pageNr) => 
+                { patternEvaluationResult && patternEvaluationResult.regions[props.nr - 1]?.map((pageResult, pageNr) => 
                     <div key={pageNr} className={`pageResultBubble ${getPageResultClasses(pageResult, pageNr)}`} onClick={(event) => onPageResultBubbleClicked(event, pageNr)}/>
                 ) }
             </Stack>
