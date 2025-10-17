@@ -96,6 +96,7 @@ export type Field = {
 export type PreprocessType = null | 'force-ocr';
 
 export type Pattern = {
+    enabled: boolean;
     name: string;
     preprocess: PreprocessType;
     checks: Check[];

@@ -146,6 +146,9 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
 
     paperless_doc_has_changed = False
     for pattern in patterns:
+        if not pattern.enabled:
+            continue
+
         # Get document (preprocessed if so required by pattern). Returns cached result.
         doc = await get_parsed_document(paperless_doc.id, pattern.preprocess, client=client)
         log.debug(f'Loaded cached text runs for document {doc.id}')

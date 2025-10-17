@@ -166,6 +166,7 @@ PreprocessType = None | Literal['force-ocr']
 
 
 class Pattern(pydantic.BaseModel):
+    enabled: bool = True
     name: str
     preprocess: PreprocessType = None
     checks: list[AnyCheck]

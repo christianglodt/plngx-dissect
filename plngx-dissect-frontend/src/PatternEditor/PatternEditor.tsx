@@ -1,13 +1,13 @@
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useDeletePatternMutation, useDocument, usePattern, usePatternEvaluationResult, useProcessDocumentWithPatternMutation, useSavePatternMutation } from "../hooks";
-import { Alert, AlertTitle, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack } from "@mui/material";
+import { Alert, AlertTitle, Box, FormControl, InputLabel, LinearProgress, MenuItem, Select, Stack, Switch } from "@mui/material";
 
 import ChecksCard from "./ChecksSidebar/ChecksCard";
 import DocumentsCard from "./DocumentsSidebar/DocumentsCard";
 import RegionsCard from "./RegionsSidebar/RegionsCard";
 import FieldsCard from "./FieldsSidebar/FieldsCard";
 import DocumentView from "./DocumentView/DocumentView";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Pattern, PreprocessType } from "../types";
 import PortalBox from "../utils/PortalBox";
 import { PatternEditorContext, PatternEditorContextType } from "./PatternEditorContext";
@@ -72,6 +72,13 @@ const PatternEditor = () => {
         onChange(newPattern);
     }
 
+    const onEnabledChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+        const newPattern = produce(pattern, draft => {
+            draft.enabled = checked;
+        });
+        onChange(newPattern);
+    }
+
     const contextValue: PatternEditorContextType = {
         pattern,
         isModified: modifiedPattern !== null,
@@ -99,6 +106,8 @@ const PatternEditor = () => {
         <PatternEditorContext.Provider value={contextValue}>
             <PortalBox>
                 <Stack direction="row" gap={2}>
+                    <Switch checked={pattern.enabled} onChange={onEnabledChange} title="Enable this pattern for automatic processing"/>
+
                     <FormControl size="small" sx={{ minWidth: '200px' }}>
                         <InputLabel id="preprocess-select-label">Preprocess</InputLabel>
                         <Select id="preprocess-select" labelId="preprocess-select-label" label="Preprocess" value={pattern.preprocess || ''} onChange={event => onPreprocessChange(event.target.value)}>
