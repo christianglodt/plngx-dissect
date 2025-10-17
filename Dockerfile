@@ -16,7 +16,7 @@ FROM python:3.13-bookworm
 
 LABEL org.opencontainers.image.source=https://github.com/christianglodt/plngx-dissect
 
-RUN apt update -y && apt install -y poppler-utils ocrmypdf tesseract-ocr-all && rm -rf /var/apt/lists
+RUN apt update -y && apt install -y poppler-utils ocrmypdf=14.0.1+dfsg1-1 tesseract-ocr-all=5.3.0-2 && rm -rf /var/apt/lists
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:0.8.12 /uv /uvx /bin/
