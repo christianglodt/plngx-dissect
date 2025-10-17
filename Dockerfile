@@ -1,4 +1,4 @@
-FROM node:22-bookworm AS npm_build_stage
+FROM node:22-bookworm-slim AS npm_build_stage
 
 COPY plngx-dissect-frontend/package.json /app/plngx-dissect-frontend/
 
@@ -12,7 +12,7 @@ COPY . /app
 RUN --mount=type=cache,target=/root/.npm \
     npm run build
 
-FROM python:3.13-bookworm
+FROM python:3.13-slim-bookworm
 
 LABEL org.opencontainers.image.source=https://github.com/christianglodt/plngx-dissect
 
