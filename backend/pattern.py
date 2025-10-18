@@ -279,7 +279,7 @@ async def list_patterns() -> list[PatternListEntry]:
 
 
 async def create_pattern(name: str) -> Pattern:
-    pattern = Pattern(name=name, checks=[], regions=[], fields=[])
+    pattern = Pattern(name=name, enabled=False, checks=[], regions=[], fields=[])
     async with async_open(name_to_path(name), 'x') as f:
         await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
     return pattern
