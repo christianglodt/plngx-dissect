@@ -35,6 +35,10 @@ const PatternEditor = () => {
 
     const { data: patternEvaluationResult } = usePatternEvaluationResult(documentId, pattern);
 
+    if (modifiedPattern !== null && modifiedPattern.name !== savedPattern?.name) { // Happens when navigate() is called when saving under a new name
+        setModifiedPattern(null);
+    }
+
     if (isError) {
         return (
             <Alert severity="error">
