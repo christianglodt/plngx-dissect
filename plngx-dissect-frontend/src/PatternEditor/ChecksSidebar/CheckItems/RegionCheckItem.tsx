@@ -1,11 +1,14 @@
 import { FormControl, InputLabel, ListItemText, MenuItem, Select, Stack, TextField } from "@mui/material";
 import { produce } from "immer";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { RegionCheck } from "../../../types";
 import DialogListItem from "../../../utils/DialogListItem";
 import { CheckItemPropsType } from "./types";
 import CheckResultIcon from "../../../utils/CheckResultIcon";
 import RegionPageSelector from "../../../utils/RegionPageSelector";
+import RegexPreview from "../../../utils/RegexPreview";
+import { useEvaluateRegion } from "../../../hooks";
+import { PatternEditorContext } from "../../PatternEditorContext";
 
 const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
 
@@ -30,7 +33,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
     };
 
     const onChangeConfirmed = () => {
-        props.onChange(produce(props.check, draft => {
+            props.onChange(produce(props.check, draft => {
             draft.x = x;
             draft.y = y;
             draft.x2 = x2;
@@ -41,6 +44,21 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
             draft.simple_expr = simpleExpr;
         }));
     };
+
+    const { document, pattern, pageNr } = useContext(PatternEditorContext);
+
+    const previewRegion = produce(props.check, draft => {
+        draft.x = x;
+        draft.y = y;
+        draft.x2 = x2;
+        draft.y2 = y2;
+        draft.page = page;
+        draft.kind = kind;
+        draft.regex_expr = `(?P<Match>${regexExpr})`;
+        draft.simple_expr = simpleExpr; // TODO highlight?
+    });
+
+    const regionResult = useEvaluateRegion(document?.id, previewRegion, pattern.preprocess) || [];
 
     const kind_desc = props.check.kind === 'simple' ? 'simple expression' : 'regular expression';
     const expr = props.check.kind === 'simple' ? props.check.simple_expr : props.check.regex_expr;
@@ -65,6 +83,9 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
                         </Select>
                     </FormControl>
                     <RegionPageSelector value={page} onChange={setPage}/>
+
+                    <RegexPreview regionResult={regionResult[pageNr || 0]}/>
+
                     { kind === 'simple' &&
                     <TextField label="Simple Expression" value={simpleExpr} onChange={(event) => setSimpleExpr(event.target.value)} error={props.result?.error != null} helperText={props.result?.error}></TextField>
                     }
