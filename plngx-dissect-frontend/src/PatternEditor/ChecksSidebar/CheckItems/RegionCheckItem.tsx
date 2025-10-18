@@ -59,6 +59,7 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
     });
 
     const regionResult = useEvaluateRegion(document?.id, previewRegion, pattern.preprocess) || [];
+    const previewRegionResult = (regionResult && pageNr !== null) ? regionResult[pageNr] : null;
 
     const kind_desc = props.check.kind === 'simple' ? 'simple expression' : 'regular expression';
     const expr = props.check.kind === 'simple' ? props.check.simple_expr : props.check.regex_expr;
@@ -84,8 +85,8 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
                     </FormControl>
                     <RegionPageSelector value={page} onChange={setPage}/>
 
-                    { regionResult &&
-                    <RegexPreview regionResult={regionResult[pageNr || 0]}/>
+                    { previewRegionResult &&
+                    <RegexPreview regionResult={previewRegionResult}/>
                     }
 
                     { kind === 'simple' &&
