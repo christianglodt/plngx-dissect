@@ -84,7 +84,9 @@ const RegionRegexCheckItem = (props: CheckItemPropsType<RegionCheck>) => {
                     </FormControl>
                     <RegionPageSelector value={page} onChange={setPage}/>
 
+                    { regionResult &&
                     <RegexPreview regionResult={regionResult[pageNr || 0]}/>
+                    }
 
                     { kind === 'simple' &&
                     <TextField label="Simple Expression" value={simpleExpr} onChange={(event) => setSimpleExpr(event.target.value)} error={props.result?.error != null} helperText={props.result?.error}></TextField>
