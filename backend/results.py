@@ -33,7 +33,7 @@ class ProcessingResults(pydantic.BaseModel):
     def register_match(self, document_id: int, pattern_name: str):
         self.matched[document_id].append(pattern_name)
 
-    def register_umatched(self, document_id: int, document_title: str):
+    def register_unmatched(self, document_id: int, document_title: str):
         self.unmatched.append(ProcessedDocument(id=document_id, title=document_title))
 
     def save(self):

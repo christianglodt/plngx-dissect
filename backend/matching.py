@@ -251,7 +251,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
                 log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
     
     if not any_pattern_has_matched:
-        results.register_umatched(paperless_doc.id, paperless_doc.title)
+        results.register_unmatched(paperless_doc.id, paperless_doc.title)
 
     if paperless_doc_has_changed:
         pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
