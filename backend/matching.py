@@ -170,7 +170,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         if await pattern.checks_match(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
             any_pattern_has_matched = True
-            results.register_match(doc.id, pattern.name)
+            results.register_match(doc.id, doc.title, pattern.name)
             # TODO use "doc" instead of "paperless_doc" here
             result = await pattern.evaluate(paperless_doc.id, pattern.preprocess, client)
                         
