@@ -14,6 +14,7 @@ import paperless
 from document import Document, get_parsed_document, get_parsed_document_for_paperless_document
 from pattern import Pattern, list_patterns, get_pattern
 from history import history_log_update
+from results import ProcessingResults
 
 logging.basicConfig()
 log = logging.getLogger('uvicorn')
@@ -99,6 +100,8 @@ processing_lock = flufl.lock.Lock(str(lockfile_path), lifetime=datetime.timedelt
 async def process_all_documents():
     try:
         with processing_lock:
+            results = ProcessingResults()  # type: ignore
+
             start_time = datetime.datetime.now()
             num_docs = 0
             log.info(f'Processing all documents with tags {PAPERLESS_REQUIRED_TAGS}')
@@ -115,17 +118,23 @@ async def process_all_documents():
                 return
 
             async for paperless_doc in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS):
-                await process_document(paperless_doc, client, patterns)
+                await process_document(paperless_doc, client, patterns, results)
                 num_docs += 1
             end_time = datetime.datetime.now()
             log.info(f'Processed {num_docs} documents in {end_time - start_time}')
+
+            results.save()
+
     except flufl.lock.AlreadyLockedError:  # pyright: ignore[reportPrivateImportUsage]
         log.warning('Not processing documents because process_all_documents() is already running')
 
 
-async def process_document(paperless_doc: paperless.PaperlessDocument, client: paperless.PaperlessClient | None = None, patterns: list[Pattern] | None = None) -> None:
+async def process_document(paperless_doc: paperless.PaperlessDocument, client: paperless.PaperlessClient | None = None, patterns: list[Pattern] | None = None, results: ProcessingResults | None = None) -> None:
     if client is None:
         client = paperless.PaperlessClient()
+
+    if results is None:
+        results = ProcessingResults()  # type: ignore
 
     if patterns is None:
         patterns = [await get_pattern(p.name) for p in await list_patterns()]
@@ -145,6 +154,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         return
 
     paperless_doc_has_changed = False
+    any_pattern_has_matched = False
     for pattern in patterns:
         if not pattern.enabled:
             continue
@@ -159,11 +169,15 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         
         if await pattern.checks_match(doc, paperless_doc, client):
             log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
+            any_pattern_has_matched = True
+            results.register_match(doc.id, pattern.name)
             # TODO use "doc" instead of "paperless_doc" here
             result = await pattern.evaluate(paperless_doc.id, pattern.preprocess, client)
                         
             if any(f and f.error for f in result.fields):
-                log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {", ".join(f.error for f in result.fields if f and f.error)}')
+                errors = ", ".join(f.error for f in result.fields if f and f.error)
+                results.register_error(doc.id, doc.title, pattern.name, errors)
+                log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {errors}')
                 continue
 
             for t_id in remove_tag_ids:
@@ -235,7 +249,10 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
 
             if custom_field_set_has_changed:
                 log.info(f'Updated custom fields of document {doc.id} to {paperless_doc.custom_fields}')
-                
+    
+    if not any_pattern_has_matched:
+        results.register_umatched(paperless_doc.id, paperless_doc.title)
+
     if paperless_doc_has_changed:
         pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
 
