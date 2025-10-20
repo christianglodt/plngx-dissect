@@ -407,3 +407,7 @@ class PaperlessClient:
         async with self._get(f'{self.base_url}/api/documents/{document_id}/?fields=modified,id') as response:
             validated_response = PaperlessDocumentModificationDatetime.model_validate(await response.json())
             return validated_response.modified
+
+
+def get_paperless_url(document_id: int) -> str:
+    return f'{PAPERLESS_URL}/documents/{document_id}/details'
