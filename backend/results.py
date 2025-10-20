@@ -19,7 +19,7 @@ class ProcessedDocument(pydantic.BaseModel):
 class ProcessingError(pydantic.BaseModel):
     document: ProcessedDocument
     pattern_name: str
-    error: str | None
+    error: str
 
 
 class ProcessingResults(pydantic.BaseModel):
