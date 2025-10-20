@@ -205,3 +205,22 @@ export type HistoryItem = {
     details: string;
     paperless_url: string;
 }
+
+export type ProcessedDocument = {
+    id: number;
+    title: string;
+    paperless_url: string;
+}
+
+export type ProcessingError = {
+    document: ProcessedDocument;
+    pattern_name: string;
+    error: string;
+}
+
+export type ProcessingResults = {
+    errors: Array<ProcessingError>;
+    matched_patterns: Record<string, Array<string>>; // Keys are strings here because of JSON not allowing numbers as keys
+    matched_document_titles: Record<string, string>;
+    unmatched: Array<ProcessedDocument>;
+}

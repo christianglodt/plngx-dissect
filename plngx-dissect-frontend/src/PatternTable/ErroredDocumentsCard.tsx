@@ -1,0 +1,32 @@
+import { Article, Error } from "@mui/icons-material";
+import { Chip, CircularProgress, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { useProcessingResults } from "../hooks";
+import ListCard from "../utils/ListCard";
+import { ProcessingError } from "../types";
+import { useNavigate } from "react-router-dom";
+
+const ErroredDocumentsCard = () => {
+
+    const { data: results, isLoading, error } = useProcessingResults();
+    const navigate = useNavigate();
+
+    const onErrorClicked = (error: ProcessingError) => {
+        navigate(`pattern/${error.pattern_name}?document=${error.document.id}`);
+    }
+
+    return (
+        <ListCard title={<span>Errors</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+            { results && !error && results.errors.map((error) =>
+            <ListItemButton key={`${error.document.id}-${error.pattern_name}-${error.error}`} onClick={() => onErrorClicked(error)} alignItems="flex-start">
+                <ListItemIcon><Article/></ListItemIcon>
+                <ListItemText primary={error.document.title} secondary={error.error}/>
+            </ListItemButton>
+            )}
+            { error &&
+            <Chip label={error.toString()} color="error" icon={<Error/>}/>
+            }
+        </ListCard>
+    );
+}
+
+export default ErroredDocumentsCard;
