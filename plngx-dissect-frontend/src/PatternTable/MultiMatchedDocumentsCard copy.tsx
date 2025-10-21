@@ -10,7 +10,7 @@ const MultiMatchedDocumentsCard = () => {
     return (
         <div style={{ display: 'flex', justifyContent: 'stretch', height: '25%' }}>
             <ListCard title={<span>Multiple Matches</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
-                { results && !error && Object.keys(results.matched_patterns).map(doc_id =>
+                { results && !error && Object.keys(results.matched_patterns).filter(doc_id => results.matched_patterns[doc_id]!.length > 1).map(doc_id =>
                 <ListItemButton key={doc_id} alignItems="flex-start">
                     <ListItemIcon><Article/></ListItemIcon>
                     <ListItemText primary={results.matched_document_titles[doc_id]} secondary={
