@@ -175,7 +175,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
             result = await pattern.evaluate(paperless_doc.id, pattern.preprocess, client)
                         
             if any(f and f.error for f in result.fields):
-                errors = ", ".join(f.error for f in result.fields if f and f.error)
+                errors = "\n".join(f'{field.name}: {field_result.error}' for field_result, field in zip(result.fields, pattern.fields) if field_result and field_result.error)
                 results.register_error(doc.id, doc.title, pattern.name, errors)
                 log.error(f'Skipping "{pattern.name}" for document {doc.id} due to errors: {errors}')
                 continue
