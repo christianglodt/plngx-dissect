@@ -20,7 +20,7 @@ const ErroredDocumentsCard = () => {
                 { results && !error && results.errors.map((error) =>
                 <ListItemButton key={`${error.document.id}-${error.pattern_name}-${error.error}`} onClick={() => onErrorClicked(error)} alignItems="flex-start">
                     <ListItemIcon><Article/></ListItemIcon>
-                    <ListItemText primary={error.document.title} secondary={error.error}/>
+                    <ListItemText primary={error.document.title} secondary={<span style={{ whiteSpace: 'pre' }}>{error.error}</span>}/>
                 </ListItemButton>
                 )}
                 { error &&
