@@ -13,17 +13,19 @@ const UnmatchedDocumentsCard = () => {
     }
 
     return (
-        <ListCard title={<span>Unmatched</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
-            { results && !error && results.unmatched.map((doc) =>
-            <ListItemButton key={doc.id} onClick={() => onDocumentClicked(doc)} alignItems="flex-start">
-                <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={doc.title}/>
-            </ListItemButton>
-            )}
-            { error &&
-            <Chip label={error.toString()} color="error" icon={<Error/>}/>
-            }
-        </ListCard>
+        <div style={{ display: 'flex', justifyContent: 'stretch', height: '25%' }}>
+            <ListCard title={<span>Unmatched</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+                { results && !error && results.unmatched.map((doc) =>
+                <ListItemButton key={doc.id} onClick={() => onDocumentClicked(doc)} alignItems="flex-start">
+                    <ListItemIcon><Article/></ListItemIcon>
+                    <ListItemText primary={doc.title}/>
+                </ListItemButton>
+                )}
+                { error &&
+                <Chip label={error.toString()} color="error" icon={<Error/>}/>
+                }
+            </ListCard>
+        </div>
     );
 }
 

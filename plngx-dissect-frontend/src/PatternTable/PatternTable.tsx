@@ -67,7 +67,7 @@ const PatternTable = () => {
                         </TableContainer>
                     </CardContent>
                 </Card>
-                <Stack direction="column" gap={2} minWidth="400px">
+                <Stack direction="column" gap={2} minWidth="400px" height="100%" maxHeight="100%" overflow="hidden">
                     <UnmatchedDocumentsCard/>
                     <ErroredDocumentsCard/>
                     <MultiMatchedDocumentsCard/>

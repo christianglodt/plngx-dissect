@@ -15,17 +15,19 @@ const ErroredDocumentsCard = () => {
     }
 
     return (
-        <ListCard title={<span>Errors</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
-            { results && !error && results.errors.map((error) =>
-            <ListItemButton key={`${error.document.id}-${error.pattern_name}-${error.error}`} onClick={() => onErrorClicked(error)} alignItems="flex-start">
-                <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={error.document.title} secondary={error.error}/>
-            </ListItemButton>
-            )}
-            { error &&
-            <Chip label={error.toString()} color="error" icon={<Error/>}/>
-            }
-        </ListCard>
+        <div style={{ display: 'flex', justifyContent: 'stretch', height: '25%' }}>
+            <ListCard title={<span>Errors</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+                { results && !error && results.errors.map((error) =>
+                <ListItemButton key={`${error.document.id}-${error.pattern_name}-${error.error}`} onClick={() => onErrorClicked(error)} alignItems="flex-start">
+                    <ListItemIcon><Article/></ListItemIcon>
+                    <ListItemText primary={error.document.title} secondary={error.error}/>
+                </ListItemButton>
+                )}
+                { error &&
+                <Chip label={error.toString()} color="error" icon={<Error/>}/>
+                }
+            </ListCard>
+        </div>
     );
 }
 
