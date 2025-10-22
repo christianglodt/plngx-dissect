@@ -2,7 +2,7 @@
 
 import asyncio
 
-import ryaml
+import yaml
 
 from pattern import Pattern
 from matching import filter_documents_matching_pattern, PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS
@@ -31,10 +31,10 @@ async def profile_region_text():
 
     paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS)]
         
-    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+    pattern = Pattern.model_validate(yaml.load(PATTERN, Loader=yaml.CLoader))
 
     region = pattern.regions[0]
-    docs = [await get_parsed_document(pl.id, client=client) for pl in paperless_docs]
+    docs = [await get_parsed_document(pl.id, client=client, preprocess=None) for pl in paperless_docs]
     for _ in range(1000):
         for doc in docs:
             if doc.pages:
@@ -46,14 +46,14 @@ async def profile_pattern_matching():
 
     paperless_docs = [d async for d in client.get_documents_with_tags(PAPERLESS_REQUIRED_TAGS, PAPERLESS_EXCLUDED_TAGS)]
         
-    pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+    pattern = Pattern.model_validate(yaml.load(PATTERN, Loader=yaml.CLoader))
 
     for _ in range(50):
       print(await pattern_matching(async_iter(paperless_docs), pattern, client))
 
 
 async def profile_get_documents_matching_pattern():
-    pattern = Pattern.model_validate(ryaml.loads(PATTERN2))
+    pattern = Pattern.model_validate(yaml.load(PATTERN2, Loader=yaml.CLoader))
     MAX_RESULTS = 50
 
     res: list[DocumentBase] = []

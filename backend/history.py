@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 import pathlib
 from aiofile import async_open
-import ryaml
+import yaml
 
 
 HISTORY_PATH = pathlib.Path('../data/history').resolve()
@@ -32,7 +32,7 @@ class History(pydantic.RootModel[list[HistoryItem]]):
 async def get_history() -> History:
     try:
         async with async_open(HISTORY_PATH / 'history.yml', 'r', encoding='utf-8') as f:
-            history = ryaml.loads(await f.read())
+            history = yaml.load(await f.read(), Loader=yaml.CLoader)
             return History.model_validate(history)
     except FileNotFoundError:
         return History([])
@@ -40,7 +40,7 @@ async def get_history() -> History:
 
 async def save_history(history: History):
     async with async_open(HISTORY_PATH / 'history.yml', 'w', encoding='utf-8') as f:
-        await f.write(ryaml.dumps(history.model_dump(mode='json')))
+        await f.write(yaml.dump(history.model_dump(mode='json'), Dumper=yaml.CDumper))
 
 
 async def add_history_item(item: HistoryItem):

@@ -14,6 +14,9 @@ import PortalBox from '../utils/PortalBox';
 import { Card, CardContent, CardHeader, Stack } from '@mui/material';
 import HistoryCard from './HistoryCard';
 import ConfirmButton from '../utils/ConfirmButton';
+import UnmatchedDocumentsCard from './UnmatchedDocumentsCard';
+import ErroredDocumentsCard from './ErroredDocumentsCard';
+import MultiMatchedDocumentsCard from './MultiMatchedDocumentsCard copy';
 
 
 const PatternTable = () => {
@@ -64,7 +67,12 @@ const PatternTable = () => {
                         </TableContainer>
                     </CardContent>
                 </Card>
-                <HistoryCard/>
+                <Stack direction="column" gap={2} minWidth="400px" height="100%" maxHeight="100%" overflow="hidden">
+                    <UnmatchedDocumentsCard/>
+                    <ErroredDocumentsCard/>
+                    <MultiMatchedDocumentsCard/>
+                    <HistoryCard/>
+                </Stack>
             </Stack>
         </>
     );

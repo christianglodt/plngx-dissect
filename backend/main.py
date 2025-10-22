@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.responses import RedirectResponse, StreamingResponse
+from fastapi.responses import RedirectResponse, StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from apscheduler.schedulers.asyncio import AsyncIOScheduler # type: ignore
@@ -14,6 +14,7 @@ import document
 import matching
 import region
 import history
+import results
 import pathlib
 import os
 import asyncio
@@ -158,10 +159,14 @@ async def get_history() -> list[ResponseHistoryItem]:
     return [ResponseHistoryItem(paperless_url=f'{paperless.PAPERLESS_URL}/documents/{item.id}/details', **item.model_dump()) for item in h.root]
 
 
+@api_app.get('/processing_results')
+async def get_processing_results():
+    return FileResponse(results.RESULTS_FILE_PATH, media_type='application/json', headers={ 'cache': 'no-cache' })
+
+
 @api_app.get('/paperless_element/{slug}')
 async def get_paperless_element_list(slug: str) -> list[paperless.PaperlessNamedElement | paperless.PaperlessAttribute]:
     return await paperless.PaperlessClient().get_element_list(slug)
-
 
 
 prefix_app.mount('/api', api_app)

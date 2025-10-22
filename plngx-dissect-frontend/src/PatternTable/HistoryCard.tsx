@@ -20,22 +20,24 @@ const HistoryCard = () => {
     history?.sort((a, b) => dayjs(b.datetime).valueOf() - dayjs(a.datetime).valueOf());
 
     return (
-        <ListCard title={<span>History</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
-            { history && !error && history.map((item) =>
-            <ListItemButton key={`${item.paperless_id}-${item.datetime}-${item.operation}`} onClick={() => onDocumentClicked(item)} alignItems="flex-start">
-                <ListItemIcon><Article/></ListItemIcon>
-                <ListItemText primary={item.title} secondary={
-                    <span>
-                        <span title={dayjs(item.datetime).toString()}>{`${dayjs(item.datetime).fromNow()}`}</span><br/>
-                        <span>{`${item.details}`}</span>
-                    </span>
-                }/>
-            </ListItemButton>
-            )}
-            { error &&
-            <Chip label={error.toString()} color="error" icon={<Error/>}/>
-            }
-        </ListCard>
+        <div style={{ display: 'flex', justifyContent: 'stretch', height: '21%' }}>
+            <ListCard title={<span>History</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+                { history && !error && history.map((item) =>
+                <ListItemButton key={`${item.paperless_id}-${item.datetime}-${item.operation}`} onClick={() => onDocumentClicked(item)} alignItems="flex-start">
+                    <ListItemIcon><Article/></ListItemIcon>
+                    <ListItemText primary={item.title} secondary={
+                        <span>
+                            <span title={dayjs(item.datetime).toString()}>{`${dayjs(item.datetime).fromNow()}`}</span><br/>
+                            <span>{`${item.details}`}</span>
+                        </span>
+                    }/>
+                </ListItemButton>
+                )}
+                { error &&
+                <Chip label={error.toString()} color="error" icon={<Error/>}/>
+                }
+            </ListCard>
+        </div>
     );
 }
 
