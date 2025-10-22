@@ -61,7 +61,7 @@ const InputDialogButton = ({dialogTitle, dialogText, label, icon, value, onConfi
                     { dialogText &&
                     <DialogContentText>{dialogText}</DialogContentText>
                     }
-                    <TextField sx={{ marginTop: '0.5rem', marginBottom: '0.5rem' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setCurrentValue(event.target.value)} onKeyDown={onKeyDown} onKeyUp={onKeyUp} error={errorMessage !== null} helperText={errorMessage}/>
+                    <TextField sx={{ marginTop: '0.5rem', marginBottom: '0.5rem', width: '500px' }} autoFocus required label="New Pattern Name" fullWidth defaultValue={value || ''} onChange={(event) => setCurrentValue(event.target.value)} onKeyDown={onKeyDown} onKeyUp={onKeyUp} error={errorMessage !== null} helperText={errorMessage}/>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onDialogClosed}>Cancel</Button>
