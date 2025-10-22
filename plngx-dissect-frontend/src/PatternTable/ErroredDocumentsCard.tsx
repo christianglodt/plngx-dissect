@@ -16,7 +16,7 @@ const ErroredDocumentsCard = () => {
 
     return (
         <div style={{ display: 'flex', justifyContent: 'stretch', height: '25%' }}>
-            <ListCard title={<span>Errors</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
+            <ListCard title={<span>Errors ({results?.errors.length})</span>} headerWidget={isLoading ? <CircularProgress/> : ''}>
                 { results && !error && results.errors.map((error) =>
                 <ListItemButton key={`${error.document.id}-${error.pattern_name}-${error.error}`} onClick={() => onErrorClicked(error)} alignItems="flex-start">
                     <ListItemIcon><Article/></ListItemIcon>
