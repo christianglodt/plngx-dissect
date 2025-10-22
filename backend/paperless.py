@@ -195,8 +195,8 @@ class PaperlessDocument(pydantic.BaseModel):
     modified: pydantic.AwareDatetime
     added: pydantic.AwareDatetime
     archive_serial_number: str | None
-    original_file_name: str
-    archived_file_name: str
+    original_file_name: str | None
+    archived_file_name: str | None
     owner: int | None
     user_can_change: bool
     is_shared_by_requester: bool
