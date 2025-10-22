@@ -11,14 +11,14 @@ TODO: anonymized Pattern
 
 from document import Document
 from pattern import Pattern
-import ryaml
+import yaml
 
 
 class TestRegionResultText(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.document = Document.model_validate(ryaml.loads(DOCUMENT))
-        self.pattern = Pattern.model_validate(ryaml.loads(PATTERN))
+        self.document = Document.model_validate(yaml.load(DOCUMENT, Loader=yaml.CLoader))
+        self.pattern = Pattern.model_validate(yaml.load(PATTERN, Loader=yaml.CLoader))
 
         self.region = self.pattern.regions[0]
         self.page = self.document.pages[0]

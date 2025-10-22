@@ -7,7 +7,7 @@ import aiofiles.os
 from aiofile import async_open
 import pathlib
 import urllib.parse
-import ryaml
+import yaml
 import re
 import logging
 
@@ -281,19 +281,19 @@ async def list_patterns() -> list[PatternListEntry]:
 async def create_pattern(name: str) -> Pattern:
     pattern = Pattern(name=name, enabled=False, checks=[], regions=[], fields=[])
     async with async_open(name_to_path(name), 'x') as f:
-        await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
+        await f.write(yaml.dump(pattern.model_dump(mode='json'), Dumper=yaml.CDumper))
     return pattern
 
 
 async def get_pattern(name: str) -> Pattern:
     async with async_open(name_to_path(name), 'r', encoding='utf-8') as f:
-        obj = ryaml.loads(await f.read())
+        obj = yaml.load(await f.read(), Loader=yaml.CLoader)
         return Pattern.model_validate(obj)
 
 
 async def put_pattern(pattern: Pattern):
     async with aiofiles.tempfile.NamedTemporaryFile('w', encoding='utf-8', dir=CONFIG_PATH) as f:
-        await f.write(ryaml.dumps(pattern.model_dump(mode='json')))
+        await f.write(yaml.dump(pattern.model_dump(mode='json'), Dumper=yaml.CDumper))
         await aiofiles.os.rename(str(f.name), name_to_path(pattern.name))
 
 

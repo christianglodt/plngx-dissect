@@ -1,7 +1,7 @@
 import pathlib
 import pydantic
 from typing import Type, Any, Callable, ParamSpec, Awaitable, TypeVar, AsyncIterable
-import ryaml
+import yaml
 from functools import wraps, lru_cache
 import abc
 import io
@@ -100,7 +100,7 @@ PT = TypeVar('PT', bound=pydantic.BaseModel)
 
 @lru_cache(maxsize=1024)
 def parse_yaml_and_validate_model(Model: Type[PT], s: bytes) -> PT:
-    return Model.model_validate(ryaml.loads(s.decode('utf-8')))
+    return Model.model_validate(yaml.load(s.decode('utf-8'), Loader=yaml.CLoader))
 
 
 class pydantic_yaml_cache(AsyncBytesCache[PT]):
@@ -112,7 +112,7 @@ class pydantic_yaml_cache(AsyncBytesCache[PT]):
         return parse_yaml_and_validate_model(self.Model, data)
 
     async def dump_to_cache(self, value: PT) -> bytes:
-        s = ryaml.dumps(value.model_dump(mode='json'))
+        s = yaml.dump(value.model_dump(mode='json'), Dumper=yaml.CDumper)
         return s.encode('utf-8')
 
 
