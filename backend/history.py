@@ -14,7 +14,7 @@ MAX_HISTORY_SIZE = 50
 class HistoryItem(pydantic.BaseModel):
     id: int
     title: str
-    datetime: datetime
+    datetime: pydantic.AwareDatetime
     operation: Literal['updated']
     details: str
 
@@ -51,6 +51,6 @@ async def add_history_item(item: HistoryItem):
 
 
 async def history_log_update(paperless_id: int, title: str, details: str) -> HistoryItem:
-    item = HistoryItem(id=paperless_id, title=title, datetime=datetime.now(), operation='updated', details=details)
+    item = HistoryItem(id=paperless_id, title=title, datetime=datetime.now().astimezone(), operation='updated', details=details)
     await add_history_item(item)
     return item

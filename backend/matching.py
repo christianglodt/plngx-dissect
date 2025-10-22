@@ -276,7 +276,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         else:
             await client.put_document(paperless_doc)
             log.info(f'Saved document {paperless_doc.id} to Paperless')
-            await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
+        await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
 
 
 if __name__ == '__main__':
