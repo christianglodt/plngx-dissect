@@ -162,7 +162,7 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
         return
 
     paperless_doc_has_changed = False
-    any_pattern_has_matched = False
+    matched_patterns: list[Pattern] = []
     for pattern in patterns:
         if not pattern.enabled:
             continue
@@ -175,10 +175,10 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
             if doc.parse_status.error != None:
                 log.error(f'Document {doc.id} has parsing error, skipping (may want to delete from cache!)')
                 return
-            
+
             if await pattern.checks_match(doc, paperless_doc, client):
                 log.debug(f'Pattern "{pattern.name}" matches against document {doc.id}')
-                any_pattern_has_matched = True
+                matched_patterns.append(pattern)
                 results.register_match(doc.id, doc.title, pattern.name)
                 # TODO use "doc" instead of "paperless_doc" here
                 result = await pattern.evaluate(paperless_doc.id, pattern.preprocess, client)
@@ -262,20 +262,24 @@ async def process_document(paperless_doc: paperless.PaperlessDocument, client: p
             log.exception('Exception while checking or applying pattern')
             results.register_error(paperless_doc.id, paperless_doc.title, pattern.name, str(e))
 
-    if not any_pattern_has_matched:
+    if not matched_patterns:
         results.register_unmatched(paperless_doc.id, paperless_doc.title)
 
     if paperless_doc_has_changed:
-        pass # TODO add note (using POST to endpoint /paperless/api/documents/{id}/notes/ ?)
 
         history_field_desc = [f'{custom_fields_by_id[f.field].name}: {f.value}' for f in paperless_doc.custom_fields]
         history_details = f'Set fields to {", ".join(history_field_desc)}'
-        if POST_PROCESS_DONT_SAVE:
-            log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
-            log.debug(f'History details: {history_details}')
-        else:
-            await client.put_document(paperless_doc)
-            log.info(f'Saved document {paperless_doc.id} to Paperless')
+        try:
+            if POST_PROCESS_DONT_SAVE:
+                log.info(f'Did not save document {paperless_doc.id} to Paperless (POST_PROCESS_DONT_SAVE)')
+                log.debug(f'History details: {history_details}')
+            else:
+                await client.put_document(paperless_doc)
+                log.info(f'Saved document {paperless_doc.id} to Paperless')
+        except Exception as e:
+            log.exception(f'Exception saving document {paperless_doc.id}')
+            for pattern in matched_patterns: # Register error for any pattern that matched
+                results.register_error(paperless_doc.id, paperless_doc.title, pattern.name, str(e))
         await history_log_update(paperless_doc.id, paperless_doc.title, history_details)
 
 
