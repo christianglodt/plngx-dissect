@@ -161,7 +161,7 @@ async def get_history() -> list[ResponseHistoryItem]:
 
 @api_app.get('/processing_results')
 async def get_processing_results():
-    return FileResponse(results.RESULTS_FILE_PATH, media_type='application/json', headers={ 'cache': 'no-cache' })
+    return FileResponse(results.RESULTS_FILE_PATH, media_type='application/json', headers={ 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' })
 
 
 @api_app.get('/paperless_element/{slug}')
