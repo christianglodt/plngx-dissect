@@ -53,7 +53,7 @@ async def profile_pattern_matching():
 
 
 async def profile_get_documents_matching_pattern():
-    pattern = Pattern.model_validate(yaml.load(PATTERN2, Loader=yaml.CLoader))
+    pattern = Pattern.model_validate(yaml.load(PATTERN, Loader=yaml.CLoader))
     MAX_RESULTS = 50
 
     res: list[DocumentBase] = []
@@ -70,7 +70,7 @@ page: 0
 name: SoloMed Invoice
 checks:
 - type: correspondent
-  name: SoloMedGmbH
+  name: LaboratoireSchaack
 - type: document_type
   name: Bill
 regions:
@@ -78,7 +78,8 @@ regions:
   y: 416.0
   x2: 546.0
   y2: 707.0
-  regex: Invoice amount € (?P<Amount>[\\d,]+)
+  kind: regex
+  regex_expr: Invoice amount € (?P<Amount>[\\d,]+)
 fields:
 - name: Amount
   template: '{{ Amount | replace(",", ".") }}'
@@ -94,7 +95,8 @@ regions:
   y: 416.0
   x2: 546.0
   y2: 707.0
-  regex: Invoice amount € (?P<Amount>[\\d,]+)
+  kind: regex
+  regex_expr: Invoice amount € (?P<Amount>[\\d,]+)
 fields:
 - name: Amount
   template: '{{ Amount | replace(",", ".") }}'
