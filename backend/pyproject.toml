@@ -15,8 +15,9 @@ dependencies = [
     "jinja2==3.1.2",
     "pdfplumber==0.11.5",
     "pydantic==2.11.9",
+    "python-dateutil==2.9.0.post0",
     "python-dotenv==1.0.0",
-    "pyyaml>=6.0.3",
+    "pyyaml==6.0.3",
     "uvicorn[standard]==0.24.0",
 ]
 

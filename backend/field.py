@@ -6,10 +6,14 @@ import jinja2.sandbox
 from typing import Literal, cast
 
 import paperless
+import utils
 
 
 def parse_date(date_str: str, format: str ='%d/%m/%Y') -> datetime.date:
-    return datetime.datetime.strptime(date_str, format).date()
+    try:
+        return datetime.datetime.strptime(date_str, format).date()
+    except ValueError:
+        return utils.parse_date(date_str)
 
 
 def parse_monetary(s: str) -> decimal.Decimal:
