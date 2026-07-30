@@ -28,7 +28,7 @@ PaperlessDataT = TypeVar('PaperlessDataT')
 
 class PaperlessResponse(pydantic.BaseModel, Generic[PaperlessDataT]):
     count: int
-    all: list[int]
+    all: list[int] | None = None # Field removed in paperless-ngx v3, made optional here to allow use of prior versions
     results: list[PaperlessDataT]
     next: pydantic.AnyHttpUrl | None
     previous: pydantic.AnyHttpUrl | None
